@@ -35,7 +35,9 @@ type
     CloseForm: TAction;
     RichEdit1: TRichEdit;
     Label1: TLabel;
+    InfoVersion: TLabel;
     procedure CloseFormExecute(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -49,9 +51,17 @@ implementation
 
 {$R *.dfm}
 
+uses
+  SvnInfo;
+
 procedure TAboutForm.CloseFormExecute(Sender: TObject);
 begin
   Close;
+end;
+
+procedure TAboutForm.FormCreate(Sender: TObject);
+begin
+  InfoVersion.Caption := Format('Revision #%d, %s', [SVN_REVISION, SVN_NOW]);
 end;
 
 end.

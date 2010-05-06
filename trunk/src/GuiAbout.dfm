@@ -15,6 +15,7 @@ object AboutForm: TAboutForm
   FormStyle = fsStayOnTop
   OldCreateOrder = False
   Position = poScreenCenter
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Image2: TImage
@@ -1973,6 +1974,22 @@ object AboutForm: TAboutForm
     Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = [fsBold]
+    ParentFont = False
+    Transparent = True
+    Layout = tlCenter
+  end
+  object InfoVersion: TLabel
+    Left = 24
+    Top = 0
+    Width = 489
+    Height = 30
+    AutoSize = False
+    Caption = '#SVN_INFOS#'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsItalic]
     ParentFont = False
     Transparent = True
     Layout = tlCenter

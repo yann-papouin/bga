@@ -584,7 +584,7 @@ end;
 
 procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
-  FApplicationTitle := Caption + ' - ' + Application.Title;
+  FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
   RFALib.FseAddProc := RFAListDirAdd;
   RFALib.FseDetailsProc := RFADetails;
 end;
