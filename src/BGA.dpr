@@ -18,7 +18,8 @@ uses
   GuiSMView in 'GuiSMView.pas' {SMViewForm},
   FileSM in 'GLSceneExt\FileSM.pas',
   GLFileSM in 'GLSceneExt\GLFileSM.pas',
-  TypesSM in 'GLSceneExt\TypesSM.pas';
+  TypesSM in 'GLSceneExt\TypesSM.pas',
+  SvnInfo in 'Lib\SvnInfo.pas';
 
 {$R *.res}
 

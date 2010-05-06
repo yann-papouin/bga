@@ -25,12 +25,20 @@ interface
 uses
   JvGnuGetText, TypInfo, CommonLib,
   SysUtils, StrUtils, Windows, Messages, Classes, Controls, ExtCtrls, Dialogs, Graphics,
-  Forms, Math, Variants, Varutils;
+  Forms, Math, Variants, Varutils, SvnInfo;
+
+
+function ApplicationSvnTitle: String;
 
 function GetAppTempDirectory: String;
 function GetMapTempDirectory: String;
 
 implementation
+
+function ApplicationSvnTitle: String;
+begin
+  result := Format('%s (rev #%d)',[Application.Title, SVN_REVISION]);
+end;
 
 function GetAppTempDirectory: String;
 begin

@@ -77,7 +77,7 @@ implementation
 {$R *.dfm}
 
 uses
-  GLFileSM;
+  GLFileSM, AppLib;
 
 type
   pData = ^rData;
@@ -94,7 +94,7 @@ type
 
 procedure TSMViewForm.FormCreate(Sender: TObject);
 begin
-  FApplicationTitle := Caption + ' - ' + Application.Title;;
+  FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
 end;
 
 procedure TSMViewForm.LoadSMData;

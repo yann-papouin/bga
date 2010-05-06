@@ -75,6 +75,7 @@
 			<DCCReference Include="GLSceneExt\FileSM.pas"/>
 			<DCCReference Include="GLSceneExt\GLFileSM.pas"/>
 			<DCCReference Include="GLSceneExt\TypesSM.pas"/>
+			<DCCReference Include="Lib\SvnInfo.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -88,6 +89,9 @@
 			</BuildConfiguration>
 		</ItemGroup>
 		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+		<PropertyGroup>
+			<PreBuildEvent><![CDATA[SubWCRev.exe "$(PROJECTDIR)" "$(PROJECTDIR)\Lib\SvnInfo.tpl" "$(PROJECTDIR)\Lib\SvnInfo.pas"]]></PreBuildEvent>
+		</PropertyGroup>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
 			<Borland.ProjectType/>
@@ -105,9 +109,9 @@
 						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
 						<VersionInfo Name="AutoIncBuild">False</VersionInfo>
 						<VersionInfo Name="MajorVer">1</VersionInfo>
-						<VersionInfo Name="MinorVer">10</VersionInfo>
-						<VersionInfo Name="Release">5</VersionInfo>
-						<VersionInfo Name="Build">6</VersionInfo>
+						<VersionInfo Name="MinorVer">0</VersionInfo>
+						<VersionInfo Name="Release">0</VersionInfo>
+						<VersionInfo Name="Build">0</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -119,7 +123,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Yann Papouin</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">BGA : Battlefield 1942 Game Archive Tool</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">1.10.5.6</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">BGA</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Yann Papouin</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
@@ -128,12 +132,7 @@
 						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="Comments"/>
 					</VersionInfoKeys>
-					<Excluded_Packages>
-						<Excluded_Packages Name="C:\Users\Public\Documents\RAD Studio\7.0\Bpl\EmbeddedWebBrowser_D2010.bpl">Internet Embedded Web Browser Components</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\bcboffice2k140.bpl">Package Serveurs Office 2000 Embarcadero C++Builder</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\bcbofficexp140.bpl">Package Serveurs Office XP Embarcadero C++Builder</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k140.bpl">Composants Microsoft Office 2000 Sample Automation Server Wrapper</Excluded_Packages>
-					</Excluded_Packages>
+					<Excluded_Packages/>
 				</Delphi.Personality>
 			</BorlandProject>
 			<ProjectFileVersion>12</ProjectFileVersion>

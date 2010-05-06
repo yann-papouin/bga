@@ -94,14 +94,14 @@ implementation
 {$R *.dfm}
 
 uses
-  Math, VectorTypes, DbugIntf, StringFunction;
+  Math, VectorTypes, DbugIntf, StringFunction, AppLib;
 
 { TRAWViewForm }
 
 
 procedure TRAWViewForm.FormCreate(Sender: TObject);
 begin
-  FApplicationTitle := Caption + ' - ' + Application.Title;;
+  FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
 
   FMapSize := -1;
   FBuffer := TMemoryStream.Create;
