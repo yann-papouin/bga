@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:export-ydpi="85.449104"
+   inkscape:export-xdpi="85.449104"
+   inkscape:export-filename="SplashScreenTest.png"
+   sodipodi:docname="about.svg"
+   inkscape:version="0.47+devel r9353"
+   version="1.1"
+   id="svg2"
+   height="368.6405"
+   width="632.74036">
+  <title
+     id="title5270">Splash screen test</title>
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient5350">
+      <stop
+         id="stop5352"
+         offset="0"
+         style="stop-color:#ff2d2d;stop-opacity:1;" />
+      <stop
+         id="stop5354"
+         offset="1"
+         style="stop-color:#b20000;stop-opacity:1;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3685">
+      <stop
+         style="stop-color:#588ca7;stop-opacity:1;"
+         offset="0"
+         id="stop3687" />
+      <stop
+         style="stop-color:#324d52;stop-opacity:1;"
+         offset="1"
+         id="stop3689" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3685"
+       id="linearGradient3691"
+       x1="-29.071428"
+       y1="563.79077"
+       x2="914.78571"
+       y2="563.79077"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.3909824,0,0,0.86507465,160.67598,-797.77206)" />
+    <filter
+       id="filter4685"
+       inkscape:label="Adobe Bevel"
+       inkscape:menu="Shadows and Glows"
+       inkscape:menu-tooltip="Adds a colorizable drop shadow inside"
+       color-interpolation-filters="sRGB"
+       width="1.5"
+       height="1.5"
+       x="-0.25"
+       y="-0.25">
+      <feGaussianBlur
+         id="feGaussianBlur4687"
+         stdDeviation="4"
+         result="result8" />
+      <feOffset
+         id="feOffset4689"
+         dx="4"
+         dy="4"
+         result="result11" />
+      <feComposite
+         id="feComposite4691"
+         in2="result11"
+         result="result6"
+         in="SourceGraphic"
+         operator="in" />
+      <feFlood
+         id="feFlood4693"
+         result="result10"
+         in="result6"
+         flood-opacity="1"
+         flood-color="rgb(0,0,0)" />
+      <feBlend
+         id="feBlend4695"
+         in2="result10"
+         mode="normal"
+         in="result6"
+         result="result12" />
+      <feComposite
+         id="feComposite4697"
+         in2="SourceGraphic"
+         result="fbSourceGraphic"
+         operator="in" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix4699" />
+      <feColorMatrix
+         id="feColorMatrix4703"
+         result="bluralpha"
+         type="matrix"
+         values="-1 0 0 0 1 0 -1 0 0 1 0 0 -1 0 1 0 0 0 0.4 0 "
+         in="fbSourceGraphicAlpha" />
+      <feOffset
+         id="feOffset4705"
+         in="bluralpha"
+         dx="1"
+         dy="2"
+         result="offsetBlur" />
+      <feMerge
+         id="feMerge4707">
+        <feMergeNode
+           id="feMergeNode4709"
+           in="offsetBlur" />
+        <feMergeNode
+           id="feMergeNode4711"
+           in="fbSourceGraphic" />
+      </feMerge>
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5350"
+       id="linearGradient5356"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.3909824,0,0,0.86507465,164.67598,-791.7721)"
+       x1="-29.071428"
+       y1="563.79077"
+       x2="914.78571"
+       y2="563.79077" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="225.176"
+     inkscape:cy="171.21115"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1018"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Splash screen test</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Yann Papouin</dc:title>
+          </cc:Agent>
+        </dc:creator>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(6.3192749,-149.50505)">
+    <rect
+       style="fill:url(#linearGradient3691);fill-opacity:1;fill-rule:evenodd;stroke:none"
+       id="rect2915"
+       width="368.6405"
+       height="632.74036"
+       x="149.50505"
+       y="-626.42108"
+       transform="matrix(0,1,-1,0,0,0)"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <text
+       xml:space="preserve"
+       style="font-size:235.56567383px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#323232;fill-opacity:1;stroke:none;filter:url(#filter4685);font-family:Sans;-inkscape-font-specification:Sans Bold"
+       x="30.343262"
+       y="367.67767"
+       id="text5272"
+       sodipodi:linespacing="125%"
+       transform="matrix(0.67528858,0,0,0.67528858,-14.03684,48.545998)"><tspan
+         sodipodi:role="line"
+         id="tspan5274"
+         x="30.343262"
+         y="367.67767">BGA</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text5276"
+       y="367.67767"
+       x="345.71289"
+       style="font-size:57.4316864px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#363636;fill-opacity:1;stroke:none;filter:url(#filter4685);font-family:Sans;-inkscape-font-specification:Sans"
+       xml:space="preserve"
+       transform="matrix(0.5697941,0,0,0.5697941,-178.854,142.90427)"><tspan
+         y="367.67767"
+         x="345.71289"
+         id="tspan5278"
+         sodipodi:role="line">Battlefield 1942 Game Archive Tool</tspan></text>
+  </g>
+</svg>
