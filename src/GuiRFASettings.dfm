@@ -51,8 +51,6 @@ object RFASettingsForm: TRFASettingsForm
       TitleCaptions.Strings = (
         'Extension'
         'Application')
-      ExplicitTop = 15
-      ExplicitHeight = 294
       ColWidths = (
         150
         389)

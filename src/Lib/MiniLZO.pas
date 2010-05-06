@@ -1,3 +1,7 @@
+(*
+  http://www.delphi3000.com/articles/article_3024.asp?SK=DLL
+*)
+
 unit MiniLZO;
 
 interface
