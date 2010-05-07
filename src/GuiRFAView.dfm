@@ -21,9 +21,9 @@ object RFAViewForm: TRFAViewForm
   TextHeight = 13
   object RFAList: TVirtualStringTree
     Left = 0
-    Top = 25
+    Top = 23
     Width = 699
-    Height = 375
+    Height = 377
     Align = alClient
     DragMode = dmAutomatic
     DragOperations = [doMove]
@@ -134,7 +134,7 @@ object RFAViewForm: TRFAViewForm
     Left = 0
     Top = 0
     Width = 699
-    Height = 25
+    Height = 23
     object tbMenuBar: TSpTBXToolbar
       Left = 0
       Top = 0

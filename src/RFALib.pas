@@ -28,61 +28,75 @@ uses
   DbugIntf, Windows, Classes, SysUtils, Contnrs;
 
 type
+  TRFAOperation =
+  (
+    roBegin,
+    roEnd,
+    roLoad,
+    roInsert,
+    roDelete
+  );
+
   TRFAFile = class;
 
-  TRFAAddEvent = procedure(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
-  TRFAAddDetailsEvent = procedure(Sender : TRFAFile; Total : integer; Index: integer; Offset, Size : Int64);
+  TRFAReadEntry = procedure(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
+  TRFAProgress = procedure(Sender : TRFAFile; Operation : TRFAOperation; Value : Integer = 0);
 
-  RFA_Result = record
+  TRFAResult = record
     offset : integer;
     size : integer;
   end;
 
-  TRFAFile = class
+  TRFAFile = class(TObject)
   private
     FLargeBuf : TMemoryStream;
     FHandle : TStream;
-    FOnAdd: TRfaAddEvent;
-    FOnAddDetails: TRfaAddDetailsEvent;
-    procedure SetOnAdd(const Value: TRFAAddEvent);
-    procedure SetOnAddDetails(const Value: TRFAAddDetailsEvent);
+    FOnReadEntry: TRFAReadEntry;
 
-    function RFA_Header : boolean;
+    FFilepath: string;
+    FCount: integer;
+    FOnProgress: TRFAProgress;
+    procedure SetOnReadEntry(const Value: TRFAReadEntry);
+
+    function ReadHeader : boolean;
     function GetDataSize: LongWord;
     function GetElementQuantity: LongWord;
     procedure SetDataSize(const Value: LongWord);
     procedure SetElementQuantity(const Value: LongWord);
+
+    procedure Release;
+    procedure SetOnProgress(const Value: TRFAProgress);
   protected
-    function DeleteData(Buf : TMemoryStream; Offset : int64; Size : int64) : RFA_Result; overload;
-    function DeleteData(Offset : int64; Size : int64) : RFA_Result; overload;
-    function InsertData(Data : TStream; Offset : Int64) : RFA_Result;
-    function InsertDataCompressed(Data : TStream; Offset : Int64) : RFA_Result;
+    function DeleteData(Buf : TMemoryStream; Offset : int64; Size : int64) : TRFAResult; overload;
+    function DeleteData(Offset : int64; Size : int64) : TRFAResult; overload;
+    function InsertData(Data : TStream; Offset : Int64) : TRFAResult;
+    function InsertDataCompressed(Data : TStream; Offset : Int64) : TRFAResult;
     procedure ReplaceData(Data : TStream; Offset : Int64; OldSize : int64);
   public
     constructor Create;
-    destructor Destroy;
+    destructor Destroy; override;
 
     function New(Filename: string): integer;
     function Open(Filename: string): integer;
-    function Save(Filename: string): integer;
 
     procedure DecompressToStream(outputstream: TStream; Offset, Size: int64; silent: boolean = true);
     procedure ExtractToStream(Data: TStream; Offset, Size, UcSize: int64);
     procedure CopyToStream(Data: TStream; Offset, Size: int64);
 
-    function DeleteFile(Offset : int64; Size : int64) : RFA_Result;
-    function DeleteEntry(FullPath : AnsiString) : RFA_Result;
-
-    function InsertFile(Data : TStream; Compressed : boolean = false) : RFA_Result;
+    function DeleteFile(Offset : int64; Size : int64) : TRFAResult;
+    function DeleteEntry(FullPath : AnsiString) : TRFAResult;
+    function InsertFile(Data : TStream; Compressed : boolean = false) : TRFAResult;
     procedure InsertEntry(FullPath : AnsiString; Offset, Size : Int64; cSize : Int64; Index : Cardinal);
-
     procedure UpdateEntry(FullPath : AnsiString; NewOffset, NewUcSize, NewCSize : int64);
 
     property DataSize : LongWord read GetDataSize write SetDataSize;
     property ElementQuantity : LongWord read GetElementQuantity write SetElementQuantity;
 
-    property OnAdd : TRFAAddEvent read FOnAdd write SetOnAdd;
-    property OnAddDetails : TRFAAddDetailsEvent read FOnAddDetails write SetOnAddDetails;
+    property Filepath : string read FFilepath;
+    property Count : integer read FCount;
+
+    property OnReadEntry: TRFAReadEntry read FOnReadEntry write SetOnReadEntry;
+    property OnProgress: TRFAProgress read FOnProgress write SetOnProgress;
   end;
 
 const
@@ -95,6 +109,7 @@ uses
   Math, CommonLib, MiniLZO;
 
 const
+  HEADER_SIZE = 28;
   ENTRY_SIZE = 24;
   DWORD_SIZE = 4;
   SEGMENT_HEADER_SIZE = DWORD_SIZE*3;
@@ -190,22 +205,33 @@ begin
   end;
 end;
 
-
-
 { TRFAFile }
 
 constructor TRFAFile.Create;
 begin
+  inherited;
   FLargeBuf := TMemoryStream.Create;
+  Release;
 end;
 
 destructor TRFAFile.Destroy;
 begin
-  if Assigned(FHandle) then
-    FHandle.Free;
+  Release;
 
   if Assigned(FLargeBuf) then
     FLargeBuf.Free;
+
+  inherited;
+end;
+
+procedure TRFAFile.Release;
+begin
+  if Assigned(FHandle) then
+    FHandle.Free;
+
+  FHandle := nil;
+  FCount := 0;
+  FFilepath := EmptyStr;
 end;
 
 
@@ -214,13 +240,17 @@ var
   Value : longword;
 begin
   Result := -1;
+  Release;
+
   FHandle := TFileStream.Create(Filename, fmOpenReadWrite or fmCreate);
+  FHandle.Size := 0;
   if Assigned(FHandle) then
   begin
     Value := 0;
     FHandle.Write(Value, DWORD_SIZE);
     FHandle.Write(Value, DWORD_SIZE);
     Result := 0;
+    FFilepath := Filename;
   end;
 end;
 
@@ -230,13 +260,11 @@ function TRFAFile.Open(Filename: string): integer;
 var
   ENT: RFA_Entry;
   Path: AnsiString;
-  NumE, x: integer;
+  NumE, i: integer;
   Position : integer;
   IsRetail: boolean;
 begin
-  //Assert(Assigned(FseAddProc));
-  //Assert(Assigned(FseDetailsProc));
-
+  Release;
 
   try
     Fhandle := TFileStream.Create(Filename, fmOpenReadWrite);
@@ -255,55 +283,56 @@ begin
   if Assigned(FHandle) then
   begin
 
-    IsRetail := RFA_Header;
-    NumE := GetElementQuantity;
+    IsRetail := ReadHeader;
+    NumE := ElementQuantity;
 
     if NumE > 65535 then
       raise Exception.Create('NumE seems too high');
 
-    for x:= 1 to NumE do
+    if Assigned(FOnProgress) then
+      FOnProgress(Self, roBegin, FHandle.Size - FHandle.Position);
+
+    for i:= 1 to NumE do
     begin
       Position := FHandle.Position;
-      //Path := get32(FHandle);
 
       Path := StringFrom(FHandle);      // Read entire Path\Filename
       FHandle.Read(ENT, ENTRY_SIZE);    // Read rfa entry data (24 bytes);
 
-      if Assigned(FOnAdd) then
+      if Assigned(FOnProgress) then
+        FOnProgress(Self, roLoad, FHandle.Position);
+
+      if Assigned(FOnReadEntry) then
       begin
+
         if IsRetail then
         begin
           if (ENT.ucsize = ENT.csize) then
-            FOnAdd(Self, Path, ENT.offset, ENT.ucsize, NORMAL_DATA, ENT.ucsize)
+            FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, NORMAL_DATA, ENT.ucsize)
           else
-            FOnAdd(Self, Path, ENT.offset, ENT.ucsize, COMPRESSED_DATA, ENT.csize)
+            FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, COMPRESSED_DATA, ENT.csize)
         end
           else
         begin
-          FOnAdd(Self, Path, ENT.offset, ENT.ucsize, false, 0);
+          FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, false, 0);
         end;
-
-        if Assigned(FOnAddDetails) then
-          FOnAddDetails(Self, NumE, x, Position, FHandle.Position - Position);
       end;
-
     end;
 
-    Result := NumE;
 
-  end
-  else
-    Result := -2;
+    if Assigned(FOnProgress) then
+      FOnProgress(Self, roEnd);
 
-end;
-
-function TRFAFile.Save(Filename: string): integer;
-begin
+    Result := 0;
+    FCount := NumE;
+    FFilepath := Filename;
+  end;
 
 end;
+
 
 // Quicker if ReAllocated size of Buf is near the last one
-function TRFAFile.DeleteData(Buf: TMemoryStream; Offset, Size: int64): RFA_Result;
+function TRFAFile.DeleteData(Buf: TMemoryStream; Offset, Size: int64): TRFAResult;
 var
   NewSize : Int64;
 begin
@@ -328,7 +357,7 @@ begin
 end;
 
 
-function TRFAFile.DeleteData(Offset, Size: int64): RFA_Result;
+function TRFAFile.DeleteData(Offset, Size: int64): TRFAResult;
 var
   Buf : TMemoryStream;
 begin
@@ -337,7 +366,7 @@ begin
   Buf.Free;
 end;
 
-function TRFAFile.InsertData(Data: TStream; Offset: Int64): RFA_Result;
+function TRFAFile.InsertData(Data: TStream; Offset: Int64): TRFAResult;
 var
   Buf : TMemoryStream;
 begin
@@ -368,7 +397,7 @@ begin
   Result.size := Data.Size;
 end;
 
-function TRFAFile.InsertDataCompressed(Data: TStream; Offset: Int64): RFA_Result;
+function TRFAFile.InsertDataCompressed(Data: TStream; Offset: Int64): TRFAResult;
 var
   WBuff: PByteArray; // Working buffer
   SBuff: PByteArray; // Source buffer
@@ -615,17 +644,17 @@ end;
 
 
 
-function TRFAFile.DeleteFile(Offset, Size: int64): RFA_Result;
+function TRFAFile.DeleteFile(Offset, Size: int64): TRFAResult;
 begin
   {$IfDef DEBUG_RFA}
   SendDebugFmt('Delete file at 0x%.8x with a size of %d',[Offset, Size]);
   {$EndIf}
 
   Result := DeleteData(FLargeBuf, Offset, Size);
-  SetDataSize(GetDataSize - Size);
+  DataSize := DataSize + Size;
 end;
 
-function TRFAFile.DeleteEntry(FullPath: AnsiString): RFA_Result;
+function TRFAFile.DeleteEntry(FullPath: AnsiString): TRFAResult;
 var
   ENT: RFA_Entry;
   Path: AnsiString;
@@ -642,7 +671,7 @@ begin
   DataOffset := 0;
   DataSize := 0;
 
-  NumE := GetElementQuantity;
+  NumE := ElementQuantity;
 
   // Search the wanted entry
   for x:= 1 to NumE do
@@ -665,9 +694,9 @@ begin
 
   // Delete this entry
   Result := DeleteData(Offset, Size);
-  SetElementQuantity(GetElementQuantity-1);
+  ElementQuantity := ElementQuantity-1;
 
-  NumE := GetElementQuantity;
+  NumE := ElementQuantity;
 (*
   // Update all indexes
   for x:= 1 to NumE do
@@ -708,7 +737,7 @@ begin
   Buf.Write(FullPath[1], Len);
   Buf.Write(ENT, ENTRY_SIZE);
 
-  NumE := GetElementQuantity;
+  NumE := ElementQuantity;
   if (Index = 0) or (Index > NumE) then
     Index := NumE;
 
@@ -722,17 +751,17 @@ begin
   end;
 
   InsertData(Buf, FHandle.Position);
-  SetElementQuantity(GetElementQuantity+1);
+  ElementQuantity := ElementQuantity+1;
 
   Buf.Free;
 end;
 
 
-function TRFAFile.InsertFile(Data: TStream; Compressed: boolean): RFA_Result;
+function TRFAFile.InsertFile(Data: TStream; Compressed: boolean): TRFAResult;
 var
   CurrentSize : cardinal;
 begin
-  CurrentSize := GetDataSize;
+  CurrentSize := DataSize;
 
   if Compressed then
   begin
@@ -746,8 +775,7 @@ begin
     Result := InsertData(Data, CurrentSize);
   end;
 
-  //SetDataSize(CurrentSize+Data.Size);
-  SetDataSize(CurrentSize + Result.size);
+  DataSize := CurrentSize + Result.size;
 end;
 
 procedure TRFAFile.UpdateEntry(FullPath: AnsiString; NewOffset, NewUcSize, NewCSize: int64);
@@ -756,7 +784,7 @@ var
   Path: AnsiString;
   NumE, x: integer;
 begin
-  NumE := GetElementQuantity;
+  NumE := ElementQuantity;
 
   // Search the wanted entry
   for x:= 1 to NumE do
@@ -782,13 +810,15 @@ end;
 
 
 // Jump to header, return true if we are using the retail format (not the demo one)
-function TRFAFile.RFA_Header: boolean;
+function TRFAFile.ReadHeader: boolean;
 var
   ID: array[0..27] of AnsiChar;
 begin
-  FHandle.Position := 0;
-  FHandle.Read(ID, 28);
   Result := false;
+  FHandle.Position := 0;
+
+  if FHandle.Size >= HEADER_SIZE then
+    FHandle.Read(ID, HEADER_SIZE);
 
   if ID <> VERSION_HEADER then
   begin
@@ -797,9 +827,10 @@ begin
   end;
 end;
 
+
 function TRFAFile.GetDataSize: LongWord;
 begin
-  RFA_Header;
+  ReadHeader;
 
   {$IfDef DEBUG_RFA}
   SendDebugFmt('Reading data size at 0x%x',[FHandle.Position]);
@@ -812,9 +843,10 @@ begin
   {$EndIf}
 end;
 
+
 procedure TRFAFile.SetDataSize(const Value: LongWord);
 begin
-  RFA_Header;
+  ReadHeader;
   FHandle.Write(Value, DWORD_SIZE);     // write data Size (32bits)
   {$IfDef DEBUG_RFA}
   SendDebugFmt('New Data size == %s',[SizeToStr(Value)]);
@@ -823,7 +855,7 @@ end;
 
 function TRFAFile.GetElementQuantity: LongWord;
 begin
-  FHandle.Seek(GetDataSize, soBeginning);  // Jump segment
+  FHandle.Seek(DataSize, soBeginning);  // Jump segment
   {$IfDef DEBUG_RFA}
   SendDebugFmt('Reading element quantity at 0x%x',[FHandle.Position]);
   {$EndIf}
@@ -835,19 +867,20 @@ end;
 
 procedure TRFAFile.SetElementQuantity(const Value: LongWord);
 begin
-  FHandle.Seek(GetDataSize, soBeginning);  // Jump segment
+  FHandle.Seek(DataSize, soBeginning);  // Jump segment
   FHandle.Write(Value, DWORD_SIZE);     // write element quantity (32bits)
 end;
 
 
-procedure TRFAFile.SetOnAdd(const Value: TRFAAddEvent);
+
+procedure TRFAFile.SetOnProgress(const Value: TRFAProgress);
 begin
-  FOnAdd := Value;
+  FOnProgress := Value;
 end;
 
-procedure TRFAFile.SetOnAddDetails(const Value: TRFAAddDetailsEvent);
+procedure TRFAFile.SetOnReadEntry(const Value: TRFAReadEntry);
 begin
-  FOnAddDetails := Value;
+  FOnReadEntry := Value;
 end;
 
 

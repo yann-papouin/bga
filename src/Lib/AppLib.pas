@@ -27,7 +27,6 @@ uses
   SysUtils, StrUtils, Windows, Messages, Classes, Controls, ExtCtrls, Dialogs, Graphics,
   Forms, Math, Variants, Varutils, SvnInfo;
 
-
 function ApplicationSvnTitle: String;
 
 function GetAppTempDirectory: String;
