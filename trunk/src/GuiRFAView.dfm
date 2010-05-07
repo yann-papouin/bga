@@ -33422,6 +33422,7 @@ object RFAViewForm: TRFAViewForm
     object Defrag: TAction
       Caption = 'Save and defrag'
       ImageIndex = 88
+      OnExecute = DefragExecute
     end
     object New: TAction
       Caption = 'New'

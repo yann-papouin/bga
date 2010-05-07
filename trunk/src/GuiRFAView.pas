@@ -198,6 +198,7 @@ type
     procedure NewExecute(Sender: TObject);
     procedure PackDirectoryExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure DefragExecute(Sender: TObject);
   private
     { Déclarations privées }
     FApplicationTitle : string;
@@ -231,13 +232,11 @@ type
   public
     { Déclarations publiques }
     function LoadMap(Path : string) :boolean;
-    function SaveMap(Path : string) :boolean;
+    function SaveMap(Path : string; Defrag : boolean = false) :boolean;
     procedure ExportFile(Node: PVirtualNode; OutputStream : TStream);
     property Title : string read GetTitle write SetTitle;
     property SearchText : string read FSearchText write SetSearchText;
   end;
-
-
 
   pFse = ^rFse;
   rFse = record
@@ -260,24 +259,19 @@ type
     ExternalAge : TDateTime;
   end;
 
-
 var
   RFAViewForm: TRFAViewForm;
 
-
-
 implementation
-
-uses
-
-  GuiAbout, GuiMain, GuiRAWView, GuiSMView, Masks, Math, StringFunction, DragDropFile, CommonLib, AppLib, MD5Api;
 
 {$R *.dfm}
 
+uses
+  GuiAbout, GuiMain, GuiRAWView, GuiSMView, Masks, Math, StringFunction,
+  DragDropFile, CommonLib, AppLib, MD5Api;
+
 var
   FLastNode : PVirtualNode;
-
-
 
 function IsFolder(Name: String) : boolean;
 begin
@@ -573,23 +567,31 @@ end;
 procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
   FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
-
-  (*
-  RFALib.FseAddProc := RFAListDirAdd;
-  RFALib.FseDetailsProc := RFADetails;
-  *)
+  Reset;
 end;
 
 procedure TRFAViewForm.FormDestroy(Sender: TObject);
 begin
   if Assigned(FArchive) then
     FArchive.Free;
-
 end;
 
 procedure TRFAViewForm.FormActivate(Sender: TObject);
 begin
   ActiveControl := RFAList;
+end;
+
+function TRFAViewForm.GetTitle: string;
+begin
+  Result := Caption
+end;
+
+procedure TRFAViewForm.SetTitle(const Value: string);
+begin
+  if Value <> EmptyStr then
+    Caption := Format('%s - %s',[ExtractFilename(Value), FApplicationTitle])
+  else
+    Caption := FApplicationTitle;
 end;
 
 
@@ -633,6 +635,7 @@ begin
 
   FArchive := nil;
   Save.Enabled := false;
+  Defrag.Enabled := false;
   SaveDialog.FileName := EmptyStr;
 end;
 
@@ -734,6 +737,7 @@ begin
   begin
     OpenDialog.FileName := SaveDialog.FileName;
     Save.Enabled := true;
+    Defrag.Enabled := true;
 
     TmpRFA := TRFAFile.Create;
     TmpRFA.New(SaveDialog.FileName);
@@ -747,14 +751,9 @@ end;
 procedure TRFAViewForm.NewExecute(Sender: TObject);
 begin
   Reset;
-
-  //CreateNew;
 end;
 
-function TRFAViewForm.GetTitle: string;
-begin
-  Result := Caption
-end;
+
 
 procedure MakePathVisible(Table : TBaseVirtualTree; Node: PVirtualNode);
 begin
@@ -834,13 +833,6 @@ begin
   SearchList.Free;
 end;
 
-procedure TRFAViewForm.SetTitle(const Value: string);
-begin
-  if Value <> EmptyStr then
-    Caption := Format('%s - %s',[ExtractFilename(Value), FApplicationTitle])
-  else
-    Caption := FApplicationTitle;
-end;
 
 
 procedure TRFAViewForm.OpenRecentClick(Sender: TObject);
@@ -879,6 +871,7 @@ begin
       RebuildRecentList.Execute;
       SaveDialog.FileName := OpenDialog.FileName;
       Save.Enabled := true;
+      Defrag.Enabled := true;
       Title := OpenDialog.FileName;
     end;
   end
@@ -895,34 +888,43 @@ begin
 end;
 
 procedure TRFAViewForm.SaveAsExecute(Sender: TObject);
+var
+  UseDefrag : boolean;
 begin
+  UseDefrag := false;
   SaveDialog.InitialDir := ExtractFilePath(SaveDialog.FileName);
   SaveDialog.FileName := ExtractFileName(SaveDialog.FileName);
 
   if SaveDialog.Execute then
   Begin
+    if OpenDialog.FileName = SaveDialog.FileName then
+      UseDefrag := true;
+    
     OpenDialog.FileName := SaveDialog.FileName;
     Save.Enabled := true;
-    Save.Execute;
-    //Title := OpenDialog.FileName;
+    Defrag.Enabled := true;
+
+    if UseDefrag then
+      Defrag.Execute
+    else
+      Save.Execute;
   End;
 end;
 
 
 procedure TRFAViewForm.SaveExecute(Sender: TObject);
 begin
-  // Execute save operation here
-
   if SaveMap(SaveDialog.FileName) then
   begin
-
     //Save.Enabled := false;
     RecentList.AddString(SaveDialog.FileName);
     RebuildRecentList.Execute;
   end;
+end;
 
-  // Reopen
-  //QuickOpen.Execute;
+procedure TRFAViewForm.DefragExecute(Sender: TObject);
+begin
+  SaveMap(SaveDialog.FileName, true);
 end;
 
 procedure TRFAViewForm.ShiftData(ShiftData: TRFAResult; ShiftWay : TShiftWay; IgnoreNode : PVirtualNode = nil);
@@ -980,17 +982,20 @@ begin
   Result := (MaxOffset = Offset);
 end;
 
-function TRFAViewForm.SaveMap(Path: string): boolean;
+function TRFAViewForm.SaveMap(Path: string; Defrag : boolean = false): boolean;
 var
   NextNode, Node : PVirtualNode;
   Data : pFse;
   DeleteResult, InsertResult : TRFAResult;
   ExternalFile : TFileStream;
+  InternalFile : TMemoryStream;
   Size : int64;
+  TmpArchive : TRFAFile;
+  TmpFilename : string;
 begin
   Result := false;
 
-  if Assigned(FArchive) and (FArchive.Filepath = Path) then
+  if Assigned(FArchive) and (FArchive.Filepath = Path) and not Defrag then
   begin
     /// Step-1 : First delete entries
     Node := RFAList.GetFirst;
@@ -1086,8 +1091,91 @@ begin
   end
     else
   begin
-    Showmessage('Not same file, not supported actually');
+    TmpArchive := TRFAFile.Create;
 
+    if Assigned(FArchive) and Defrag then
+    begin
+      repeat
+        TmpFilename := ExtractFilePath(Path) + RandomString('333333') + '.tmp';
+      until not FileExists(TmpFilename);
+      TmpArchive.New(TmpFilename);
+    end
+    else
+      TmpArchive.New(Path);
+
+    /// Step-1 : Add same files without lost data
+    Node := RFAList.GetFirst;
+    while Node <> nil do
+    begin
+      NextNode := RFAList.GetNext(Node);
+      Data := RFAList.GetNodeData(Node);
+
+      if (Data.Status = fs_No_Change) and IsFile(Data.FileType) then
+      begin
+        SendDebugFmt('File %s exported',[Data.W32Name]);
+        InternalFile := TMemoryStream.Create;
+        ExportFile(Node, InternalFile);
+        Size := InternalFile.Size;
+        InsertResult := TmpArchive.InsertFile(InternalFile, Data.Compressed);
+        InternalFile.Free;
+        TmpArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+      end;
+
+      Node := NextNode;
+    end;
+
+    /// Step-2 : Add edited files
+    ModifCheck;
+    Node := RFAList.GetFirst;
+    while Node <> nil do
+    begin
+      NextNode := RFAList.GetNext(Node);
+      Data := RFAList.GetNodeData(Node);
+
+      if (Data.Status = fs_Modified) and IsFile(Data.FileType) then
+      begin
+        ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+        Size := ExternalFile.Size;
+        InsertResult := FArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+        ExternalFile.Free;
+        FArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+      end;
+
+      Node := NextNode;
+    end;
+
+    /// Step-3 : Add new files
+    Node := RFAList.GetFirst;
+    while Node <> nil do
+    begin
+      NextNode := RFAList.GetNext(Node);
+      Data := RFAList.GetNodeData(Node);
+
+      if (Data.Status = fs_New) and IsFile(Data.FileType) then
+      begin
+        ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+        Size := ExternalFile.Size;
+        InsertResult := FArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+        ExternalFile.Free;
+
+        Data.BF42FullName := BuildFullPathFromTree(Node); // a drag/drop can change this value
+        FArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+      end;
+
+      Node := NextNode;
+    end;
+
+    TmpArchive.Free;
+
+    if Assigned(FArchive) and Defrag then
+    begin
+      Reset;
+      DeleteFile(Path);
+      RenameFile(TmpFilename, Path);
+    end;
+
+    OpenDialog.FileName := Path;
+    QuickOpen.Execute;
   end;
 
 end;
@@ -1537,14 +1625,10 @@ begin
   SearchText := Search.Text;
 end;
 
-
-
 procedure TRFAViewForm.RFAListDblClick(Sender: TObject);
 begin
   EditSelection;
-
 end;
-
 
 function FilesFromIDataObject(ADataObject: IDataObject; AFiles: TStrings): Integer;
 var
@@ -1577,9 +1661,7 @@ begin
     end;
 end;
 
-procedure TRFAViewForm.RFAListDragDrop(Sender: TBaseVirtualTree; Source: TObject;
-  DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState;
-  Pt: TPoint; var Effect: Integer; Mode: TDropMode);
+procedure TRFAViewForm.RFAListDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 var
   DropData: TStgMedium;
   SOF: TFormatEtc;
@@ -1661,9 +1743,7 @@ begin
   Sort;
 end;
 
-procedure TRFAViewForm.RFAListDragOver(Sender: TBaseVirtualTree; Source: TObject;
-  Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode;
-  var Effect: Integer; var Accept: Boolean);
+procedure TRFAViewForm.RFAListDragOver(Sender: TBaseVirtualTree; Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode; var Effect: Integer; var Accept: Boolean);
 var
   TargetNode : PVirtualNode;
   Data : pFse;
@@ -1714,13 +1794,6 @@ begin
           CellText := 'NONE';
 
       4: CellText := Format('0x%.8x',[Data.Offset]);
-      (*
-      4: CellText := Data.W32Path;
-      5: if Data.EntryIndex = 0 then
-          CellText := EmptyStr
-         else
-          CellText := Format('%d',[Data.EntryIndex]);
-      *)
     end;
   end
     else
@@ -1737,12 +1810,10 @@ end;
 
 procedure TRFAViewForm.RFAListKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 begin
-
   if CharCode = VK_DELETE then
   begin
     DeleteSelection;
   end;
-
 end;
 
 procedure TRFAViewForm.RFAListStartDrag(Sender: TObject; var DragObject: TDragObject);

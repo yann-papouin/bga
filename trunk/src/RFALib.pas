@@ -549,6 +549,9 @@ begin
   FHandle.Read(segments,DWORD_SIZE);
 
   // Creating as much as Data header than segments
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Setting DataH length to %d', [Segments]);
+  {$EndIf}
   SetLength(DataH,Segments);
 
   // Filling each header with usable values

@@ -81,7 +81,6 @@ uses
 type
   pData = ^rData;
   rData = record
-    //
     Text : string[255];
     Mesh : TGLSMMeshObject;
     Img : integer;
