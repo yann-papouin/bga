@@ -24,7 +24,7 @@ uses
 {$R *.res}
 
 begin
-  ReportMemoryLeaksOnShutdown := DebugHook <> 0;
+  //ReportMemoryLeaksOnShutdown := DebugHook <> 0;
 
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
