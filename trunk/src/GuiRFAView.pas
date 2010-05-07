@@ -37,9 +37,11 @@ type
     ftFolder,
     ftFile,
     ftFileCON,
+    ftFileINC,
     ftFileSSC,
     ftFileTXT,
     ftFileBAK,
+    ftFileBIK,
     ftFileWAV,
     ftFileDDS,
     ftFileTGA,
@@ -54,7 +56,14 @@ type
     ftFileGZ,
     ftFileBZ2,
     ftFile7Z,
-    ftFileSM
+    ftFileDIF,
+    ftFileFONT,
+    ftFileBAF,
+    ftFileSKN,
+    ftFileSKE,
+    ftFileVSO,
+    ftFileSM,
+    ftFileTM
   );
 
   TFseStatus =
@@ -187,17 +196,19 @@ type
     procedure ExtractAllExecute(Sender: TObject);
     procedure NewExecute(Sender: TObject);
     procedure PackDirectoryExecute(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Déclarations privées }
     FApplicationTitle : string;
     FSyncNode : PVirtualNode;
     FFileCount : integer;
     FPath : string;
+    FFileRFA : TRFAFile;
     procedure SelectFolderChildren;
     procedure RemoveEmptyFoldersByData;
     procedure RemoveEmptyFolders;
     function CountFilesByStatus(Node: PVirtualNode; Status:TFseStatus) : cardinal;
-    procedure DeleteSelectionByData;
+    //procedure DeleteSelectionByData;
     procedure DeleteSelection;
     procedure ExtendSelection(Node : PVirtualNode);
     procedure Sort;
@@ -234,6 +245,7 @@ type
 
   pFse = ^rFse;
   rFse = record
+    RFAFile : TRFAFile;
     // Data fields
     BF42FullName : AnsiString;
     Offset : Int64;
@@ -399,7 +411,7 @@ begin
 
 end;
 
-
+ (*
 procedure InsertFile(Stream : TStream; BF42FullName : AnsiString; Compressed : boolean = false);
 var
   Result : RFA_Result;
@@ -415,9 +427,10 @@ begin
   Result := RFAInsertFile(Stream, Compressed);
   //RFAInsertEntry(BF42FullName, Result.offset, Stream.Size, Result.Size, 0);
 end;
+*)
 
 
-procedure RFAListDirAdd(Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
+procedure RFAListDirAdd(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
 var
   Node: PVirtualNode;
   Data : pFse;
@@ -444,6 +457,7 @@ begin
       Updating := true;
       
   Data := RFAViewForm.RFAList.GetNodeData(Node);
+  Data.RFAFile := Sender;
 
   if Updating then
   begin
@@ -469,10 +483,13 @@ begin
 
   Data.W32Path := W32Path;
   Data.W32Name := ExtractFileName(W32Path);
-  Data.W32Ext := ExtractFileExt(W32Path);
+  Data.W32Ext := ExtractFileExt(LowerCase(W32Path));
 
   if Data.W32Ext = '.con' then
     Data.FileType := ftFileCON
+  else
+  if Data.W32Ext = '.inc' then
+    Data.FileType := ftFileINC
   else
   if Data.W32Ext = '.ssc' then
     Data.FileType := ftFileSSC
@@ -485,6 +502,9 @@ begin
   else
   if Data.W32Ext = '.wav' then
     Data.FileType := ftFileWAV
+  else
+  if Data.W32Ext = '.bik' then
+    Data.FileType := ftFileBIK
   else
   if Data.W32Ext = '.dds' then
     Data.FileType := ftFileDDS
@@ -525,8 +545,29 @@ begin
   if Data.W32Ext = '.7z' then
     Data.FileType := ftFile7Z
   else
+  if Data.W32Ext = '.dif' then
+    Data.FileType := ftFileDIF
+  else
+  if Data.W32Ext = '.font' then
+    Data.FileType := ftFileFONT
+  else
+  if Data.W32Ext = '.baf' then
+    Data.FileType := ftFileBAF
+  else
+  if Data.W32Ext = '.skn' then
+    Data.FileType := ftFileSKN
+  else
+  if Data.W32Ext = '.ske' then
+    Data.FileType := ftFileSKE
+  else
+  if Data.W32Ext = '.vso' then
+    Data.FileType := ftFileVSO
+  else
   if Data.W32Ext = '.sm' then
     Data.FileType := ftFileSM
+  else
+  if Data.W32Ext = '.tm' then
+    Data.FileType := ftFileTM
   else
     Data.FileType := ftFile;
 
@@ -537,7 +578,7 @@ begin
 
 end;
 
-procedure RFADetails(Total: integer; Index: integer; Offset, Size : Int64);
+procedure RFADetails(Sender : TRFAFile;Total: integer; Index: integer; Offset, Size : Int64);
 var
   Data : pFse;
 begin
@@ -567,11 +608,11 @@ begin
 
   if Data.Compressed then
   begin
-    RFADecompressToStream(OutputStream, Data.Offset, Data.CompSize);
+    Data.RFAFile.DecompressToStream(OutputStream, Data.Offset, Data.CompSize);
   end
     else
   begin
-    RFAExtractToStream(OutputStream, Data.Offset, Data.CompSize, Data.Size);
+    Data.RFAFile.ExtractToStream(OutputStream, Data.Offset, Data.CompSize, Data.Size);
   end
 end;
 
@@ -585,8 +626,18 @@ end;
 procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
   FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
+
+  (*
   RFALib.FseAddProc := RFAListDirAdd;
   RFALib.FseDetailsProc := RFADetails;
+  *)
+end;
+
+procedure TRFAViewForm.FormDestroy(Sender: TObject);
+begin
+  if Assigned(FFileRFA) then
+    FFileRFA.Free;
+
 end;
 
 procedure TRFAViewForm.FormActivate(Sender: TObject);
@@ -643,9 +694,16 @@ begin
   if not Update then
     RFAList.Clear;
 
-  RFAList.BeginUpdate;
+    RFAList.BeginUpdate;
 
-    FFileCount := RFAOpen(Path);
+    if Assigned(FFileRFA) then
+      FFileRFA.Free;
+
+    FFileRFA := TRFAFile.Create;
+    FFileRFA.OnAdd := RFAListDirAdd;
+    FFileRFA.OnAddDetails := RFADetails;
+
+    FFileCount := FFileRFA.Open(Path);
 
     if FFileCount < 0 then
     begin
@@ -715,6 +773,7 @@ end;
 function TRFAViewForm.CreateNew(Filename : string = ''): boolean;
 var
   Newfile : string;
+  TmpRFA : TRFAFile;
 begin
   Result := false;
 
@@ -730,7 +789,11 @@ begin
   begin
     OpenDialog.FileName := SaveDialog.FileName;
     Save.Enabled := true;
-    RFANew(SaveDialog.FileName);
+
+    TmpRFA := TRFAFile.Create;
+    TmpRFA.New(SaveDialog.FileName);
+    TmpRFA.Free;
+
     QuickOpen.Execute;
     Result := true;
   end;
@@ -941,7 +1004,7 @@ begin
         Data.Offset := Data.Offset + ShiftData.size;
       end;
 
-      RFAUpdateEntry(Data.BF42FullName, Data.Offset, Data.Size, Data.CompSize);
+      FFileRFA.UpdateEntry(Data.BF42FullName, Data.Offset, Data.Size, Data.CompSize);
       RFAList.InvalidateNode(Node);
     end;
     Node := RFAList.GetNext(Node);
@@ -994,7 +1057,7 @@ begin
 
       if (Data.Status = fs_Delete) and IsFile(Data.FileType) then
       begin
-        DeleteResult := RFADeleteEntry(Data.BF42FullName);
+        DeleteResult := FFileRFA.DeleteEntry(Data.BF42FullName);
         //ShiftData(DeleteResult, shLeft);
         RFAList.DeleteNode(Node);
       end;
@@ -1016,17 +1079,17 @@ begin
         // if the file is the last one then remove it first
         if LastOne(Data.Offset) then
         begin
-          DeleteResult := RFADeleteFile(Data.Offset, Data.CompSize);
+          DeleteResult := FFileRFA.DeleteFile(Data.Offset, Data.CompSize);
           ShiftData(DeleteResult, shLeft, Node);
         end;
 
         ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
         Size := ExternalFile.Size;
-        InsertResult := RFAInsertFile(ExternalFile, COMPRESSED_DATA);
+        InsertResult := FFileRFA.InsertFile(ExternalFile, COMPRESSED_DATA);
         ShiftData(InsertResult, shRight, Node);
         ExternalFile.Free;
 
-        RFAUpdateEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size);
+        FFileRFA.UpdateEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size);
 
         Data.Size := Size;
         Data.Offset := InsertResult.offset;
@@ -1054,12 +1117,12 @@ begin
       begin
         ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
         Size := ExternalFile.Size;
-        InsertResult := RFAInsertFile(ExternalFile, COMPRESSED_DATA);
+        InsertResult := FFileRFA.InsertFile(ExternalFile, COMPRESSED_DATA);
         ShiftData(InsertResult, shRight, Node);
         ExternalFile.Free;
 
         Data.BF42FullName := BuildFullPathFromTree(Node); // a drag/drop can change this value
-        RFAInsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+        FFileRFA.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
 
         Data.Status := fs_No_Change;
         Data.Size := Size;
@@ -1352,7 +1415,7 @@ begin
       SMViewForm.LoadStandardMesh(ExtractTemporary(Node));
       SMViewForm.Show;
     end;
-    ftFileCON:
+    ftFileCON, ftFileINC:
     begin
 
     end
@@ -1854,6 +1917,7 @@ begin
 
 end;
 
+(*
 procedure TRFAViewForm.DeleteSelectionByData;
 var
   Node, PNode: PVirtualNode;
@@ -1888,6 +1952,7 @@ begin
   RemoveEmptyFolders;
 
 end;
+*)
 
 (*
 procedure TRFAViewForm.Button1Click(Sender: TObject);
@@ -1967,17 +2032,26 @@ begin
 
   case Column of
     0: case data.FileType of
-        ftFile, ftFileDAT, ftFilePAL, ftFileLSB, ftFileRAW : ImageIndex := 113;
+        ftFile, ftFileDAT, ftFilePAL, ftFileLSB : ImageIndex := 113;
+        ftFileRAW : ImageIndex := 177;
         ftFileTXT  : ImageIndex := 111;
         ftFileBAK  : ImageIndex := 133;
         ftFileRCM  : ImageIndex := 110;
         ftFileWAV  : ImageIndex := 106;
+        ftFileBIK  : ImageIndex := 583;
         ftFileRS   : ImageIndex := 119;
-        ftFileCON : ImageIndex := 114;
+        ftFileSKE  : ImageIndex := 387;
+        ftFileSKN  : ImageIndex := 1132;
+        ftFileDIF  : ImageIndex := 107;
+        ftFileFONT  : ImageIndex := 1098;
+        ftFileBAF  : ImageIndex := 87;
+        ftFileVSO  : ImageIndex := 118;
+        ftFileCON, ftFileINC: ImageIndex := 114;
         ftFileSSC : ImageIndex := 136;
         ftFileDDS, ftFileTGA : ImageIndex := 108;
         ftFileZIP, ftFileRAR, ftFileGZ, ftFileBZ2, ftFile7Z : ImageIndex := 109;
-        ftFileSM : ImageIndex := 150;
+        ftFileSM : ImageIndex := 174;
+        ftFileTM : ImageIndex := 175;
         ftFolder : ImageIndex := 122;
        end;
     else

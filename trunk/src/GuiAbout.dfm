@@ -2044,6 +2044,9 @@ object AboutForm: TAboutForm
       
         '- Jaanos for its icons (http://jaanos.deviantart.com/art/Perl-On' +
         'ion-Tango-Icon-116745020)'
+      
+        '- MJames for the Silk icon set (http://www.famfamfam.com/lab/ico' +
+        'ns/silk/)'
       ''
       'Delphi libraries used:'
       '- VirtualTreeview (http://code.google.com/p/virtual-treeview/)'

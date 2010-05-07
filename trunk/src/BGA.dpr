@@ -24,6 +24,8 @@ uses
 {$R *.res}
 
 begin
+  ReportMemoryLeaksOnShutdown := DebugHook <> 0;
+
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.Title := 'BGA : Battlefield 1942 Game Archive Tool';
