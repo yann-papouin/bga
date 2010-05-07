@@ -50,8 +50,8 @@ object SMViewForm: TSMViewForm
     TabOrder = 1
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking]
     TreeOptions.SelectionOptions = [toMultiSelect, toRightClickSelect]
-    OnFocusChanged = MeshListFocusChanged
     OnFocusChanging = MeshListFocusChanging
+    OnFreeNode = MeshListFreeNode
     OnGetText = MeshListGetText
     OnGetImageIndex = MeshListGetImageIndex
     OnGetNodeDataSize = MeshListGetNodeDataSize
@@ -103,7 +103,7 @@ object SMViewForm: TSMViewForm
       DepthOfView = 1000.000000000000000000
       FocalLength = 70.000000000000000000
       TargetObject = CameraTarget
-      Position.Coordinates = {0601814206018142060181420000803F}
+      Position.Coordinates = {4774874247748742477487420000803F}
       object CamLight: TGLLightSource
         ConstAttenuation = 1.000000000000000000
         Diffuse.Color = {8D8C0C3F8D8C0C3F8D8C0C3F0000803F}

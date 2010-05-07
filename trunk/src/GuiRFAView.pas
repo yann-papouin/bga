@@ -218,7 +218,6 @@ type
     procedure SetTitle(const Value: string);
 
     procedure Add(MainNode : PVirtualNode; List: TStringList; Path : string = '');
-    procedure RecursiveAdd;
 
     procedure ShiftData(ShiftData : TRFAResult; ShiftWay : TShiftWay; IgnoreNode : PVirtualNode = nil);
     procedure SetSearchText(const Value: string);
@@ -250,14 +249,13 @@ type
     Compressed : boolean;
     CompSize : integer;
     // Extended fields
-    W32Path : String;
-    W32Name : String;
-    W32Ext : String;
+    W32Path : string[255];
+    W32Name : string[255];
+    W32Ext : string[255];
     FileType : TFileType;
     Status : TFseStatus;
-    Recursive : boolean;
     // External fields
-    ExternalFilePath : string;
+    ExternalFilePath : string[255];
     ExternalMD5 : Ansistring;
     ExternalAge : TDateTime;
   end;
@@ -1230,7 +1228,6 @@ begin
     BuildFileList(Browse.Directory+'*', faAnyFile - faHidden, FileList);
     Add(RFAList.RootNode, FileList, Browse.Directory);
     FileList.Free;
-    RecursiveAdd;
   end;
 end;
 
@@ -1386,6 +1383,7 @@ var
   Node: PVirtualNode;
   Data : pFse;
   Sender: TBaseVirtualTree;
+  SubList: TStringList;
 begin
   Sender := RFAList;
   List.Sort;
@@ -1398,12 +1396,14 @@ begin
     begin
       Node := Sender.AddChild(MainNode);
       Data := Sender.GetNodeData(Node);
-     // Data.Path := Path + List[i];
       Data.W32Path := Path + List[i];
       Data.W32Name := ExtractFileName(List[i]);
       Data.FileType := ftFolder;
-      Data.Recursive := true;
-      //Data.Status := fs_New;
+
+      SubList := TStringList.Create;
+      BuildFileList(IncludeTrailingPathDelimiter(Data.W32Path)+'*', faAnyFile - faHidden, SubList);
+      Add(Node, SubList, Data.W32Path);
+      SubList.Free;
     end;
 
   for i := 0 to List.Count - 1 do
@@ -1411,50 +1411,15 @@ begin
     begin
       Node := Sender.AddChild(MainNode);
       Data := Sender.GetNodeData(Node);
-      //Data.Path := Path + List[i];
-      Data.ExternalFilePath := Path + List[i];
       Data.W32Path := Path + List[i];
       Data.W32Name := ExtractFileName(List[i]);
+      Data.ExternalFilePath := Data.W32Path;
       Data.Size := FileGetSize(Data.W32Path);
       Data.FileType := ftFile;
       Data.Status := fs_New;
     end;
 
 end;
-
-
-
-procedure TRFAViewForm.RecursiveAdd;
-var
-  Sender: TBaseVirtualTree;
-  Node: PVirtualNode;
-  Data : pFse;
-  FileList : TStringList;
-begin
-  Sender := RFAList;
-  Node := Sender.GetFirst;
-
-  while Node <> nil do
-  begin
-    Data := Sender.GetNodeData(Node);
-
-    if Data.Recursive then
-    begin
-      FileList := TStringList.Create;
-      BuildFileList(IncludeTrailingPathDelimiter(Data.W32Path)+'*', faAnyFile - faHidden, FileList);
-
-      Add(Node, FileList, Data.W32Path);
-      FileList.Free;
-
-      Data.Recursive := false;
-      Node := Sender.GetFirst;
-    end
-      else
-    Node := Sender.GetNext(Node, true);
-  end;
-
-end;
-
 
 
 function TRFAViewForm.CountFilesByStatus(Node: PVirtualNode; Status:TFseStatus) : cardinal;
@@ -1650,10 +1615,8 @@ begin
       end;
     end;
 
-
     Add(HitNode, FileList);
     FileList.Free;
-    RecursiveAdd;
   end
     else
   begin
