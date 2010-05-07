@@ -52,6 +52,8 @@ object RFAViewForm: TRFAViewForm
     OnGetNodeDataSize = RFAListGetNodeDataSize
     OnKeyAction = RFAListKeyAction
     OnStartDrag = RFAListStartDrag
+    ExplicitLeft = 34
+    ExplicitTop = 99
     Columns = <
       item
         MinWidth = 300
@@ -33372,12 +33374,12 @@ object RFAViewForm: TRFAViewForm
     end
     object ExtractAll: TAction
       Caption = 'All'
-      ImageIndex = 78
+      ImageIndex = 1041
       OnExecute = ExtractAllExecute
     end
     object ExtractSelected: TAction
       Caption = 'Selected'
-      ImageIndex = 74
+      ImageIndex = 796
       OnExecute = ExtractSelectedExecute
     end
     object ExtractModFolder: TAction
@@ -33429,6 +33431,10 @@ object RFAViewForm: TRFAViewForm
       ImageIndex = 7
       OnExecute = NewExecute
     end
+    object UpdateCheck: TAction
+      Caption = 'UpdateCheck'
+      OnExecute = UpdateCheckExecute
+    end
   end
   object RecentList: TJvMruList
     SubKeyUnicode = 'Software\Battlefield 1942\BGA\Recent'
@@ -33478,5 +33484,17 @@ object RFAViewForm: TRFAViewForm
     SubStorages = <>
     Left = 40
     Top = 56
+  end
+  object wget: TIdHTTP
+    AllowCookies = True
+    ProxyParams.BasicAuthentication = False
+    ProxyParams.ProxyPort = 0
+    Request.ContentLength = -1
+    Request.Accept = 'text/html, */*'
+    Request.BasicAuthentication = False
+    Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
+    HTTPOptions = [hoForceEncodeParams]
+    Left = 8
+    Top = 280
   end
 end

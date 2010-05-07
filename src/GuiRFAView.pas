@@ -29,7 +29,8 @@ uses
   JclFileUtils, PngImageList, ExtCtrls, ActiveX, Types, SpTBXControls, SpTBXItem,
   TB2Item, TB2Dock, TB2Toolbar, ActnList, JvMRUList, JvAppInst,
   Menus, RFALib, SpTBXEditors, JvBaseDlg, JvBrowseFolder, JvAppStorage,
-  JvAppRegistryStorage;
+  JvAppRegistryStorage, IdBaseComponent, IdComponent, IdTCPConnection,
+  IdTCPClient, IdHTTP;
 
 type
 
@@ -80,6 +81,16 @@ type
     shLeft,
     shRight
   );
+
+  TUpdateResult = (
+    rs_None,
+    rs_UpToDate,
+    rs_UpdateFound,
+    rs_NoUpdate,
+    rs_NoInternet
+  );
+
+  TUpdateReply = procedure(Sender: TObject; Result : TUpdateResult) of object;
 
   TRFAViewForm = class(TForm)
     RFAList: TVirtualStringTree;
@@ -151,6 +162,8 @@ type
     SpTBXItem15: TSpTBXItem;
     New: TAction;
     SpTBXItem16: TSpTBXItem;
+    wget: TIdHTTP;
+    UpdateCheck: TAction;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -199,12 +212,14 @@ type
     procedure PackDirectoryExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure DefragExecute(Sender: TObject);
+    procedure UpdateCheckExecute(Sender: TObject);
   private
     { Déclarations privées }
     FApplicationTitle : string;
     FSearchText: string;
     FSyncNode : PVirtualNode;
     FArchive : TRFAFile;
+    FOnUpdateReply: TUpdateReply;
     procedure RemoveEmptyFolders;
     function CountFilesByStatus(Node: PVirtualNode; Status:TFseStatus) : cardinal;
     //procedure DeleteSelectionByData;
@@ -229,6 +244,10 @@ type
     procedure EditSelection;
     function CreateNew(Filename : string = ''): boolean;
     procedure Reset;
+    function UpdateProcess : TUpdateResult;
+    procedure SetOnUpdateReply(const Value: TUpdateReply);
+
+    procedure UpdateReply(Sender: TObject; Result : TUpdateResult);
   public
     { Déclarations publiques }
     function LoadMap(Path : string) :boolean;
@@ -236,6 +255,7 @@ type
     procedure ExportFile(Node: PVirtualNode; OutputStream : TStream);
     property Title : string read GetTitle write SetTitle;
     property SearchText : string read FSearchText write SetSearchText;
+    property OnUpdateReply : TUpdateReply read FOnUpdateReply write SetOnUpdateReply;
   end;
 
   pFse = ^rFse;
@@ -268,7 +288,7 @@ implementation
 
 uses
   GuiAbout, GuiMain, GuiRAWView, GuiSMView, Masks, Math, StringFunction,
-  DragDropFile, CommonLib, AppLib, MD5Api;
+  DragDropFile, CommonLib, AppLib, MD5Api, SvnInfo, AsyncCalls;
 
 var
   FLastNode : PVirtualNode;
@@ -568,6 +588,9 @@ procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
   FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
   Reset;
+
+  OnUpdateReply := UpdateReply;
+  //UpdateCheck.Execute;
 end;
 
 procedure TRFAViewForm.FormDestroy(Sender: TObject);
@@ -765,6 +788,11 @@ begin
     Table.Expanded[Node] := true;
     Node := Node.Parent;
   until False;
+end;
+
+procedure TRFAViewForm.SetOnUpdateReply(const Value: TUpdateReply);
+begin
+  FOnUpdateReply := Value;
 end;
 
 procedure TRFAViewForm.SetSearchText(const Value: string);
@@ -1220,48 +1248,6 @@ begin
   end;
 end;
 
-procedure TRFAViewForm.RFAListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
-var
-  Data : pFse;
-begin
-  Data := RFAList.GetNodeData(Node);
-
-  with TargetCanvas do
-  begin
-    Pen.Style := psClear;
-    InflateRect(CellRect,1,1);
-
-    Brush.Color := clNone;
-
-    if Data.Status = fs_Modified then
-      Brush.Color := $0093DCFF;
-
-    if Data.Status = fs_New then
-      Brush.Color := $0080FF80;
-
-    if Brush.Color <> clNone then
-      Rectangle(CellRect);
-  end;
-end;
-
-procedure TRFAViewForm.RFAListCompareNodes(Sender: TBaseVirtualTree; Node1,
-  Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
-var
-  Data1, Data2 : pFse;
-begin
-  Data1 := Sender.GetNodeData(Node1);
-  Data2 := Sender.GetNodeData(Node2);
-
-  if IsFile(Data1.FileType) = IsFile(Data2.FileType) then
-    Result := CompareStr(UpperCase(Data1.BF42FullName), UpperCase(Data2.BF42FullName))
-  else
-  if IsFile(Data1.FileType) then
-    Result := GreaterThanValue
-  else
-  if IsFile(Data2.FileType) then
-    Result := LessThanValue
-
-end;
 
 function TRFAViewForm.FindFileByName(Filename: string): PVirtualNode;
 var
@@ -1770,6 +1756,50 @@ begin
 
 end;
 
+
+procedure TRFAViewForm.RFAListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
+var
+  Data : pFse;
+begin
+  Data := RFAList.GetNodeData(Node);
+
+  with TargetCanvas do
+  begin
+    Pen.Style := psClear;
+    InflateRect(CellRect,1,1);
+
+    Brush.Color := clNone;
+
+    if Data.Status = fs_Modified then
+      Brush.Color := $0093DCFF;
+
+    if Data.Status = fs_New then
+      Brush.Color := $0080FF80;
+
+    if Brush.Color <> clNone then
+      Rectangle(CellRect);
+  end;
+end;
+
+procedure TRFAViewForm.RFAListCompareNodes(Sender: TBaseVirtualTree; Node1,
+  Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
+var
+  Data1, Data2 : pFse;
+begin
+  Data1 := Sender.GetNodeData(Node1);
+  Data2 := Sender.GetNodeData(Node2);
+
+  if IsFile(Data1.FileType) = IsFile(Data2.FileType) then
+    Result := CompareStr(UpperCase(Data1.BF42FullName), UpperCase(Data2.BF42FullName))
+  else
+  if IsFile(Data1.FileType) then
+    Result := GreaterThanValue
+  else
+  if IsFile(Data2.FileType) then
+    Result := LessThanValue
+
+end;
+
 procedure TRFAViewForm.RFAListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
 var
   Data : pFse;
@@ -1873,6 +1903,93 @@ procedure TRFAViewForm.Sort;
 begin
   RFAList.SortTree(0, sdAscending);
 end;
+
+procedure TRFAViewForm.UpdateReply(Sender: TObject; Result: TUpdateResult);
+begin
+  if Result = rs_UpdateFound then
+    Showmessage('New version available');
+end;
+
+procedure TRFAViewForm.UpdateCheckExecute(Sender: TObject);
+var
+  Result : TUpdateResult;
+begin
+  TAsyncCalls.Invoke(procedure
+  begin
+    Result := UpdateProcess;
+    TAsyncCalls.VCLSync(procedure
+    begin
+      if Assigned(FOnUpdateReply) then
+        FOnUpdateReply(Self,Result);
+    end);
+  end);
+end;
+
+
+function TRFAViewForm.UpdateProcess : TUpdateResult;
+var
+  HtmlText : TStringList;
+  VersionList : TStringList;
+  DownloadLine : integer;
+  URL, Revision : string;
+  i : integer;
+begin
+  HtmlText := TStringList.Create;
+
+  Result := rs_NoUpdate;
+  try
+    HtmlText.Text := wget.Get('http://ccode.google.com/p/bga/');
+  except
+    on e:exception do
+      Result := rs_NoInternet;
+  end;
+
+  for i:= 0 to HtmlText.Count-1 do
+  if Pos('<span id="downloadbox">', HtmlText[i]) > 0 then
+  begin
+    DownloadLine := i;
+    Break;
+  end;
+
+  if DownloadLine > 0 then
+  begin
+    VersionList := TStringList.Create;
+    i := DownloadLine;
+    repeat
+
+      if Pos('http://bga.googlecode.com/files/BGA_', HtmlText[i]) > 0 then
+      begin
+        URL := SFBetween('"',HtmlText[i]);
+        VersionList.Add(URL);
+      end;
+
+      Inc(i);
+    until Pos('</span>', HtmlText[i]) > 0;
+  end;
+
+  HtmlText.Free;
+
+  if Assigned(VersionList) then
+  begin
+    for i:= 0 to VersionList.Count-1 do
+    begin
+      Revision := VersionList[i];
+      Revision := SFRight('BGA_rev_', Revision);
+      Revision := SFLeft('.zip', Revision);
+
+      if StrToIntDef(Revision,0) > SVN_REVISION then
+      begin
+        Result := rs_UpdateFound;
+        Break;
+      end;
+
+    end;
+
+    VersionList.Free;
+  end;
+
+end;
+
 
 
 end.
