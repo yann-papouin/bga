@@ -33,6 +33,7 @@ uses
 
   function Align(Lines: TStrings; AlignToken : string; AlignMode: TGXAlignMode): Boolean;
 
+
   function SFRight(substr: string; s: string): string;
   function SFRightRight(substr: string; s: string): string;
   function SFLeft(substr: string; s: string): string;
@@ -41,6 +42,7 @@ uses
   function SFNRight(substr: string; s: string;n:integer): string;
   function SFNLeft(substr: string; s: string;n:integer): string;
   function SFLeftNRight(substr: string; s: string;n:integer): string;
+  function SFBetween(substr: string; s: string): string;
 
   function VariantToString(AVar: OleVariant): string;
 
@@ -251,6 +253,11 @@ begin
     S:=copy(s, pos(substr, s)+length(substr), length(s)-pos(substr, s)+length(substr));
   end;
   result:=copy(s, 1, pos(substr, s)-1);
+end;
+
+function SFBetween(substr: string; s: string): string;
+begin
+  result := SFLeftNRight(substr, s, 1);
 end;
 
 
