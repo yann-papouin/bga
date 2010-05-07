@@ -48,11 +48,10 @@ type
     procedure MeshListGetImageIndex(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
-    procedure MeshListFocusChanged(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex);
     procedure MeshListFocusChanging(Sender: TBaseVirtualTree; OldNode,
       NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex;
       var Allowed: Boolean);
+    procedure MeshListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
     { Déclarations privées }
     FColRootNode : PVirtualNode;
@@ -83,7 +82,7 @@ type
   pData = ^rData;
   rData = record
     //
-    Text : string;
+    Text : string[255];
     Mesh : TGLSMMeshObject;
     Img : integer;
   end;
@@ -173,21 +172,6 @@ begin
   LoadSMData;
 end;
 
-procedure TSMViewForm.MeshListFocusChanged(Sender: TBaseVirtualTree;
-  Node: PVirtualNode; Column: TColumnIndex);
-var
-  Data : pData;
-begin
-(*
-  Data := Sender.GetNodeData(Node);
-  if Data.Mesh <> nil then
-  begin
-    Data.Mesh.Visible := Sender.Selected[Node];
-    FreeMesh.StructureChanged;
-  end;
-*)
-end;
-
 procedure TSMViewForm.MeshListFocusChanging(Sender: TBaseVirtualTree; OldNode,
   NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex;
   var Allowed: Boolean);
@@ -223,6 +207,14 @@ begin
     FreeMesh.StructureChanged;
 end;
 
+
+procedure TSMViewForm.MeshListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  Data : pData;
+begin
+  Data := Sender.GetNodeData(Node);
+  Finalize(Data^);
+end;
 
 procedure TSMViewForm.MeshListGetImageIndex(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
