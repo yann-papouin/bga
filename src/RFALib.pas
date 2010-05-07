@@ -22,71 +22,68 @@ unit RFALib;
 
 interface
 
-{$DEFINE DEBUG_RFA}
+{.$DEFINE DEBUG_RFA}
 
 uses
   DbugIntf, Windows, Classes, SysUtils, Contnrs;
 
 type
+  TRFAFile = class;
+
+  TRFAAddEvent = procedure(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
+  TRFAAddDetailsEvent = procedure(Sender : TRFAFile; Total : integer; Index: integer; Offset, Size : Int64);
+
   RFA_Result = record
     offset : integer;
     size : integer;
   end;
 
-  function RFANew(src: string): integer;
-  function RFAOpen(src: string): integer;
-  function RFASave(dst: string): integer;
+  TRFAFile = class
+  private
+    FLargeBuf : TMemoryStream;
+    FHandle : TStream;
+    FOnAdd: TRfaAddEvent;
+    FOnAddDetails: TRfaAddDetailsEvent;
+    procedure SetOnAdd(const Value: TRFAAddEvent);
+    procedure SetOnAddDetails(const Value: TRFAAddDetailsEvent);
 
-  procedure RFADecompressToStream(outputstream: TStream; Offset, Size: int64; silent: boolean = true);
-  procedure RFAExtractToStream(Data: TStream; Offset, Size, UcSize: int64);
-  procedure RFACopyToStream(Data: TStream; Offset, Size: int64);
+    function RFA_Header : boolean;
+    function GetDataSize: LongWord;
+    function GetElementQuantity: LongWord;
+    procedure SetDataSize(const Value: LongWord);
+    procedure SetElementQuantity(const Value: LongWord);
+  protected
+    function DeleteData(Buf : TMemoryStream; Offset : int64; Size : int64) : RFA_Result; overload;
+    function DeleteData(Offset : int64; Size : int64) : RFA_Result; overload;
+    function InsertData(Data : TStream; Offset : Int64) : RFA_Result;
+    function InsertDataCompressed(Data : TStream; Offset : Int64) : RFA_Result;
+    procedure ReplaceData(Data : TStream; Offset : Int64; OldSize : int64);
+  public
+    constructor Create;
+    destructor Destroy;
 
-  function RFADeleteData(Buf : TMemoryStream; Offset : int64; Size : int64) : RFA_Result; overload;
-  function RFADeleteData(Offset : int64; Size : int64) : RFA_Result; overload;
-  function RFADeleteFile(Offset : int64; Size : int64) : RFA_Result;
-  function RFADeleteEntry(FullPath : AnsiString) : RFA_Result;
+    function New(Filename: string): integer;
+    function Open(Filename: string): integer;
+    function Save(Filename: string): integer;
 
-  function RFAInsertData(Data : TStream; Offset : Int64) : RFA_Result;
-  function RFAInsertDataCompressed(Data : TStream; Offset : Int64) : RFA_Result;
+    procedure DecompressToStream(outputstream: TStream; Offset, Size: int64; silent: boolean = true);
+    procedure ExtractToStream(Data: TStream; Offset, Size, UcSize: int64);
+    procedure CopyToStream(Data: TStream; Offset, Size: int64);
 
-  function RFAInsertFile(Data : TStream; Compressed : boolean = false) : RFA_Result;
-  procedure RFAInsertEntry(FullPath : AnsiString; Offset, Size : Int64; cSize : Int64; Index : Cardinal);
+    function DeleteFile(Offset : int64; Size : int64) : RFA_Result;
+    function DeleteEntry(FullPath : AnsiString) : RFA_Result;
 
-  procedure RFAUpdateEntry(FullPath : AnsiString; NewOffset, NewUcSize, NewCSize : int64);
-  procedure RFAReplaceData(Data : TStream; Offset : Int64; OldSize : int64);
-  function RFAReplaceFile(Data : TStream) : Cardinal;
+    function InsertFile(Data : TStream; Compressed : boolean = false) : RFA_Result;
+    procedure InsertEntry(FullPath : AnsiString; Offset, Size : Int64; cSize : Int64; Index : Cardinal);
 
+    procedure UpdateEntry(FullPath : AnsiString; NewOffset, NewUcSize, NewCSize : int64);
 
+    property DataSize : LongWord read GetDataSize write SetDataSize;
+    property ElementQuantity : LongWord read GetElementQuantity write SetElementQuantity;
 
-// -------------------------------------------------------------------------- //
-// Battlefield 1942 .RFA support ============================================ //
-// -------------------------------------------------------------------------- //
-
-type
-    pRFA_Entry = ^RFA_Entry;
-    RFA_Entry = packed record
-      csize: integer;
-      ucsize: integer;
-      offset: integer;
-      unknown: array[0..2] of integer;
-    end;
-
-    pRFA_DataHeader = ^RFA_DataHeader;
-    RFA_DataHeader = packed record
-      csize: longword;
-      ucsize: longword;
-      doffset: longword;
-    end;
-
-
-  TFseAdd = procedure(Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
-  TFseDetails = procedure(Total : integer; Index: integer; Offset, Size : Int64);
-
-var
-  FHandle: TStream = nil;
-  FLargeBuf : TMemoryStream;
-  FseAddProc : TFseAdd;
-  FseDetailsProc : TFseDetails;
+    property OnAdd : TRFAAddEvent read FOnAdd write SetOnAdd;
+    property OnAddDetails : TRFAAddDetailsEvent read FOnAddDetails write SetOnAddDetails;
+  end;
 
 const
   NORMAL_DATA = false;
@@ -150,6 +147,26 @@ RFA File format description
 |==============================================
 *)
 
+// -------------------------------------------------------------------------- //
+// Battlefield 1942 .RFA support ============================================ //
+// -------------------------------------------------------------------------- //
+
+type
+    pRFA_Entry = ^RFA_Entry;
+    RFA_Entry = packed record
+      csize: integer;
+      ucsize: integer;
+      offset: integer;
+      unknown: array[0..2] of integer;
+    end;
+
+    pRFA_DataHeader = ^RFA_DataHeader;
+    RFA_DataHeader = packed record
+      csize: longword;
+      ucsize: longword;
+      doffset: longword;
+    end;
+
 
 function StringFrom(AStream: TStream): AnsiString;
 var
@@ -174,88 +191,42 @@ begin
 end;
 
 
-// Jump to header, return true if we are using the retail format (not the demo one)
-function RFA_Header : boolean;
+
+{ TRFAFile }
+
+constructor TRFAFile.Create;
+begin
+  FLargeBuf := TMemoryStream.Create;
+end;
+
+destructor TRFAFile.Destroy;
+begin
+  if Assigned(FHandle) then
+    FHandle.Free;
+
+  if Assigned(FLargeBuf) then
+    FLargeBuf.Free;
+end;
+
+
+function TRFAFile.New(Filename: string): integer;
 var
-  ID: array[0..27] of AnsiChar;
-begin
-  FHandle.Position := 0;
-  FHandle.Read(ID, 28);
-  Result := false;
-
-  if ID <> VERSION_HEADER then
-  begin
-    FHandle.Position := 0;
-    Result := true;
-  end;
-end;
-
-
-function GetDataSize : LongWord;
-begin
-  RFA_Header;
-
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('Reading data size at 0x%x',[FHandle.Position]);
-  {$EndIf}
-
-  FHandle.Read(Result, DWORD_SIZE);   // Read data length (32bits)
-
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('Data size == %s',[SizeToStr(Result)]);
-  {$EndIf}
-end;
-
-
-procedure SetElementQuantity(Quantity : LongWord);
-begin
-  FHandle.Seek(GetDataSize, soBeginning);  // Jump segment
-  FHandle.Write(Quantity, DWORD_SIZE);     // write element quantity (32bits)
-end;
-
-
-function GetElementQuantity : LongWord;
-begin
-  FHandle.Seek(GetDataSize, soBeginning);  // Jump segment
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('Reading element quantity at 0x%x',[FHandle.Position]);
-  {$EndIf}
-  FHandle.Read(Result, DWORD_SIZE);           // Read element quantity (32bits)
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('Element quantity == %d',[Result]);
-  {$EndIf}
-end;
-
-
-procedure SetDataSize(Size : LongWord);
-begin
-  RFA_Header;
-  FHandle.Write(Size, DWORD_SIZE);     // write data Size (32bits)
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('New Data size == %s',[SizeToStr(Size)]);
-  {$EndIf}
-end;
-
-
-function RFANew(src: string): integer;
-var
-  FileHandle : TStream;
   Value : longword;
 begin
   Result := -1;
-  FileHandle := TFileStream.Create(src, fmOpenReadWrite or fmCreate);
-  if Assigned(FileHandle) then
+  FHandle := TFileStream.Create(Filename, fmOpenReadWrite or fmCreate);
+  if Assigned(FHandle) then
   begin
     Value := 0;
-    FileHandle.Write(Value, DWORD_SIZE);
-    FileHandle.Write(Value, DWORD_SIZE);
+    FHandle.Write(Value, DWORD_SIZE);
+    FHandle.Write(Value, DWORD_SIZE);
     Result := 0;
-
-    FileHandle.Free;
   end;
 end;
 
-function RFAOpen(src: string): integer;
+
+
+function TRFAFile.Open(Filename: string): integer;
 var
   ENT: RFA_Entry;
   Path: AnsiString;
@@ -263,19 +234,17 @@ var
   Position : integer;
   IsRetail: boolean;
 begin
-  Assert(Assigned(FseAddProc));
-  Assert(Assigned(FseDetailsProc));
+  //Assert(Assigned(FseAddProc));
+  //Assert(Assigned(FseDetailsProc));
 
-  if Assigned(FHandle) then
-    FHandle.Free;
 
   try
-    Fhandle := TFileStream.Create(src, fmOpenReadWrite);
+    Fhandle := TFileStream.Create(Filename, fmOpenReadWrite);
   except
     on e:exception do
     try
       FHandle.Free;
-      Fhandle := TFileStream.Create(src, fmOpenRead);
+      Fhandle := TFileStream.Create(Filename, fmOpenRead);
       Result := -1;
     except
       FHandle.Free;
@@ -294,30 +263,30 @@ begin
 
     for x:= 1 to NumE do
     begin
-
       Position := FHandle.Position;
       //Path := get32(FHandle);
 
       Path := StringFrom(FHandle);      // Read entire Path\Filename
       FHandle.Read(ENT, ENTRY_SIZE);    // Read rfa entry data (24 bytes);
 
-      if IsRetail then
+      if Assigned(FOnAdd) then
       begin
-        if (ENT.ucsize = ENT.csize) then
+        if IsRetail then
         begin
-          FseAddProc(Path, ENT.offset, ENT.ucsize, NORMAL_DATA, ENT.ucsize);
+          if (ENT.ucsize = ENT.csize) then
+            FOnAdd(Self, Path, ENT.offset, ENT.ucsize, NORMAL_DATA, ENT.ucsize)
+          else
+            FOnAdd(Self, Path, ENT.offset, ENT.ucsize, COMPRESSED_DATA, ENT.csize)
         end
           else
         begin
-          FseAddProc(Path, ENT.offset, ENT.ucsize, COMPRESSED_DATA, ENT.csize);
+          FOnAdd(Self, Path, ENT.offset, ENT.ucsize, false, 0);
         end;
-      end
-        else
-      begin
-        FseAddProc(Path, ENT.offset, ENT.ucsize, false, 0);
+
+        if Assigned(FOnAddDetails) then
+          FOnAddDetails(Self, NumE, x, Position, FHandle.Position - Position);
       end;
 
-      FseDetailsProc(NumE, x, Position, FHandle.Position - Position);
     end;
 
     Result := NumE;
@@ -328,18 +297,13 @@ begin
 
 end;
 
-
-function RFASave(dst: string): integer;
+function TRFAFile.Save(Filename: string): integer;
 begin
-  if Assigned(FHandle) and (FHandle is TFileStream) then
-  begin
-    if dst = (FHandle as TFileStream).FileName then
-    //
-  end;
+
 end;
 
 // Quicker if ReAllocated size of Buf is near the last one
-function RFADeleteData(Buf : TMemoryStream; Offset : int64; Size : int64) : RFA_Result;
+function TRFAFile.DeleteData(Buf: TMemoryStream; Offset, Size: int64): RFA_Result;
 var
   NewSize : Int64;
 begin
@@ -360,134 +324,20 @@ begin
 
   Result.offset := Offset;
   Result.size := Size;
+
 end;
 
-function RFADeleteData(Offset : int64; Size : int64) : RFA_Result;
+
+function TRFAFile.DeleteData(Offset, Size: int64): RFA_Result;
 var
   Buf : TMemoryStream;
 begin
   Buf := TMemoryStream.Create;
-  Result := RFADeleteData(Buf, Offset, Size);
+  Result := DeleteData(Buf, Offset, Size);
   Buf.Free;
 end;
 
-function RFADeleteFile(Offset : int64; Size : int64) : RFA_Result;
-begin
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('Delete file at 0x%.8x with a size of %d',[Offset, Size]);
-  {$EndIf}
-
-  Result := RFADeleteData(FLargeBuf, Offset, Size);
-  SetDataSize(GetDataSize - Size);
-end;
-
-
-procedure RFAUpdateEntry(FullPath : AnsiString; NewOffset, NewUcSize, NewCSize : int64);
-var
-  ENT: RFA_Entry;
-  Path: AnsiString;
-  NumE, x: integer;
-begin
-  NumE := GetElementQuantity;
-
-  // Search the wanted entry
-  for x:= 1 to NumE do
-  begin
-    Path := StringFrom(FHandle);
-    FHandle.Read(ENT, ENTRY_SIZE);
-
-    if Path = FullPath then
-    begin
-      ENT.offset := NewOffset;
-      ENT.ucsize := NewUcSize;
-      Ent.csize := NewCSize;
-      FHandle.Position := FHandle.Position - ENTRY_SIZE;
-      FHandle.Write(ENT, ENTRY_SIZE);
-      Break;
-    end;
-
-    if x = NumE then
-      raise Exception.Create('Path not found');
-  end;
-end;
-
-
-
-function RFADeleteEntry(FullPath : AnsiString) : RFA_Result;
-var
-  ENT: RFA_Entry;
-  Path: AnsiString;
-  NumE, x: integer;
-  Offset, DataOffset : Int64;
-  Size, DataSize : Int64;
-begin
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('Delete entry %s',[FullPath]);
-  {$EndIf}
-
-  Offset := 0;
-  Size := 0;
-  DataOffset := 0;
-  DataSize := 0;
-
-  NumE := GetElementQuantity;
-
-  // Search the wanted entry
-  for x:= 1 to NumE do
-  begin
-    Offset := FHandle.Position;
-    Path := StringFrom(FHandle);
-    FHandle.Read(ENT, ENTRY_SIZE);
-    Size := FHandle.Position - Offset;
-
-    if Path = FullPath then
-    begin
-      DataOffset := ENT.offset;
-      DataSize := ENT.csize;
-      Break;
-    end;
-
-    if x = NumE then
-      raise Exception.Create('Path not found');
-  end;
-
-  // Delete this entry
-  Result := RFADeleteData(Offset, Size);
-  SetElementQuantity(GetElementQuantity-1);
-
-  NumE := GetElementQuantity;
-(*
-  // Update all indexes
-  for x:= 1 to NumE do
-  begin
-    Path := StringFrom(FHandle);
-    FHandle.Read(ENT, ENTRY_SIZE);
-
-    if ENT.offset >= DataOffset then
-    begin
-      SendDebugFmt('Changing offset of %d',[x]);
-      ENT.offset := ENT.offset - DataSize;
-
-      FHandle.Seek(-ENTRY_SIZE, soFromCurrent);
-      FHandle.Write(ENT, ENTRY_SIZE);
-    end;
-  end;
-*)
-end;
-
-
-procedure RFAReplaceData(Data : TStream; Offset : Int64; OldSize : int64);
-begin
-  RFADeleteData(Offset, OldSize);
-  RFAInsertData(Data, Offset);
-end;
-
-function RFAReplaceFile(Data : TStream) : Cardinal;
-begin
-  Result := 0;
-end;
-
-function RFAInsertData(Data : TStream; Offset : Int64) : RFA_Result;
+function TRFAFile.InsertData(Data: TStream; Offset: Int64): RFA_Result;
 var
   Buf : TMemoryStream;
 begin
@@ -518,113 +368,7 @@ begin
   Result.size := Data.Size;
 end;
 
-
-function RFAInsertFile(Data : TStream; Compressed : boolean = false) : RFA_Result;
-var
-  CurrentSize : cardinal;
-begin
-  CurrentSize := GetDataSize;
-
-  if Compressed then
-  begin
-    {$IfDef DEBUG_RFA}
-    SendDebugFmt('RFAInsertFile::Data.Size=%d',[Data.Size]);
-    {$EndIf}
-    Result := RFAInsertDataCompressed(Data, CurrentSize);
-  end
-    else
-  begin
-    Result := RFAInsertData(Data, CurrentSize);
-  end;
-
-  //SetDataSize(CurrentSize+Data.Size);
-  SetDataSize(CurrentSize + Result.size);
-end;
-
-procedure RFAInsertEntry(FullPath : AnsiString; Offset, Size : Int64; cSize : Int64; Index : Cardinal);
-var
-  Buf : TMemoryStream;
-  Len : LongWord;
-  ENT: RFA_Entry;
-  Path: AnsiString;
-  NumE, x: Cardinal;
-begin
-  Len := Length(FullPath);
-  ENT.offset := Offset;
-  ENT.csize := cSize;
-  ENT.ucsize := Size;
-
-  Buf := TMemoryStream.Create;
-  Buf.Size := DWORD_SIZE + Len + ENTRY_SIZE;
-  Buf.Seek(0, soFromBeginning);
-
-  Buf.Write(Len, DWORD_SIZE);
-  Buf.Write(FullPath[1], Len);
-  Buf.Write(ENT, ENTRY_SIZE);
-
-  NumE := GetElementQuantity;
-  if (Index = 0) or (Index > NumE) then
-    Index := NumE;
-
-  for x:= 1 to NumE do
-  begin
-    Path := StringFrom(FHandle);
-    FHandle.Read(ENT, ENTRY_SIZE);
-
-    if Index = x then
-      Break;
-  end;
-
-  RFAInsertData(Buf, FHandle.Position);
-  SetElementQuantity(GetElementQuantity+1);
-
-  Buf.Free;
-end;
-
-//  Same as ExtractRFAToStream but with a buffer
-procedure RFACopyToStream(Data: TStream; Offset, Size: int64);
-var
-  i,numbuf, Restbuf: Integer;
-begin
-  FHandle.Seek(Offset, 0);
-  numbuf := Size div BUFFER_SIZE;
-  Restbuf := Size mod BUFFER_SIZE;
-
-  Data.Seek(0,soFromBeginning);
-
-  for i := 1 to numbuf do
-  begin
-    Data.CopyFrom(FHandle, BUFFER_SIZE);
-  end;
-
-  Data.CopyFrom(FHandle, Restbuf);
-end;
-
-procedure RFAExtractToStream(Data: TStream; Offset, Size, UcSize: int64);
-var
-  Buffer : TMemoryStream;
-begin
-
-  Buffer := TMemoryStream.Create;
-
-  Buffer.Size := Size;
-
-  Buffer.Seek(0, soFromBeginning);
-  FHandle.Seek(Offset, soFromBeginning);
-
-  Buffer.CopyFrom(FHandle, Size);
-  Buffer.Seek(0, soFromBeginning);
-
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('Buffer size = %d',[Buffer.Size]);
-  {$EndIf}
-  Buffer.SaveToStream(Data);
-
-  Buffer.Free;
-end;
-
-
-function RFAInsertDataCompressed(Data : TStream; Offset : Int64) : RFA_Result;
+function TRFAFile.InsertDataCompressed(Data: TStream; Offset: Int64): RFA_Result;
 var
   WBuff: PByteArray; // Working buffer
   SBuff: PByteArray; // Source buffer
@@ -750,7 +494,13 @@ begin
 end;
 
 
-procedure RFADecompressToStream(outputstream: TStream; Offset, Size: int64; silent: boolean);
+procedure TRFAFile.ReplaceData(Data: TStream; Offset, OldSize: int64);
+begin
+  DeleteData(Offset, OldSize);
+  InsertData(Data, Offset);
+end;
+
+procedure TRFAFile.DecompressToStream(outputstream: TStream; Offset, Size: int64; silent: boolean);
 var
   SBuff: PByteArray;
   OBuff: PByteArray;
@@ -820,15 +570,286 @@ begin
 
 end;
 
-initialization
-  FHandle := nil;
-  FLargeBuf := TMemoryStream.Create;
+procedure TRFAFile.ExtractToStream(Data: TStream; Offset, Size, UcSize: int64);
+var
+  Buffer : TMemoryStream;
+begin
 
-finalization
-  if Assigned(FHandle) then
-    FHandle.Free;
+  Buffer := TMemoryStream.Create;
 
-  if Assigned(FLargeBuf) then
-    FLargeBuf.Free;
+  Buffer.Size := Size;
+
+  Buffer.Seek(0, soFromBeginning);
+  FHandle.Seek(Offset, soFromBeginning);
+
+  Buffer.CopyFrom(FHandle, Size);
+  Buffer.Seek(0, soFromBeginning);
+
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Buffer size = %d',[Buffer.Size]);
+  {$EndIf}
+  Buffer.SaveToStream(Data);
+
+  Buffer.Free;
+end;
+
+
+//  Same as ExtractRFAToStream but with a buffer
+procedure TRFAFile.CopyToStream(Data: TStream; Offset, Size: int64);
+var
+  i,numbuf, Restbuf: Integer;
+begin
+  FHandle.Seek(Offset, 0);
+  numbuf := Size div BUFFER_SIZE;
+  Restbuf := Size mod BUFFER_SIZE;
+
+  Data.Seek(0,soFromBeginning);
+
+  for i := 1 to numbuf do
+  begin
+    Data.CopyFrom(FHandle, BUFFER_SIZE);
+  end;
+
+  Data.CopyFrom(FHandle, Restbuf);
+end;
+
+
+
+function TRFAFile.DeleteFile(Offset, Size: int64): RFA_Result;
+begin
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Delete file at 0x%.8x with a size of %d',[Offset, Size]);
+  {$EndIf}
+
+  Result := DeleteData(FLargeBuf, Offset, Size);
+  SetDataSize(GetDataSize - Size);
+end;
+
+function TRFAFile.DeleteEntry(FullPath: AnsiString): RFA_Result;
+var
+  ENT: RFA_Entry;
+  Path: AnsiString;
+  NumE, x: integer;
+  Offset, DataOffset : Int64;
+  Size, DataSize : Int64;
+begin
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Delete entry %s',[FullPath]);
+  {$EndIf}
+
+  Offset := 0;
+  Size := 0;
+  DataOffset := 0;
+  DataSize := 0;
+
+  NumE := GetElementQuantity;
+
+  // Search the wanted entry
+  for x:= 1 to NumE do
+  begin
+    Offset := FHandle.Position;
+    Path := StringFrom(FHandle);
+    FHandle.Read(ENT, ENTRY_SIZE);
+    Size := FHandle.Position - Offset;
+
+    if Path = FullPath then
+    begin
+      DataOffset := ENT.offset;
+      DataSize := ENT.csize;
+      Break;
+    end;
+
+    if x = NumE then
+      raise Exception.Create('Path not found');
+  end;
+
+  // Delete this entry
+  Result := DeleteData(Offset, Size);
+  SetElementQuantity(GetElementQuantity-1);
+
+  NumE := GetElementQuantity;
+(*
+  // Update all indexes
+  for x:= 1 to NumE do
+  begin
+    Path := StringFrom(FHandle);
+    FHandle.Read(ENT, ENTRY_SIZE);
+
+    if ENT.offset >= DataOffset then
+    begin
+      SendDebugFmt('Changing offset of %d',[x]);
+      ENT.offset := ENT.offset - DataSize;
+
+      FHandle.Seek(-ENTRY_SIZE, soFromCurrent);
+      FHandle.Write(ENT, ENTRY_SIZE);
+    end;
+  end;
+*)
+end;
+
+procedure TRFAFile.InsertEntry(FullPath: AnsiString; Offset, Size, cSize: Int64; Index: Cardinal);
+var
+  Buf : TMemoryStream;
+  Len : LongWord;
+  ENT: RFA_Entry;
+  Path: AnsiString;
+  NumE, x: Cardinal;
+begin
+  Len := Length(FullPath);
+  ENT.offset := Offset;
+  ENT.csize := cSize;
+  ENT.ucsize := Size;
+
+  Buf := TMemoryStream.Create;
+  Buf.Size := DWORD_SIZE + Len + ENTRY_SIZE;
+  Buf.Seek(0, soFromBeginning);
+
+  Buf.Write(Len, DWORD_SIZE);
+  Buf.Write(FullPath[1], Len);
+  Buf.Write(ENT, ENTRY_SIZE);
+
+  NumE := GetElementQuantity;
+  if (Index = 0) or (Index > NumE) then
+    Index := NumE;
+
+  for x:= 1 to NumE do
+  begin
+    Path := StringFrom(FHandle);
+    FHandle.Read(ENT, ENTRY_SIZE);
+
+    if Index = x then
+      Break;
+  end;
+
+  InsertData(Buf, FHandle.Position);
+  SetElementQuantity(GetElementQuantity+1);
+
+  Buf.Free;
+end;
+
+
+function TRFAFile.InsertFile(Data: TStream; Compressed: boolean): RFA_Result;
+var
+  CurrentSize : cardinal;
+begin
+  CurrentSize := GetDataSize;
+
+  if Compressed then
+  begin
+    {$IfDef DEBUG_RFA}
+    SendDebugFmt('RFAInsertFile::Data.Size=%d',[Data.Size]);
+    {$EndIf}
+    Result := InsertDataCompressed(Data, CurrentSize);
+  end
+    else
+  begin
+    Result := InsertData(Data, CurrentSize);
+  end;
+
+  //SetDataSize(CurrentSize+Data.Size);
+  SetDataSize(CurrentSize + Result.size);
+end;
+
+procedure TRFAFile.UpdateEntry(FullPath: AnsiString; NewOffset, NewUcSize, NewCSize: int64);
+var
+  ENT: RFA_Entry;
+  Path: AnsiString;
+  NumE, x: integer;
+begin
+  NumE := GetElementQuantity;
+
+  // Search the wanted entry
+  for x:= 1 to NumE do
+  begin
+    Path := StringFrom(FHandle);
+    FHandle.Read(ENT, ENTRY_SIZE);
+
+    if Path = FullPath then
+    begin
+      ENT.offset := NewOffset;
+      ENT.ucsize := NewUcSize;
+      Ent.csize := NewCSize;
+      FHandle.Position := FHandle.Position - ENTRY_SIZE;
+      FHandle.Write(ENT, ENTRY_SIZE);
+      Break;
+    end;
+
+    if x = NumE then
+      raise Exception.Create('Path not found');
+  end;
+end;
+
+
+
+// Jump to header, return true if we are using the retail format (not the demo one)
+function TRFAFile.RFA_Header: boolean;
+var
+  ID: array[0..27] of AnsiChar;
+begin
+  FHandle.Position := 0;
+  FHandle.Read(ID, 28);
+  Result := false;
+
+  if ID <> VERSION_HEADER then
+  begin
+    FHandle.Position := 0;
+    Result := true;
+  end;
+end;
+
+function TRFAFile.GetDataSize: LongWord;
+begin
+  RFA_Header;
+
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Reading data size at 0x%x',[FHandle.Position]);
+  {$EndIf}
+
+  FHandle.Read(Result, DWORD_SIZE);   // Read data length (32bits)
+
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Data size == %s',[SizeToStr(Result)]);
+  {$EndIf}
+end;
+
+procedure TRFAFile.SetDataSize(const Value: LongWord);
+begin
+  RFA_Header;
+  FHandle.Write(Value, DWORD_SIZE);     // write data Size (32bits)
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('New Data size == %s',[SizeToStr(Value)]);
+  {$EndIf}
+end;
+
+function TRFAFile.GetElementQuantity: LongWord;
+begin
+  FHandle.Seek(GetDataSize, soBeginning);  // Jump segment
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Reading element quantity at 0x%x',[FHandle.Position]);
+  {$EndIf}
+  FHandle.Read(Result, DWORD_SIZE);           // Read element quantity (32bits)
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Element quantity == %d',[Result]);
+  {$EndIf}
+end;
+
+procedure TRFAFile.SetElementQuantity(const Value: LongWord);
+begin
+  FHandle.Seek(GetDataSize, soBeginning);  // Jump segment
+  FHandle.Write(Value, DWORD_SIZE);     // write element quantity (32bits)
+end;
+
+
+procedure TRFAFile.SetOnAdd(const Value: TRFAAddEvent);
+begin
+  FOnAdd := Value;
+end;
+
+procedure TRFAFile.SetOnAddDetails(const Value: TRFAAddDetailsEvent);
+begin
+  FOnAddDetails := Value;
+end;
+
+
 
 end.
