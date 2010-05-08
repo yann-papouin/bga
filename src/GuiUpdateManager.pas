@@ -18,11 +18,13 @@ type
     rs_NoInternet
   );
 
-  TUpdateEntry = record
-    datetime : string[255];
-    id : string[255];
-    link : string[255];
-    title : string[255];
+  TUpdateEntry = class
+  private
+  public
+    Datetime : string;
+    Id : string;
+    Link : string;
+    Title : string;
   end;
 
 
@@ -58,7 +60,7 @@ type
     procedure SetOnUpdateReply(const Value: TUpdateReply);
   public
     { Déclarations publiques }
-    Entries : TList<TUpdateEntry>;
+    Entries : TObjectList<TUpdateEntry>;
     property OnUpdateReply : TUpdateReply read FOnUpdateReply write SetOnUpdateReply;
   end;
 
@@ -109,6 +111,7 @@ begin
     while Entry <> nil do
     begin
       try
+        UpdateEntry := TUpdateEntry.Create;
         UpdateEntry.datetime := Entry.ChildNodes.FindNode('updated').Text;
         UpdateEntry.id := Entry.ChildNodes.FindNode('id').Text;
         UpdateEntry.link := Entry.ChildNodes.FindNode('link').Attributes['href'];
@@ -125,7 +128,7 @@ begin
 
   for i:= 0 to Entries.Count-1 do
   begin
-    Revision := Entries[i].link;
+    UpdateEntry := Entries[i];
     Revision := SFRight('BGA_rev_', UpdateEntry.link);
     Revision := SFLeft('.zip', Revision);
 
@@ -172,7 +175,7 @@ end;
 
 procedure TUpdateManagerForm.FormCreate(Sender: TObject);
 begin
-  Entries := TList<TUpdateEntry>.Create;
+  Entries := TObjectList<TUpdateEntry>.Create;
 end;
 
 procedure TUpdateManagerForm.FormDestroy(Sender: TObject);
