@@ -29,8 +29,8 @@ uses
   JclFileUtils, PngImageList, ExtCtrls, ActiveX, Types, SpTBXControls, SpTBXItem,
   TB2Item, TB2Dock, TB2Toolbar, ActnList, JvMRUList, JvAppInst,
   Menus, RFALib, SpTBXEditors, JvBaseDlg, JvBrowseFolder, JvAppStorage,
-  JvAppRegistryStorage, IdBaseComponent, IdComponent, IdTCPConnection,
-  IdTCPClient, IdHTTP;
+  JvAppRegistryStorage, GuiUpdateManager, IdBaseComponent, IdComponent,
+  IdTCPConnection, IdTCPClient, IdHTTP;
 
 type
 
@@ -81,16 +81,6 @@ type
     shLeft,
     shRight
   );
-
-  TUpdateResult = (
-    rs_None,
-    rs_UpToDate,
-    rs_UpdateFound,
-    rs_NoUpdate,
-    rs_NoInternet
-  );
-
-  TUpdateReply = procedure(Sender: TObject; Result : TUpdateResult) of object;
 
   TRFAViewForm = class(TForm)
     RFAList: TVirtualStringTree;
@@ -163,7 +153,8 @@ type
     New: TAction;
     SpTBXItem16: TSpTBXItem;
     wget: TIdHTTP;
-    UpdateCheck: TAction;
+    NewVersionAvailable: TAction;
+    SpTBXItem17: TSpTBXItem;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -212,14 +203,13 @@ type
     procedure PackDirectoryExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure DefragExecute(Sender: TObject);
-    procedure UpdateCheckExecute(Sender: TObject);
+    procedure NewVersionAvailableExecute(Sender: TObject);
   private
     { Déclarations privées }
     FApplicationTitle : string;
     FSearchText: string;
     FSyncNode : PVirtualNode;
     FArchive : TRFAFile;
-    FOnUpdateReply: TUpdateReply;
     procedure RemoveEmptyFolders;
     function CountFilesByStatus(Node: PVirtualNode; Status:TFseStatus) : cardinal;
     //procedure DeleteSelectionByData;
@@ -244,8 +234,6 @@ type
     procedure EditSelection;
     function CreateNew(Filename : string = ''): boolean;
     procedure Reset;
-    function UpdateProcess : TUpdateResult;
-    procedure SetOnUpdateReply(const Value: TUpdateReply);
 
     procedure UpdateReply(Sender: TObject; Result : TUpdateResult);
   public
@@ -255,7 +243,7 @@ type
     procedure ExportFile(Node: PVirtualNode; OutputStream : TStream);
     property Title : string read GetTitle write SetTitle;
     property SearchText : string read FSearchText write SetSearchText;
-    property OnUpdateReply : TUpdateReply read FOnUpdateReply write SetOnUpdateReply;
+
   end;
 
   pFse = ^rFse;
@@ -287,8 +275,9 @@ implementation
 {$R *.dfm}
 
 uses
-  GuiAbout, GuiMain, GuiRAWView, GuiSMView, Masks, Math, StringFunction,
-  DragDropFile, CommonLib, AppLib, MD5Api, SvnInfo, AsyncCalls;
+  GuiAbout, GuiMain, GuiRAWView, GuiSMView, Masks,
+  Math, StringFunction,
+  DragDropFile, CommonLib, AppLib, MD5Api;
 
 var
   FLastNode : PVirtualNode;
@@ -580,6 +569,8 @@ end;
 
 procedure TRFAViewForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  FormStorage.SaveFormPlacement;
+
   if DirectoryExists(GetAppTempDirectory) then
     DeleteDirectory(GetAppTempDirectory, false);
 end;
@@ -589,8 +580,6 @@ begin
   FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
   Reset;
 
-  OnUpdateReply := UpdateReply;
-  //UpdateCheck.Execute;
 end;
 
 procedure TRFAViewForm.FormDestroy(Sender: TObject);
@@ -630,6 +619,11 @@ end;
 
 procedure TRFAViewForm.ApplicationRunExecute(Sender: TObject);
 begin
+  FormStorage.RestoreFormPlacement;
+
+  UpdateManagerForm.OnUpdateReply := UpdateReply;
+  UpdateManagerForm.Check.Execute;
+
   RecentList.Open;
   RebuildRecentList.Execute;
   Application.ProcessMessages;
@@ -790,10 +784,6 @@ begin
   until False;
 end;
 
-procedure TRFAViewForm.SetOnUpdateReply(const Value: TUpdateReply);
-begin
-  FOnUpdateReply := Value;
-end;
 
 procedure TRFAViewForm.SetSearchText(const Value: string);
 var
@@ -1906,90 +1896,26 @@ end;
 
 procedure TRFAViewForm.UpdateReply(Sender: TObject; Result: TUpdateResult);
 begin
+  NewVersionAvailable.Enabled := true;
   if Result = rs_UpdateFound then
-    Showmessage('New version available');
-end;
-
-procedure TRFAViewForm.UpdateCheckExecute(Sender: TObject);
-var
-  Result : TUpdateResult;
-begin
-  TAsyncCalls.Invoke(procedure
   begin
-    Result := UpdateProcess;
-    TAsyncCalls.VCLSync(procedure
+    if not NewVersionAvailable.Visible then
     begin
-      if Assigned(FOnUpdateReply) then
-        FOnUpdateReply(Self,Result);
-    end);
-  end);
+      NewVersionAvailable.Visible := true;
+      NewVersionAvailable.Execute;
+    end
+    else
+      NewVersionAvailable.Visible := true;
+  end
+    else
+  begin
+    NewVersionAvailable.Visible := false;
+  end;
 end;
 
-
-function TRFAViewForm.UpdateProcess : TUpdateResult;
-var
-  HtmlText : TStringList;
-  VersionList : TStringList;
-  DownloadLine : integer;
-  URL, Revision : string;
-  i : integer;
+procedure TRFAViewForm.NewVersionAvailableExecute(Sender: TObject);
 begin
-  HtmlText := TStringList.Create;
-
-  Result := rs_NoUpdate;
-  try
-    HtmlText.Text := wget.Get('http://ccode.google.com/p/bga/');
-  except
-    on e:exception do
-      Result := rs_NoInternet;
-  end;
-
-  for i:= 0 to HtmlText.Count-1 do
-  if Pos('<span id="downloadbox">', HtmlText[i]) > 0 then
-  begin
-    DownloadLine := i;
-    Break;
-  end;
-
-  if DownloadLine > 0 then
-  begin
-    VersionList := TStringList.Create;
-    i := DownloadLine;
-    repeat
-
-      if Pos('http://bga.googlecode.com/files/BGA_', HtmlText[i]) > 0 then
-      begin
-        URL := SFBetween('"',HtmlText[i]);
-        VersionList.Add(URL);
-      end;
-
-      Inc(i);
-    until Pos('</span>', HtmlText[i]) > 0;
-  end;
-
-  HtmlText.Free;
-
-  if Assigned(VersionList) then
-  begin
-    for i:= 0 to VersionList.Count-1 do
-    begin
-      Revision := VersionList[i];
-      Revision := SFRight('BGA_rev_', Revision);
-      Revision := SFLeft('.zip', Revision);
-
-      if StrToIntDef(Revision,0) > SVN_REVISION then
-      begin
-        Result := rs_UpdateFound;
-        Break;
-      end;
-
-    end;
-
-    VersionList.Free;
-  end;
-
+  UpdateManagerForm.ShowModal;
 end;
-
-
 
 end.

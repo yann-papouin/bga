@@ -52,8 +52,6 @@ object RFAViewForm: TRFAViewForm
     OnGetNodeDataSize = RFAListGetNodeDataSize
     OnKeyAction = RFAListKeyAction
     OnStartDrag = RFAListStartDrag
-    ExplicitLeft = 34
-    ExplicitTop = 99
     Columns = <
       item
         MinWidth = 300
@@ -226,6 +224,9 @@ object RFAViewForm: TRFAViewForm
           Action = About
         end
       end
+      object SpTBXItem17: TSpTBXItem
+        Action = NewVersionAvailable
+      end
     end
   end
   object SearchBar: TSpTBXPanel
@@ -284,7 +285,8 @@ object RFAViewForm: TRFAViewForm
     AppStorage = AppStorage
     AppStoragePath = '%FORM_NAME%\'
     StoredProps.Strings = (
-      'Browse.Directory')
+      'Browse.Directory'
+      'NewVersionAvailable.Visible')
     StoredValues = <>
     Left = 8
     Top = 56
@@ -33431,9 +33433,11 @@ object RFAViewForm: TRFAViewForm
       ImageIndex = 7
       OnExecute = NewExecute
     end
-    object UpdateCheck: TAction
-      Caption = 'UpdateCheck'
-      OnExecute = UpdateCheckExecute
+    object NewVersionAvailable: TAction
+      Caption = 'New version available !'
+      Enabled = False
+      Visible = False
+      OnExecute = NewVersionAvailableExecute
     end
   end
   object RecentList: TJvMruList
