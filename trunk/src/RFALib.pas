@@ -34,6 +34,9 @@ type
     roEnd,
     roLoad,
     roInsert,
+    roCompress,
+    roExport,
+    roDecompress,
     roDelete
   );
 
@@ -430,6 +433,7 @@ begin
   GetMem(SBuff, SEGMENT_MAX_SIZE);
   GetMem(OBuff, SEGMENT_MAX_SIZE + SEGMENT_MAX_SIZE div 64 + 16 + 3);
   GetMem(WBuff, LZO1X_1_MEM_COMPRESS);
+
 
   while True do
   begin

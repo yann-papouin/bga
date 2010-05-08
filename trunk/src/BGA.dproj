@@ -76,6 +76,9 @@
 			<DCCReference Include="GLSceneExt\GLFileSM.pas"/>
 			<DCCReference Include="GLSceneExt\TypesSM.pas"/>
 			<DCCReference Include="Lib\SvnInfo.pas"/>
+			<DCCReference Include="GuiUpdateManager.pas">
+				<Form>UpdateManagerForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

@@ -19,7 +19,8 @@ uses
   FileSM in 'GLSceneExt\FileSM.pas',
   GLFileSM in 'GLSceneExt\GLFileSM.pas',
   TypesSM in 'GLSceneExt\TypesSM.pas',
-  SvnInfo in 'Lib\SvnInfo.pas';
+  SvnInfo in 'Lib\SvnInfo.pas',
+  GuiUpdateManager in 'GuiUpdateManager.pas' {UpdateManagerForm};
 
 {$R *.res}
 
@@ -34,6 +35,7 @@ begin
   Application.CreateForm(TRAWViewForm, RAWViewForm);
   Application.CreateForm(TAboutForm, AboutForm);
   Application.CreateForm(TSMViewForm, SMViewForm);
+  Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
   RFAViewForm.ApplicationRun.Execute;
   Application.Run;
 end.
