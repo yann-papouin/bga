@@ -638,6 +638,7 @@ end;
 
 procedure TRFAViewForm.ApplicationRunExecute(Sender: TObject);
 begin
+  ApplicationRun.Enabled := false;
   FormStorage.RestoreFormPlacement;
 
   UpdateManagerForm.OnUpdateReply := UpdateReply;
@@ -657,6 +658,7 @@ begin
     RecentMenu.Items[0].Click
   else
     OpenDialog.InitialDir := ExtractFilePath(Application.ExeName);
+
 end;
 
 
