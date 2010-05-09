@@ -156,6 +156,9 @@ type
     ProgressPanel: TSpTBXPanel;
     SpTBXButton2: TSpTBXButton;
     Cancel: TAction;
+    Fragmentation: TSpTBXLabelItem;
+    SpTBXSeparatorItem4: TSpTBXSeparatorItem;
+    ArchiveSize: TSpTBXLabelItem;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -239,6 +242,8 @@ type
     procedure EditSelection;
     function CreateNew(Filename : string = ''): boolean;
     procedure Reset;
+
+    procedure UpdateInfobar;
 
     procedure UpdateReply(Sender: TObject; Result : TUpdateResult);
     procedure ReadEntry(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
@@ -666,6 +671,7 @@ begin
   Save.Enabled := false;
   Defrag.Enabled := false;
   SaveDialog.FileName := EmptyStr;
+  UpdateInfobar;
 end;
 
 function TRFAViewForm.LoadMap(Path : string) :boolean;
@@ -687,30 +693,51 @@ begin
   FArchive.OnProgress := SubProgress;
 
   TotalProgress(roBegin, 0, 0);
-  if FArchive.Open(Path) < 0 then
+
+  try
+    if FArchive.Open(Path) < 0 then
+    begin
+      ShowMessage('This file is already used');
+    end
+      else
+    begin
+      Result := true;
+    end;
+
+    Node := RFAList.GetFirst;
+    while Node <> nil do
+    begin
+      if RFAList.GetNodeLevel(Node) <= 2 then
+        RFAList.Expanded[Node] := true;
+
+      Node := RFAList.GetNext(Node);
+    end;
+    Sort;
+  finally
+    TotalProgress(roEnd, 0, 0);
+    RFAList.EndUpdate;
+  end;
+
+  UpdateInfobar;
+  SyncStart;
+end;
+
+procedure TRFAViewForm.UpdateInfobar;
+begin
+  if Assigned(FArchive) then
   begin
-    ShowMessage('This file is already used');
+    ArchiveSize.Visible := true;
+    ArchiveSize.Caption := Format('Archive = %s',[SizeToStr(FArchive.DataSize)]);
+
+    Fragmentation.Visible := true;
+    Fragmentation.Caption := Format('Fragmentation = %s',[SizeToStr(FArchive.Fragmentation)]);
   end
     else
   begin
-    TotalProgress(roEnd, 0, 0);
-    Result := true;
+    ArchiveSize.Visible := false;
+    Fragmentation.Visible := false;
   end;
-
-  Node := RFAList.GetFirst;
-  while Node <> nil do
-  begin
-    if RFAList.GetNodeLevel(Node) <= 2 then
-      RFAList.Expanded[Node] := true;
-
-    Node := RFAList.GetNext(Node);
-  end;
-  Sort;
-
-  RFAList.EndUpdate;
-  SyncStart
 end;
-
 
 procedure TRFAViewForm.CancelExecute(Sender: TObject);
 begin
@@ -1140,6 +1167,7 @@ begin
     end;
 
     TotalProgress(roEnd, PG_NULL, PG_NULL);
+    UpdateInfobar;
     Result := true;
   end
     else
@@ -1451,8 +1479,11 @@ begin
         ForceDirectories(ExtractFilePath(Data.ExternalFilePath));
 
         ExternFile := TFileStream.Create(Data.ExternalFilePath, fmOpenWrite or fmCreate);
-        ExportFile(Node, ExternFile);
-        ExternFile.Free;
+        try
+          ExportFile(Node, ExternFile);
+        finally
+          ExternFile.Free;
+        end;
 
         FileAge(Data.ExternalFilePath, Data.ExternalAge);
         Data.ExternalMD5 := MD5FromFile(Data.ExternalFilePath);
@@ -2057,6 +2088,7 @@ procedure TRFAViewForm.Sort;
 begin
   RFAList.SortTree(0, sdAscending);
 end;
+
 
 
 procedure TRFAViewForm.UpdateReply(Sender: TObject; Result: TUpdateResult);
