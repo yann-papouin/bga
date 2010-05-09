@@ -25,7 +25,7 @@ object RFAViewForm: TRFAViewForm
     Left = 0
     Top = 23
     Width = 632
-    Height = 341
+    Height = 337
     Align = alClient
     DragMode = dmAutomatic
     DragOperations = [doMove]
@@ -54,7 +54,7 @@ object RFAViewForm: TRFAViewForm
     OnGetNodeDataSize = RFAListGetNodeDataSize
     OnKeyAction = RFAListKeyAction
     OnStartDrag = RFAListStartDrag
-    ExplicitHeight = 313
+    ExplicitTop = 20
     Columns = <
       item
         MinWidth = 300
@@ -194,9 +194,9 @@ object RFAViewForm: TRFAViewForm
   end
   object ProgressPanel: TSpTBXPanel
     Left = 0
-    Top = 364
+    Top = 360
     Width = 632
-    Height = 28
+    Height = 32
     Caption = 'LoadBar'
     Align = alBottom
     TabOrder = 3
@@ -204,13 +204,13 @@ object RFAViewForm: TRFAViewForm
     Borders = False
     object SubProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
-      Left = 456
-      Top = 5
+      Left = 370
+      Top = 7
       Width = 168
       Height = 18
-      Margins.Top = 5
+      Margins.Top = 7
       Margins.Right = 8
-      Margins.Bottom = 5
+      Margins.Bottom = 7
       Color = clBtnFace
       Align = alRight
       Font.Charset = DEFAULT_CHARSET
@@ -221,16 +221,19 @@ object RFAViewForm: TRFAViewForm
       ParentFont = False
       CaptionGlow = gldNone
       CaptionType = pctNone
+      Smooth = True
+      ExplicitLeft = 456
+      ExplicitTop = 5
     end
     object TotalProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
       Left = 67
-      Top = 5
-      Width = 378
+      Top = 7
+      Width = 292
       Height = 18
-      Margins.Top = 5
+      Margins.Top = 7
       Margins.Right = 8
-      Margins.Bottom = 5
+      Margins.Bottom = 7
       Color = clBtnFace
       Align = alClient
       Font.Charset = DEFAULT_CHARSET
@@ -241,18 +244,36 @@ object RFAViewForm: TRFAViewForm
       ParentFont = False
       CaptionGlow = gldNone
       CaptionType = pctNone
-      ExplicitLeft = 119
-      ExplicitWidth = 505
+      Smooth = True
+      ExplicitTop = 5
+      ExplicitWidth = 378
     end
     object TotalProgressLabel: TSpTBXLabel
       AlignWithMargins = True
       Left = 8
       Top = 3
       Width = 53
-      Height = 22
+      Height = 26
       Margins.Left = 8
       Caption = 'Progress'
       Align = alLeft
+      ExplicitHeight = 22
+    end
+    object SpTBXButton2: TSpTBXButton
+      AlignWithMargins = True
+      Left = 549
+      Top = 4
+      Width = 75
+      Height = 24
+      Margins.Top = 4
+      Margins.Right = 8
+      Margins.Bottom = 4
+      Action = Cancel
+      Align = alRight
+      TabOrder = 3
+      Images = ExplorerImg
+      ImageIndex = 85
+      ExplicitTop = 3
     end
   end
   object SearchBar: TSpTBXPanel
@@ -283,6 +304,8 @@ object RFAViewForm: TRFAViewForm
       TabOrder = 0
       Text = '*.*'
       OnChange = SearchChange
+      ExplicitLeft = 83
+      ExplicitTop = 8
     end
     object SpTBXLabel1: TSpTBXLabel
       AlignWithMargins = True
@@ -33465,6 +33488,12 @@ object RFAViewForm: TRFAViewForm
       Visible = False
       OnExecute = NewVersionAvailableExecute
     end
+    object Cancel: TAction
+      Caption = 'Cancel'
+      Enabled = False
+      ImageIndex = 85
+      OnExecute = CancelExecute
+    end
   end
   object RecentList: TJvMruList
     SubKeyUnicode = 'Software\Battlefield 1942\BGA\Recent'
@@ -33514,17 +33543,5 @@ object RFAViewForm: TRFAViewForm
     SubStorages = <>
     Left = 40
     Top = 56
-  end
-  object wget: TIdHTTP
-    AllowCookies = True
-    ProxyParams.BasicAuthentication = False
-    ProxyParams.ProxyPort = 0
-    Request.ContentLength = -1
-    Request.Accept = 'text/html, */*'
-    Request.BasicAuthentication = False
-    Request.UserAgent = 'Mozilla/3.0 (compatible; Indy Library)'
-    HTTPOptions = [hoForceEncodeParams]
-    Left = 8
-    Top = 280
   end
 end

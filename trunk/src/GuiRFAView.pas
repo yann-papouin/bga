@@ -29,8 +29,7 @@ uses
   JclFileUtils, PngImageList, ExtCtrls, ActiveX, Types, SpTBXControls, SpTBXItem,
   TB2Item, TB2Dock, TB2Toolbar, ActnList, JvMRUList, JvAppInst,
   Menus, RFALib, SpTBXEditors, JvBaseDlg, JvBrowseFolder, JvAppStorage,
-  JvAppRegistryStorage, GuiUpdateManager, IdBaseComponent, IdComponent,
-  IdTCPConnection, IdTCPClient, IdHTTP;
+  JvAppRegistryStorage, GuiUpdateManager;
 
 type
 
@@ -151,11 +150,12 @@ type
     SpTBXItem15: TSpTBXItem;
     New: TAction;
     SpTBXItem16: TSpTBXItem;
-    wget: TIdHTTP;
     NewVersionAvailable: TAction;
     SpTBXItem17: TSpTBXItem;
     SubProgressBar: TSpTBXProgressBar;
     ProgressPanel: TSpTBXPanel;
+    SpTBXButton2: TSpTBXButton;
+    Cancel: TAction;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -205,6 +205,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure DefragExecute(Sender: TObject);
     procedure NewVersionAvailableExecute(Sender: TObject);
+    procedure CancelExecute(Sender: TObject);
   private
     { Déclarations privées }
     FApplicationTitle : string;
@@ -601,6 +602,7 @@ end;
 procedure TRFAViewForm.FormActivate(Sender: TObject);
 begin
   ActiveControl := RFAList;
+  ApplicationRun.Execute;
 end;
 
 function TRFAViewForm.GetTitle: string;
@@ -709,6 +711,11 @@ begin
   SyncStart
 end;
 
+
+procedure TRFAViewForm.CancelExecute(Sender: TObject);
+begin
+  Cancel.Enabled := false;
+end;
 
 procedure TRFAViewForm.CheckStatus(Node: PVirtualNode);
 var
@@ -1022,6 +1029,8 @@ var
 begin
   SyncStop;
   SyncAll;
+
+  Cancel.Enabled := true;
   Result := false;
 
   if Assigned(FArchive) and (FArchive.Filepath = Path) and not Defrag then
@@ -1032,6 +1041,9 @@ begin
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
+      if not Cancel.Enabled then
+        Break;
+
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
@@ -1051,6 +1063,9 @@ begin
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
+      if not Cancel.Enabled then
+        Break;
+
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
@@ -1092,6 +1107,9 @@ begin
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
+      if not Cancel.Enabled then
+        Break;
+
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
@@ -1145,6 +1163,9 @@ begin
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
+      if not Cancel.Enabled then
+        Break;
+
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
@@ -1167,6 +1188,9 @@ begin
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
+      if not Cancel.Enabled then
+        Break;
+
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
@@ -1187,6 +1211,9 @@ begin
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
+      if not Cancel.Enabled then
+        Break;
+
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
@@ -1368,12 +1395,16 @@ var
   ExternalFilePath : string;
   ExternFile : TFileStream;
 begin
+  Cancel.Enabled := true;
   if Browse.Execute then
   begin
     TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);
     Node := RFAList.GetFirstSelected;
     while Node <> nil do
     begin
+      if not Cancel.Enabled then
+        Break;
+
       ExtendSelection(Node);
       Data := RFAList.GetNodeData(Node);
 
