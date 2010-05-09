@@ -36,6 +36,5 @@ begin
   Application.CreateForm(TAboutForm, AboutForm);
   Application.CreateForm(TSMViewForm, SMViewForm);
   Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
-  RFAViewForm.ApplicationRun.Execute;
   Application.Run;
 end.
