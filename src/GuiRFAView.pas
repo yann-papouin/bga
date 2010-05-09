@@ -86,8 +86,7 @@ type
     RFAList: TVirtualStringTree;
     FormStorage: TJvFormStorage;
     ExplorerImg: TPngImageList;
-    LoadBar: TSpTBXPanel;
-    TotalProgress: TSpTBXProgressBar;
+    TotalProgressBar: TSpTBXProgressBar;
     TotalProgressLabel: TSpTBXLabel;
     Sync: TTimer;
     StatusBar: TSpTBXStatusBar;
@@ -155,6 +154,8 @@ type
     wget: TIdHTTP;
     NewVersionAvailable: TAction;
     SpTBXItem17: TSpTBXItem;
+    SubProgressBar: TSpTBXProgressBar;
+    ProgressPanel: TSpTBXPanel;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -216,7 +217,10 @@ type
     procedure DeleteSelection;
     procedure ExtendSelection(Node : PVirtualNode);
     procedure Sort;
-    procedure ModifCheck;
+    procedure SyncStart;
+    procedure SyncStop;
+    procedure SyncAll;
+    procedure CheckStatus(Node : PVirtualNode);
     function FindFileByName(Filename :string) : PVirtualNode;
 
     function IsFile(FileType : TFileType) : boolean;
@@ -236,6 +240,9 @@ type
     procedure Reset;
 
     procedure UpdateReply(Sender: TObject; Result : TUpdateResult);
+    procedure ReadEntry(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
+    procedure SubProgress(Sender : TRFAFile; Operation : TRFAOperation; Value : Integer = 0);
+    procedure TotalProgress(Operation : TRFAOperation; Value : Integer; Max:integer);
   public
     { Déclarations publiques }
     function LoadMap(Path : string) :boolean;
@@ -278,6 +285,7 @@ uses
   GuiAbout, GuiMain, GuiRAWView, GuiSMView, Masks,
   Math, StringFunction,
   DragDropFile, CommonLib, AppLib, MD5Api;
+
 
 var
   FLastNode : PVirtualNode;
@@ -407,13 +415,15 @@ begin
 end;
 
 
-procedure ReadEntry(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
+procedure TRFAViewForm.ReadEntry(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
 var
   Node: PVirtualNode;
   Data : pFse;
   W32Path : AnsiString;
   Updating : boolean;
 begin
+  TotalProgress(roLoad, PG_AUTO, Sender.Count);
+
   W32Path := StringReplace(Name,'/','\',[rfReplaceAll]);
   BuildTreeFromFullPath(W32Path);
 
@@ -425,14 +435,14 @@ begin
     Node := FindPath(W32Path);
 
     if Node = nil then
-      Node := RFAViewForm.RFAList.RootNode;
+      Node := RFAList.RootNode;
 
-    Node := RFAViewForm.RFAList.AddChild(Node);
+    Node := RFAList.AddChild(Node);
   end
     else
       Updating := true;
-      
-  Data := RFAViewForm.RFAList.GetNodeData(Node);
+
+  Data := RFAList.GetNodeData(Node);
   Data.RFAFile := Sender;
 
   if Updating then
@@ -643,7 +653,7 @@ end;
 
 procedure TRFAViewForm.Reset;
 begin
-  Sync.Enabled := false;
+  SyncStop;
   RFAList.Clear;
   Title := EmptyStr;
 
@@ -661,7 +671,7 @@ var
   Node: PVirtualNode;
 begin
   Result := false;
-  Sync.Enabled := false;
+  SyncStop;
   FSyncNode := nil;
 
   RFAList.BeginUpdate;
@@ -672,13 +682,16 @@ begin
 
   FArchive := TRFAFile.Create;
   FArchive.OnReadEntry := ReadEntry;
+  FArchive.OnProgress := SubProgress;
 
+  TotalProgress(roBegin, 0, 0);
   if FArchive.Open(Path) < 0 then
   begin
     ShowMessage('This file is already used');
   end
     else
   begin
+    TotalProgress(roEnd, 0, 0);
     Result := true;
   end;
 
@@ -693,23 +706,19 @@ begin
   Sort;
 
   RFAList.EndUpdate;
-  Sync.Enabled := true;
+  SyncStart
 end;
 
-procedure TRFAViewForm.ModifCheck;
+
+procedure TRFAViewForm.CheckStatus(Node: PVirtualNode);
 var
   Data : pFse;
   PreviousStatus : TFseStatus;
   FileDateTime: TDateTime;
 begin
-  if FSyncNode = nil then
-    FSyncNode := RFAList.GetFirst
-  else
-    FSyncNode := RFAList.GetNext(FSyncNode, true);
-
-  if FSyncNode <> nil then
+  if Node <> nil then
   begin
-    Data := RFAList.GetNodeData(FSyncNode);
+    Data := RFAList.GetNodeData(Node);
     PreviousStatus := Data.Status;
     if IsFile(Data.FileType) and (Data.ExternalFilePath <> EmptyStr) and not (Data.Status = fs_New) then
     begin
@@ -729,10 +738,10 @@ begin
     end;
 
     if PreviousStatus <> Data.Status then
-      RFAList.InvalidateNode(FSyncNode);
+      RFAList.InvalidateNode(Node);
   end;
-
 end;
+
 
 
 function TRFAViewForm.CreateNew(Filename : string = ''): boolean;
@@ -1011,10 +1020,14 @@ var
   TmpArchive : TRFAFile;
   TmpFilename : string;
 begin
+  SyncStop;
+  SyncAll;
   Result := false;
 
   if Assigned(FArchive) and (FArchive.Filepath = Path) and not Defrag then
   begin
+    TotalProgress(roBegin, 0, RFAList.TotalCount*3);
+
     /// Step-1 : First delete entries
     Node := RFAList.GetFirst;
     while Node <> nil do
@@ -1029,11 +1042,12 @@ begin
         RFAList.DeleteNode(Node);
       end;
 
+      TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
       Node := NextNode;
     end;
 
     /// Step-2 : Update edited files
-    ModifCheck;
+
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
@@ -1070,6 +1084,7 @@ begin
         RFAList.InvalidateNode(Node);
       end;
 
+      TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
       Node := NextNode;
     end;
 
@@ -1102,14 +1117,17 @@ begin
         RFAList.InvalidateNode(Node);
       end;
 
+      TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
       Node := NextNode;
     end;
 
+    TotalProgress(roEnd, PG_NULL, PG_NULL);
     Result := true;
   end
     else
   begin
     TmpArchive := TRFAFile.Create;
+    TmpArchive.OnProgress := SubProgress;
 
     if Assigned(FArchive) and Defrag then
     begin
@@ -1121,6 +1139,8 @@ begin
     else
       TmpArchive.New(Path);
 
+    TotalProgress(roBegin, 0, RFAList.TotalCount*3);
+
     /// Step-1 : Add same files without lost data
     Node := RFAList.GetFirst;
     while Node <> nil do
@@ -1130,7 +1150,7 @@ begin
 
       if (Data.Status = fs_No_Change) and IsFile(Data.FileType) then
       begin
-        SendDebugFmt('File %s exported',[Data.W32Name]);
+        //SendDebugFmt('File %s exported',[Data.W32Name]);
         InternalFile := TMemoryStream.Create;
         ExportFile(Node, InternalFile);
         Size := InternalFile.Size;
@@ -1139,11 +1159,11 @@ begin
         TmpArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
       end;
 
+      TotalProgress(roSave, PG_AUTO, PG_SAME);
       Node := NextNode;
     end;
 
     /// Step-2 : Add edited files
-    ModifCheck;
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
@@ -1154,11 +1174,12 @@ begin
       begin
         ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
         Size := ExternalFile.Size;
-        InsertResult := FArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+        InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
         ExternalFile.Free;
-        FArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+        TmpArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
       end;
 
+      TotalProgress(roSave, PG_AUTO, PG_SAME);
       Node := NextNode;
     end;
 
@@ -1173,15 +1194,19 @@ begin
       begin
         ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
         Size := ExternalFile.Size;
-        InsertResult := FArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+        InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
         ExternalFile.Free;
 
         Data.BF42FullName := BuildFullPathFromTree(Node); // a drag/drop can change this value
-        FArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+        TmpArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
       end;
 
+      TotalProgress(roSave, PG_AUTO, PG_SAME);
       Node := NextNode;
     end;
+
+    TotalProgress(roEnd, PG_NULL, PG_NULL);
+    Result := true;
 
     TmpArchive.Free;
 
@@ -1196,6 +1221,7 @@ begin
     QuickOpen.Execute;
   end;
 
+  SyncStart;
 end;
 
 procedure TRFAViewForm.RebuildRecentListExecute(Sender: TObject);
@@ -1221,6 +1247,29 @@ begin
 end;
 
 
+procedure TRFAViewForm.SyncAll;
+var
+  Node : PVirtualNode;
+begin
+  Node := RFAList.GetFirst;
+  while Node <> nil do
+  begin
+    CheckStatus(Node);
+    Node := RFAList.GetNext(Node, true);
+  end;
+end;
+
+procedure TRFAViewForm.SyncStart;
+begin
+  FSyncNode := nil;
+  Sync.Enabled := true;
+end;
+
+procedure TRFAViewForm.SyncStop;
+begin
+  Sync.Enabled := false;
+end;
+
 procedure TRFAViewForm.SyncTimer(Sender: TObject);
 var
   i, Count : integer;
@@ -1232,12 +1281,18 @@ begin
     Count := Max(1, FArchive.Count div 100);
 
     for i := 0 to Count - 1 do
-      ModifCheck;
+    begin
+      if (FSyncNode = nil) then
+        FSyncNode := RFAList.GetFirst
+      else
+        FSyncNode := RFAList.GetNext(FSyncNode, true);
+
+      CheckStatus(FSyncNode);
+    end;
 
     Sync.Enabled := true;
   end;
 end;
-
 
 function TRFAViewForm.FindFileByName(Filename: string): PVirtualNode;
 var
@@ -1281,17 +1336,11 @@ end;
 
 
 procedure TRFAViewForm.PackDirectoryExecute(Sender: TObject);
-var
-  FileList : TStringList;
 begin
   if Browse.Execute then
   begin
     Reset;
-    Browse.Directory := IncludeTrailingPathDelimiter(Browse.Directory);
-    FileList := TStringList.Create;
-    BuildFileList(Browse.Directory+'*', faAnyFile - faHidden, FileList);
-    Add(RFAList.RootNode, FileList, Browse.Directory);
-    FileList.Free;
+    Add(RFAList.RootNode, nil, Browse.Directory);
   end;
 end;
 
@@ -1321,8 +1370,7 @@ var
 begin
   if Browse.Execute then
   begin
-    //Browse.Directory;
-
+    TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);
     Node := RFAList.GetFirstSelected;
     while Node <> nil do
     begin
@@ -1340,8 +1388,10 @@ begin
         ExternFile.Free;
       end;
 
+      TotalProgress(roExport, PG_AUTO, RFAList.SelectedCount);
       Node := RFAList.GetNextSelected(Node);
     end;
+    TotalProgress(roEnd, PG_NULL, PG_NULL);
   end;
 end;
 
@@ -1447,21 +1497,17 @@ var
   Node: PVirtualNode;
   Data : pFse;
   Sender: TBaseVirtualTree;
-  SubList: TStringList;
-begin
-  Sender := RFAList;
-  List.Sort;
 
-  if Path <> EmptyStr then
-    Path := IncludeTrailingPathDelimiter(Path);
-
-  for i := 0 to List.Count - 1 do
-    if IsDirectory(Path + List[i]) then
+  procedure AddFolder(Filename : string);
+  var
+    SubList: TStringList;
+  begin
+    if IsDirectory(Filename) then
     begin
       Node := Sender.AddChild(MainNode);
       Data := Sender.GetNodeData(Node);
-      Data.W32Path := Path + List[i];
-      Data.W32Name := ExtractFileName(List[i]);
+      Data.W32Path := Filename;
+      Data.W32Name := ExtractFileName(Filename);
       Data.FileType := ftFolder;
 
       SubList := TStringList.Create;
@@ -1469,20 +1515,44 @@ begin
       Add(Node, SubList, Data.W32Path);
       SubList.Free;
     end;
+  end;
 
-  for i := 0 to List.Count - 1 do
-    if not IsDirectory(Path + List[i]) then
+  procedure AddFile(Filename : string);
+  begin
+    if not IsDirectory(Filename) then
     begin
       Node := Sender.AddChild(MainNode);
       Data := Sender.GetNodeData(Node);
-      Data.W32Path := Path + List[i];
-      Data.W32Name := ExtractFileName(List[i]);
+      Data.W32Path := Filename;
+      Data.W32Name := ExtractFileName(Filename);
       Data.ExternalFilePath := Data.W32Path;
       Data.Size := FileGetSize(Data.W32Path);
       Data.FileType := ftFile;
       Data.Status := fs_New;
     end;
+  end;
 
+begin
+  Sender := RFAList;
+
+  if Assigned(List) then
+  begin
+    if Path <> EmptyStr then
+      Path := IncludeTrailingPathDelimiter(Path);
+
+    List.Sort;
+
+    for i := 0 to List.Count - 1 do
+      AddFolder(Path + List[i]);
+
+    for i := 0 to List.Count - 1 do
+      AddFile(Path + List[i]);
+  end
+    else
+  begin
+    AddFolder(Path);
+    AddFile(Path);
+  end;
 end;
 
 
@@ -1583,6 +1653,7 @@ begin
 end;
 
 
+
 procedure TRFAViewForm.CloseSearchBarExecute(Sender: TObject);
 begin
   SearchBar.Hide;
@@ -1600,6 +1671,68 @@ procedure TRFAViewForm.SearchChange(Sender: TObject);
 begin
   SearchText := Search.Text;
 end;
+
+procedure TRFAViewForm.SubProgress(Sender: TRFAFile; Operation: TRFAOperation; Value: Integer);
+begin
+  if Operation = roBegin then
+  begin
+    SubProgressBar.Position := 0;
+    SubProgressBar.Max := Value;
+  end
+    else
+  begin
+    if Value = PG_AUTO then
+      SubProgressBar.Position := SubProgressBar.Position+1
+    else
+      SubProgressBar.Position := Value;
+  end;
+
+  Application.ProcessMessages;
+end;
+
+
+procedure TRFAViewForm.TotalProgress(Operation: TRFAOperation; Value: Integer; Max:integer);
+begin
+  if TotalProgressLabel.Tag <> Ord(Operation) then
+  begin
+
+    case Operation of
+      roLoad: TotalProgressLabel.Caption := 'Loading';
+      roSave: TotalProgressLabel.Caption := 'Saving';
+      roExport: TotalProgressLabel.Caption := 'Exporting';
+        else
+      TotalProgressLabel.Caption := EmptyStr;
+    end;
+
+    TotalProgressLabel.Tag := Ord(Operation);
+  end;
+
+  if Operation = roBegin then
+  begin
+    ProgressPanel.Show;
+    TotalProgressBar.Position := 0;
+    TotalProgressBar.Max := Max;
+    //SubProgressBar.Position := 0;
+  end
+    else
+  if Operation = roEnd then
+  begin
+    ProgressPanel.Hide;
+  end
+    else
+  begin
+    if Max <> PG_SAME then
+      TotalProgressBar.Max := Max;
+
+    if Value = PG_AUTO then
+      TotalProgressBar.Position := TotalProgressBar.Position+1
+    else
+      TotalProgressBar.Position := Value;
+  end;
+
+  Application.ProcessMessages;
+end;
+
 
 procedure TRFAViewForm.RFAListDblClick(Sender: TObject);
 begin
@@ -1893,6 +2026,7 @@ procedure TRFAViewForm.Sort;
 begin
   RFAList.SortTree(0, sdAscending);
 end;
+
 
 procedure TRFAViewForm.UpdateReply(Sender: TObject; Result: TUpdateResult);
 begin

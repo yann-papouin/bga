@@ -3,9 +3,11 @@ object RFAViewForm: TRFAViewForm
   Top = 0
   ActiveControl = RFAList
   Caption = 'RFA View'
-  ClientHeight = 502
-  ClientWidth = 699
+  ClientHeight = 453
+  ClientWidth = 632
   Color = clBtnFace
+  Constraints.MinHeight = 480
+  Constraints.MinWidth = 640
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -22,8 +24,8 @@ object RFAViewForm: TRFAViewForm
   object RFAList: TVirtualStringTree
     Left = 0
     Top = 23
-    Width = 699
-    Height = 377
+    Width = 632
+    Height = 341
     Align = alClient
     DragMode = dmAutomatic
     DragOperations = [doMove]
@@ -52,6 +54,7 @@ object RFAViewForm: TRFAViewForm
     OnGetNodeDataSize = RFAListGetNodeDataSize
     OnKeyAction = RFAListKeyAction
     OnStartDrag = RFAListStartDrag
+    ExplicitHeight = 313
     Columns = <
       item
         MinWidth = 300
@@ -80,60 +83,20 @@ object RFAViewForm: TRFAViewForm
       item
         Alignment = taRightJustify
         Position = 4
-        Width = 92
+        Width = 25
         WideText = 'Offset'
       end>
   end
-  object LoadBar: TSpTBXPanel
-    Left = 0
-    Top = 435
-    Width = 699
-    Height = 41
-    Caption = 'LoadBar'
-    Align = alBottom
-    TabOrder = 1
-    Visible = False
-    Borders = False
-    object TotalProgress: TSpTBXProgressBar
-      AlignWithMargins = True
-      Left = 83
-      Top = 10
-      Width = 613
-      Height = 21
-      Margins.Top = 10
-      Margins.Bottom = 10
-      Caption = '0%'
-      Color = clBtnFace
-      Align = alClient
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-      ParentFont = False
-      CaptionGlow = gldNone
-    end
-    object TotalProgressLabel: TSpTBXLabel
-      AlignWithMargins = True
-      Left = 3
-      Top = 3
-      Width = 74
-      Height = 35
-      Caption = 'Load progress'
-      Align = alLeft
-      Alignment = taRightJustify
-    end
-  end
   object StatusBar: TSpTBXStatusBar
     Left = 0
-    Top = 476
-    Width = 699
+    Top = 427
+    Width = 632
     Height = 26
   end
   object TopDock: TSpTBXDock
     Left = 0
     Top = 0
-    Width = 699
+    Width = 632
     Height = 23
     object tbMenuBar: TSpTBXToolbar
       Left = 0
@@ -229,11 +192,74 @@ object RFAViewForm: TRFAViewForm
       end
     end
   end
+  object ProgressPanel: TSpTBXPanel
+    Left = 0
+    Top = 364
+    Width = 632
+    Height = 28
+    Caption = 'LoadBar'
+    Align = alBottom
+    TabOrder = 3
+    Visible = False
+    Borders = False
+    object SubProgressBar: TSpTBXProgressBar
+      AlignWithMargins = True
+      Left = 456
+      Top = 5
+      Width = 168
+      Height = 18
+      Margins.Top = 5
+      Margins.Right = 8
+      Margins.Bottom = 5
+      Color = clBtnFace
+      Align = alRight
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      CaptionGlow = gldNone
+      CaptionType = pctNone
+    end
+    object TotalProgressBar: TSpTBXProgressBar
+      AlignWithMargins = True
+      Left = 67
+      Top = 5
+      Width = 378
+      Height = 18
+      Margins.Top = 5
+      Margins.Right = 8
+      Margins.Bottom = 5
+      Color = clBtnFace
+      Align = alClient
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentFont = False
+      CaptionGlow = gldNone
+      CaptionType = pctNone
+      ExplicitLeft = 119
+      ExplicitWidth = 505
+    end
+    object TotalProgressLabel: TSpTBXLabel
+      AlignWithMargins = True
+      Left = 8
+      Top = 3
+      Width = 53
+      Height = 22
+      Margins.Left = 8
+      Caption = 'Progress'
+      Align = alLeft
+    end
+  end
   object SearchBar: TSpTBXPanel
     AlignWithMargins = True
     Left = 0
-    Top = 400
-    Width = 699
+    Top = 392
+    Width = 632
     Height = 35
     Margins.Left = 0
     Margins.Top = 0
@@ -251,7 +277,7 @@ object RFAViewForm: TRFAViewForm
     object Search: TSpTBXEdit
       Left = 80
       Top = 7
-      Width = 612
+      Width = 545
       Height = 21
       Align = alClient
       TabOrder = 0

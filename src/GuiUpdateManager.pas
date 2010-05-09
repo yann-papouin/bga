@@ -126,7 +126,7 @@ begin
   HtmlDoc.Active := false;
   HtmlDoc.Free;
 
-  for i:= 0 to Entries.Count-1 do
+  for i:= Entries.Count-1 to 0 do
   begin
     UpdateEntry := Entries[i];
     Revision := SFRight('BGA_rev_', UpdateEntry.link);

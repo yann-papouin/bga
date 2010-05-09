@@ -23,16 +23,19 @@ unit RFALib;
 interface
 
 {.$DEFINE DEBUG_RFA}
+{$DEFINE USE_BUFFER}
 
 uses
   DbugIntf, Windows, Classes, SysUtils, Contnrs;
 
 type
+
   TRFAOperation =
   (
     roBegin,
     roEnd,
     roLoad,
+    roSave,
     roInsert,
     roCompress,
     roExport,
@@ -42,8 +45,8 @@ type
 
   TRFAFile = class;
 
-  TRFAReadEntry = procedure(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
-  TRFAProgress = procedure(Sender : TRFAFile; Operation : TRFAOperation; Value : Integer = 0);
+  TRFAReadEntry = procedure(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer) of object;
+  TRFAProgress = procedure(Sender : TRFAFile; Operation : TRFAOperation; Value : Integer) of object;
 
   TRFAResult = record
     offset : integer;
@@ -84,7 +87,6 @@ type
 
     procedure DecompressToStream(outputstream: TStream; Offset, Size: int64; silent: boolean = true);
     procedure ExtractToStream(Data: TStream; Offset, Size, UcSize: int64);
-    procedure CopyToStream(Data: TStream; Offset, Size: int64);
 
     function DeleteFile(Offset : int64; Size : int64) : TRFAResult;
     function DeleteEntry(FullPath : AnsiString) : TRFAResult;
@@ -102,7 +104,12 @@ type
     property OnProgress: TRFAProgress read FOnProgress write SetOnProgress;
   end;
 
+
 const
+  PG_NULL = 0;
+  PG_DEFAULT = -1;
+  PG_SAME = -2;
+  PG_AUTO = -3;
   NORMAL_DATA = false;
   COMPRESSED_DATA = true;
 
@@ -115,6 +122,7 @@ const
   HEADER_SIZE = 28;
   ENTRY_SIZE = 24;
   DWORD_SIZE = 4;
+  INIT_DATA_SIZE = $9C;
   SEGMENT_HEADER_SIZE = DWORD_SIZE*3;
   BUFFER_SIZE = 8192;
   SEGMENT_MAX_SIZE = 32768;
@@ -246,14 +254,18 @@ begin
   Release;
 
   FHandle := TFileStream.Create(Filename, fmOpenReadWrite or fmCreate);
-  FHandle.Size := 0;
+  FHandle.Size := INIT_DATA_SIZE + DWORD_SIZE;
   if Assigned(FHandle) then
   begin
-    Value := 0;
-    FHandle.Write(Value, DWORD_SIZE);
-    FHandle.Write(Value, DWORD_SIZE);
+    DataSize := INIT_DATA_SIZE;
+    ElementQuantity := 0;
+
     Result := 0;
     FFilepath := Filename;
+
+    {$IfDef DEBUG_RFA}
+    SendDebugFmt('New RFA (%s) = %d bytes',[FFilepath, FHandle.Size]);
+    {$EndIf}
   end;
 end;
 
@@ -263,7 +275,7 @@ function TRFAFile.Open(Filename: string): integer;
 var
   ENT: RFA_Entry;
   Path: AnsiString;
-  NumE, i: integer;
+  i: integer;
   Position : integer;
   IsRetail: boolean;
 begin
@@ -285,17 +297,16 @@ begin
 
   if Assigned(FHandle) then
   begin
-
     IsRetail := ReadHeader;
-    NumE := ElementQuantity;
+    FCount := ElementQuantity;
 
-    if NumE > 65535 then
-      raise Exception.Create('NumE seems too high');
+    if FCount > 65535 then
+      raise Exception.Create('File Count seems too high');
 
     if Assigned(FOnProgress) then
-      FOnProgress(Self, roBegin, FHandle.Size - FHandle.Position);
+      FOnProgress(Self, roBegin, FHandle.Size);
 
-    for i:= 1 to NumE do
+    for i:= 1 to FCount do
     begin
       Position := FHandle.Position;
 
@@ -322,12 +333,10 @@ begin
       end;
     end;
 
-
     if Assigned(FOnProgress) then
-      FOnProgress(Self, roEnd);
+      FOnProgress(Self, roEnd, 0);
 
     Result := 0;
-    FCount := NumE;
     FFilepath := Filename;
   end;
 
@@ -372,6 +381,9 @@ end;
 function TRFAFile.InsertData(Data: TStream; Offset: Int64): TRFAResult;
 var
   Buf : TMemoryStream;
+  {$IfDef USE_BUFFER}
+  i, BufferCount, FlakedBuffer: Integer;
+  {$EndIf}
 begin
   Buf := TMemoryStream.Create;
 
@@ -385,14 +397,49 @@ begin
   // Expand current archive
   FHandle.Size := FHandle.Size + Data.Size;
 
+  if Assigned(FOnProgress) then
+    FOnProgress(Self, roBegin, Data.Size + Buf.Size);
+
   // Write the new data
   Data.Seek(0, soBeginning);
   FHandle.Position := Offset;
-  FHandle.CopyFrom(Data, Data.Size);
+  {$IfDef USE_BUFFER}
+    BufferCount := Data.Size div BUFFER_SIZE;
+    FlakedBuffer := Data.Size mod BUFFER_SIZE;
+
+    for i := 1 to BufferCount do
+    begin
+      FHandle.CopyFrom(Data, BUFFER_SIZE);
+
+      if Assigned(FOnProgress) then
+        FOnProgress(Self, roInsert, Data.Position);
+    end;
+    FHandle.CopyFrom(Data, FlakedBuffer);
+  {$Else}
+    FHandle.CopyFrom(Data, Data.Size);
+  {$EndIf}
 
   // Write back shifted data
   Buf.Seek(0, soBeginning);
-  FHandle.CopyFrom(Buf, Buf.Size);
+  {$IfDef USE_BUFFER}
+    BufferCount := Buf.Size div BUFFER_SIZE;
+    FlakedBuffer := Buf.Size mod BUFFER_SIZE;
+
+    for i := 1 to BufferCount do
+    begin
+      FHandle.CopyFrom(Buf, BUFFER_SIZE);
+
+      if Assigned(FOnProgress) then
+        FOnProgress(Self, roInsert, Data.Position + Buf.Position);
+    end;
+    FHandle.CopyFrom(Buf, FlakedBuffer);
+  {$Else}
+    FHandle.CopyFrom(Buf, Buf.Size);
+  {$EndIf}
+
+  if Assigned(FOnProgress) then
+    FOnProgress(Self, roEnd, 0);
+
   Buf.Free;
 
   // The result is the offset position of the file and its size
@@ -410,9 +457,12 @@ var
   RemainingSize : integer;
   CompressedSize : cardinal;
   LzoResult : integer;
-  SegmentCounter : integer;
+  SegmentCounter : longword;
   Buf : TMemoryStream;
   PreviousPos : integer;
+  {$IfDef USE_BUFFER}
+  i, BufferCount, FlakedBuffer: Integer;
+  {$EndIf}
 begin
 
   SegmentCounter := 0;
@@ -434,6 +484,8 @@ begin
   GetMem(OBuff, SEGMENT_MAX_SIZE + SEGMENT_MAX_SIZE div 64 + 16 + 3);
   GetMem(WBuff, LZO1X_1_MEM_COMPRESS);
 
+  if Assigned(FOnProgress) then
+    FOnProgress(Self, roBegin, Data.Size);
 
   while True do
   begin
@@ -473,6 +525,9 @@ begin
       SegmentHeader.Write(DataH.doffset,DWORD_SIZE);
     end;
 
+    if Assigned(FOnProgress) then
+      FOnProgress(Self, roCompress, Data.Position);
+
     if (Data.Size = Data.Position) then
     begin
       SegmentHeader.Position := 0;
@@ -480,6 +535,9 @@ begin
       Break;
     end;
   end;
+
+  if Assigned(FOnProgress) then
+    FOnProgress(Self, roEnd, 0);
 
   FreeMem(WBuff); WBuff:= nil;
   FreeMem(OBuff); OBuff:= nil;
@@ -502,12 +560,48 @@ begin
   SegmentData.Seek(0, soBeginning);
   FHandle.Position := Offset;
   FHandle.CopyFrom(SegmentHeader, SegmentHeader.Size);
-  FHandle.CopyFrom(SegmentData, SegmentData.Size);
+
+  if Assigned(FOnProgress) then
+    FOnProgress(Self, roBegin, SegmentData.Size+Buf.Size);
+
+  {$IfDef USE_BUFFER}
+    BufferCount := SegmentData.Size div BUFFER_SIZE;
+    FlakedBuffer := SegmentData.Size mod BUFFER_SIZE;
+
+    for i := 1 to BufferCount do
+    begin
+      FHandle.CopyFrom(SegmentData, BUFFER_SIZE);
+
+      if Assigned(FOnProgress) then
+        FOnProgress(Self, roCompress, SegmentData.Position);
+    end;
+    FHandle.CopyFrom(SegmentData, FlakedBuffer);
+  {$Else}
+    FHandle.CopyFrom(SegmentData, SegmentData.Size);
+  {$EndIf}
 
   // Write back shifted data
   Buf.Seek(0, soBeginning);
-  FHandle.CopyFrom(Buf, Buf.Size);
+  {$IfDef USE_BUFFER}
+    BufferCount := Buf.Size div BUFFER_SIZE;
+    FlakedBuffer := Buf.Size mod BUFFER_SIZE;
+
+    for i := 1 to BufferCount do
+    begin
+      FHandle.CopyFrom(Buf, BUFFER_SIZE);
+
+      if Assigned(FOnProgress) then
+        FOnProgress(Self, roCompress, SegmentData.Position + Buf.Position);
+    end;
+    FHandle.CopyFrom(Buf, FlakedBuffer);
+  {$Else}
+    FHandle.CopyFrom(Buf, Buf.Size);
+  {$EndIf}
+
   Buf.Free;
+
+  if Assigned(FOnProgress) then
+    FOnProgress(Self, roEnd, 0);
 
   // The result is the offset position of the file and its size
   Result.offset := Offset;
@@ -542,6 +636,8 @@ var
   DataH: array of RFA_DataHeader;
   i, Segments: longword;
 begin
+  Assert(Assigned(outputstream));
+
   // Reinit variables;
   SetLength(DataH,0);
   Segments := 0;
@@ -552,11 +648,17 @@ begin
   FHandle.Seek(offset,0);
   FHandle.Read(segments,DWORD_SIZE);
 
+  if segments > 1024 then
+    raise Exception.Create('Segment Count seems too high');
+
   // Creating as much as Data header than segments
   {$IfDef DEBUG_RFA}
   SendDebugFmt('Setting DataH length to %d', [Segments]);
   {$EndIf}
   SetLength(DataH,Segments);
+
+  if Assigned(FOnProgress) then
+    FOnProgress(Self, roBegin, (Segments-1)*2);
 
   // Filling each header with usable values
   for i := 0 to Segments-1 do
@@ -569,12 +671,16 @@ begin
     SendDebugFmt('DecompressRFAToStream::FHandle.Position = %d', [FHandle.Position]);
     SendDebugFmt('DecompressRFAToStream::Segment No_%d (%d)(%d)(%d)', [i, DataH[i].csize, DataH[i].ucsize, DataH[i].doffset]);
     {$EndIf}
-  end;
 
+    if Assigned(FOnProgress) then
+      FOnProgress(Self, roDecompress, PG_AUTO);
+  end;
 
   {$IfDef DEBUG_RFA}
   SendDebugFmt('DecompressRFAToStream::Start', []);
   {$EndIf}
+
+
   for i := 0 to Segments-1 do
   begin
 
@@ -602,53 +708,52 @@ begin
     outputstream.WriteBuffer(OBuff^, DataH[i].ucsize);
     FreeMem(SBuff);
     FreeMem(OBuff);
+
+    if Assigned(FOnProgress) then
+      FOnProgress(Self, roDecompress, PG_AUTO);
   end;
 
+  if Assigned(FOnProgress) then
+    FOnProgress(Self, roEnd, 0);
 end;
 
 procedure TRFAFile.ExtractToStream(Data: TStream; Offset, Size, UcSize: int64);
 var
   Buffer : TMemoryStream;
+  {$IfDef USE_BUFFER}
+  i, BufferCount, FlakedBuffer: Integer;
+  {$EndIf}
 begin
+  Assert(Assigned(Data));
+
+  BufferCount := Size div BUFFER_SIZE;
+  FlakedBuffer := Size mod BUFFER_SIZE;
 
   Buffer := TMemoryStream.Create;
-
   Buffer.Size := Size;
-
   Buffer.Seek(0, soFromBeginning);
+  //Data.Seek(0, soFromBeginning);
   FHandle.Seek(Offset, soFromBeginning);
 
-  Buffer.CopyFrom(FHandle, Size);
+  {$IfDef USE_BUFFER}
+    for i := 1 to BufferCount do
+    begin
+      Buffer.CopyFrom(FHandle, BUFFER_SIZE);
+    end;
+    Buffer.CopyFrom(FHandle, FlakedBuffer);
+  {$Else}
+    Buffer.CopyFrom(FHandle, Size);
+  {$EndIf}
+
   Buffer.Seek(0, soFromBeginning);
 
   {$IfDef DEBUG_RFA}
   SendDebugFmt('Buffer size = %d',[Buffer.Size]);
   {$EndIf}
-  Buffer.SaveToStream(Data);
 
+  Buffer.SaveToStream(Data);
   Buffer.Free;
 end;
-
-
-//  Same as ExtractRFAToStream but with a buffer
-procedure TRFAFile.CopyToStream(Data: TStream; Offset, Size: int64);
-var
-  i,numbuf, Restbuf: Integer;
-begin
-  FHandle.Seek(Offset, 0);
-  numbuf := Size div BUFFER_SIZE;
-  Restbuf := Size mod BUFFER_SIZE;
-
-  Data.Seek(0,soFromBeginning);
-
-  for i := 1 to numbuf do
-  begin
-    Data.CopyFrom(FHandle, BUFFER_SIZE);
-  end;
-
-  Data.CopyFrom(FHandle, Restbuf);
-end;
-
 
 
 function TRFAFile.DeleteFile(Offset, Size: int64): TRFAResult;
@@ -782,6 +887,7 @@ begin
     Result := InsertData(Data, CurrentSize);
   end;
 
+  Assert(Result.offset <> 0);
   DataSize := CurrentSize + Result.size;
 end;
 
