@@ -54,8 +54,6 @@ object RFAViewForm: TRFAViewForm
     OnGetNodeDataSize = RFAListGetNodeDataSize
     OnKeyAction = RFAListKeyAction
     OnStartDrag = RFAListStartDrag
-    ExplicitTop = 20
-    ExplicitHeight = 337
     Columns = <
       item
         MinWidth = 300
@@ -100,6 +98,11 @@ object RFAViewForm: TRFAViewForm
     end
     object Fragmentation: TSpTBXLabelItem
       Caption = 'Fragmentation'
+    end
+    object SpTBXSeparatorItem5: TSpTBXSeparatorItem
+    end
+    object ArchiveFileCount: TSpTBXLabelItem
+      Caption = 'ArchiveFileCount'
     end
   end
   object TopDock: TSpTBXDock
@@ -211,7 +214,6 @@ object RFAViewForm: TRFAViewForm
     TabOrder = 3
     Visible = False
     Borders = False
-    ExplicitTop = 360
     object SubProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
       Left = 370
@@ -232,8 +234,6 @@ object RFAViewForm: TRFAViewForm
       CaptionGlow = gldNone
       CaptionType = pctNone
       Smooth = True
-      ExplicitLeft = 456
-      ExplicitTop = 5
     end
     object TotalProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
@@ -255,8 +255,6 @@ object RFAViewForm: TRFAViewForm
       CaptionGlow = gldNone
       CaptionType = pctNone
       Smooth = True
-      ExplicitTop = 5
-      ExplicitWidth = 378
     end
     object TotalProgressLabel: TSpTBXLabel
       AlignWithMargins = True
@@ -267,7 +265,6 @@ object RFAViewForm: TRFAViewForm
       Margins.Left = 8
       Caption = 'Progress'
       Align = alLeft
-      ExplicitHeight = 22
     end
     object SpTBXButton2: TSpTBXButton
       AlignWithMargins = True
@@ -283,7 +280,6 @@ object RFAViewForm: TRFAViewForm
       TabOrder = 3
       Images = ExplorerImg
       ImageIndex = 85
-      ExplicitTop = 3
     end
   end
   object SearchBar: TSpTBXPanel
@@ -305,7 +301,6 @@ object RFAViewForm: TRFAViewForm
     TabOrder = 4
     Visible = False
     Borders = False
-    ExplicitTop = 392
     object Search: TSpTBXEdit
       Left = 80
       Top = 7
@@ -315,8 +310,6 @@ object RFAViewForm: TRFAViewForm
       TabOrder = 0
       Text = '*.*'
       OnChange = SearchChange
-      ExplicitLeft = 83
-      ExplicitTop = 8
     end
     object SpTBXLabel1: TSpTBXLabel
       AlignWithMargins = True
@@ -33486,6 +33479,7 @@ object RFAViewForm: TRFAViewForm
     object Defrag: TAction
       Caption = 'Save and defrag'
       ImageIndex = 88
+      ShortCut = 49235
       OnExecute = DefragExecute
     end
     object New: TAction
