@@ -159,6 +159,8 @@ type
     Fragmentation: TSpTBXLabelItem;
     SpTBXSeparatorItem4: TSpTBXSeparatorItem;
     ArchiveSize: TSpTBXLabelItem;
+    SpTBXSeparatorItem5: TSpTBXSeparatorItem;
+    ArchiveFileCount: TSpTBXLabelItem;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -731,11 +733,15 @@ begin
 
     Fragmentation.Visible := true;
     Fragmentation.Caption := Format('Fragmentation = %s',[SizeToStr(FArchive.Fragmentation)]);
+
+    ArchiveFileCount.Visible := true;
+    ArchiveFileCount.Caption := Format('%d file(s)',[FArchive.Count]);
   end
     else
   begin
     ArchiveSize.Visible := false;
     Fragmentation.Visible := false;
+    ArchiveFileCount.Visible := false;
   end;
 end;
 
