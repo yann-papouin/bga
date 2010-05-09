@@ -805,13 +805,14 @@ begin
     Offset := FHandle.Position;
     Path := StringFrom(FHandle);
     FHandle.Read(ENT, ENTRY_SIZE);
-    FIndexedDataSize := FIndexedDataSize - ENT.csize;
+
     Size := FHandle.Position - Offset;
 
     if Path = FullPath then
     begin
       DataOffset := ENT.offset;
       DataSize := ENT.csize;
+      FIndexedDataSize := FIndexedDataSize - ENT.csize;
       Break;
     end;
 
@@ -819,11 +820,13 @@ begin
       raise Exception.Create('Path not found');
   end;
 
-  // Delete this entry
-  Result := DeleteData(Offset, Size);
-  ElementQuantity := ElementQuantity-1;
-
-  FCount := ElementQuantity;
+  // Delete this entry if data found
+  if DataSize > 0 then
+  begin
+    Result := DeleteData(Offset, Size);
+    ElementQuantity := ElementQuantity-1;
+    FCount := ElementQuantity;
+  end;
 end;
 
 procedure TRFAFile.InsertEntry(FullPath: AnsiString; Offset, Size, cSize: Int64; Index: Cardinal);
