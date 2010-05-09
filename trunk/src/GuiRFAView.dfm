@@ -25,7 +25,7 @@ object RFAViewForm: TRFAViewForm
     Left = 0
     Top = 23
     Width = 632
-    Height = 337
+    Height = 340
     Align = alClient
     DragMode = dmAutomatic
     DragOperations = [doMove]
@@ -55,6 +55,7 @@ object RFAViewForm: TRFAViewForm
     OnKeyAction = RFAListKeyAction
     OnStartDrag = RFAListStartDrag
     ExplicitTop = 20
+    ExplicitHeight = 337
     Columns = <
       item
         MinWidth = 300
@@ -89,9 +90,17 @@ object RFAViewForm: TRFAViewForm
   end
   object StatusBar: TSpTBXStatusBar
     Left = 0
-    Top = 427
+    Top = 430
     Width = 632
-    Height = 26
+    Height = 23
+    object ArchiveSize: TSpTBXLabelItem
+      Caption = 'ArchiveSize'
+    end
+    object SpTBXSeparatorItem4: TSpTBXSeparatorItem
+    end
+    object Fragmentation: TSpTBXLabelItem
+      Caption = 'Fragmentation'
+    end
   end
   object TopDock: TSpTBXDock
     Left = 0
@@ -194,7 +203,7 @@ object RFAViewForm: TRFAViewForm
   end
   object ProgressPanel: TSpTBXPanel
     Left = 0
-    Top = 360
+    Top = 363
     Width = 632
     Height = 32
     Caption = 'LoadBar'
@@ -202,6 +211,7 @@ object RFAViewForm: TRFAViewForm
     TabOrder = 3
     Visible = False
     Borders = False
+    ExplicitTop = 360
     object SubProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
       Left = 370
@@ -279,7 +289,7 @@ object RFAViewForm: TRFAViewForm
   object SearchBar: TSpTBXPanel
     AlignWithMargins = True
     Left = 0
-    Top = 392
+    Top = 395
     Width = 632
     Height = 35
     Margins.Left = 0
@@ -295,6 +305,7 @@ object RFAViewForm: TRFAViewForm
     TabOrder = 4
     Visible = False
     Borders = False
+    ExplicitTop = 392
     object Search: TSpTBXEdit
       Left = 80
       Top = 7

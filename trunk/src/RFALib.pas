@@ -22,7 +22,7 @@ unit RFALib;
 
 interface
 
-{.$DEFINE DEBUG_RFA}
+{$DEFINE DEBUG_RFA}
 {$DEFINE USE_BUFFER}
 
 uses
@@ -62,6 +62,7 @@ type
     FFilepath: string;
     FCount: integer;
     FOnProgress: TRFAProgress;
+    FIndexedDataSize: integer;
     procedure SetOnReadEntry(const Value: TRFAReadEntry);
 
     function ReadHeader : boolean;
@@ -72,6 +73,7 @@ type
 
     procedure Release;
     procedure SetOnProgress(const Value: TRFAProgress);
+    function GetFragmentation: Integer;
   protected
     function DeleteData(Buf : TMemoryStream; Offset : int64; Size : int64) : TRFAResult; overload;
     function DeleteData(Offset : int64; Size : int64) : TRFAResult; overload;
@@ -100,6 +102,9 @@ type
     property Filepath : string read FFilepath;
     property Count : integer read FCount;
 
+    property IndexedDataSize : Integer read FIndexedDataSize;
+    property Fragmentation : Integer read GetFragmentation;
+
     property OnReadEntry: TRFAReadEntry read FOnReadEntry write SetOnReadEntry;
     property OnProgress: TRFAProgress read FOnProgress write SetOnProgress;
   end;
@@ -119,6 +124,8 @@ uses
   Math, CommonLib, MiniLZO;
 
 const
+  MAX_FILE_COUNT = 65535;
+  MAX_SEGMENT_COUNT = 1024;
   HEADER_SIZE = 28;
   ENTRY_SIZE = 24;
   DWORD_SIZE = 4;
@@ -241,6 +248,7 @@ begin
     FHandle.Free;
 
   FHandle := nil;
+  FIndexedDataSize := 0;
   FCount := 0;
   FFilepath := EmptyStr;
 end;
@@ -299,8 +307,9 @@ begin
   begin
     IsRetail := ReadHeader;
     FCount := ElementQuantity;
+    FIndexedDataSize := 0;
 
-    if FCount > 65535 then
+    if FCount > MAX_FILE_COUNT then
       raise Exception.Create('File Count seems too high');
 
     if Assigned(FOnProgress) then
@@ -312,6 +321,8 @@ begin
 
       Path := StringFrom(FHandle);      // Read entire Path\Filename
       FHandle.Read(ENT, ENTRY_SIZE);    // Read rfa entry data (24 bytes);
+
+      FIndexedDataSize := FIndexedDataSize + ENT.csize;
 
       if Assigned(FOnProgress) then
         FOnProgress(Self, roLoad, FHandle.Position);
@@ -648,7 +659,7 @@ begin
   FHandle.Seek(offset,0);
   FHandle.Read(segments,DWORD_SIZE);
 
-  if segments > 1024 then
+  if segments > MAX_SEGMENT_COUNT then
     raise Exception.Create('Segment Count seems too high');
 
   // Creating as much as Data header than segments
@@ -763,14 +774,14 @@ begin
   {$EndIf}
 
   Result := DeleteData(FLargeBuf, Offset, Size);
-  DataSize := DataSize + Size;
+  DataSize := DataSize - Size;
 end;
 
 function TRFAFile.DeleteEntry(FullPath: AnsiString): TRFAResult;
 var
   ENT: RFA_Entry;
   Path: AnsiString;
-  NumE, x: integer;
+  i: integer;
   Offset, DataOffset : Int64;
   Size, DataSize : Int64;
 begin
@@ -783,14 +794,18 @@ begin
   DataOffset := 0;
   DataSize := 0;
 
-  NumE := ElementQuantity;
+  FCount := ElementQuantity;
+
+  if FCount > MAX_FILE_COUNT then
+    raise Exception.Create('File Count seems too high');
 
   // Search the wanted entry
-  for x:= 1 to NumE do
+  for i:= 1 to FCount do
   begin
     Offset := FHandle.Position;
     Path := StringFrom(FHandle);
     FHandle.Read(ENT, ENTRY_SIZE);
+    FIndexedDataSize := FIndexedDataSize - ENT.csize;
     Size := FHandle.Position - Offset;
 
     if Path = FullPath then
@@ -800,7 +815,7 @@ begin
       Break;
     end;
 
-    if x = NumE then
+    if i = FCount then
       raise Exception.Create('Path not found');
   end;
 
@@ -808,24 +823,7 @@ begin
   Result := DeleteData(Offset, Size);
   ElementQuantity := ElementQuantity-1;
 
-  NumE := ElementQuantity;
-(*
-  // Update all indexes
-  for x:= 1 to NumE do
-  begin
-    Path := StringFrom(FHandle);
-    FHandle.Read(ENT, ENTRY_SIZE);
-
-    if ENT.offset >= DataOffset then
-    begin
-      SendDebugFmt('Changing offset of %d',[x]);
-      ENT.offset := ENT.offset - DataSize;
-
-      FHandle.Seek(-ENTRY_SIZE, soFromCurrent);
-      FHandle.Write(ENT, ENTRY_SIZE);
-    end;
-  end;
-*)
+  FCount := ElementQuantity;
 end;
 
 procedure TRFAFile.InsertEntry(FullPath: AnsiString; Offset, Size, cSize: Int64; Index: Cardinal);
@@ -834,12 +832,14 @@ var
   Len : LongWord;
   ENT: RFA_Entry;
   Path: AnsiString;
-  NumE, x: Cardinal;
+  i: integer;
 begin
   Len := Length(FullPath);
   ENT.offset := Offset;
   ENT.csize := cSize;
   ENT.ucsize := Size;
+
+  FIndexedDataSize := FIndexedDataSize + ENT.csize;
 
   Buf := TMemoryStream.Create;
   Buf.Size := DWORD_SIZE + Len + ENTRY_SIZE;
@@ -849,21 +849,26 @@ begin
   Buf.Write(FullPath[1], Len);
   Buf.Write(ENT, ENTRY_SIZE);
 
-  NumE := ElementQuantity;
-  if (Index = 0) or (Index > NumE) then
-    Index := NumE;
+  FCount := ElementQuantity;
 
-  for x:= 1 to NumE do
+  if FCount > MAX_FILE_COUNT then
+    raise Exception.Create('File Count seems too high');
+
+  if (Index = 0) or (Index > FCount) then
+    Index := FCount;
+
+  for i:= 1 to FCount do
   begin
     Path := StringFrom(FHandle);
     FHandle.Read(ENT, ENTRY_SIZE);
 
-    if Index = x then
+    if Index = i then
       Break;
   end;
 
   InsertData(Buf, FHandle.Position);
   ElementQuantity := ElementQuantity+1;
+  FCount := ElementQuantity;
 
   Buf.Free;
 end;
@@ -895,18 +900,22 @@ procedure TRFAFile.UpdateEntry(FullPath: AnsiString; NewOffset, NewUcSize, NewCS
 var
   ENT: RFA_Entry;
   Path: AnsiString;
-  NumE, x: integer;
+  i: integer;
 begin
-  NumE := ElementQuantity;
+  FCount := ElementQuantity;
+
+  if FCount > MAX_FILE_COUNT then
+    raise Exception.Create('File Count seems too high');
 
   // Search the wanted entry
-  for x:= 1 to NumE do
+  for i:= 1 to FCount do
   begin
     Path := StringFrom(FHandle);
     FHandle.Read(ENT, ENTRY_SIZE);
 
     if Path = FullPath then
     begin
+      FIndexedDataSize := FIndexedDataSize + NewCSize - Ent.csize;
       ENT.offset := NewOffset;
       ENT.ucsize := NewUcSize;
       Ent.csize := NewCSize;
@@ -915,7 +924,7 @@ begin
       Break;
     end;
 
-    if x = NumE then
+    if i = FCount then
       raise Exception.Create('Path not found');
   end;
 end;
@@ -978,13 +987,17 @@ begin
   {$EndIf}
 end;
 
+
 procedure TRFAFile.SetElementQuantity(const Value: LongWord);
 begin
   FHandle.Seek(DataSize, soBeginning);  // Jump segment
   FHandle.Write(Value, DWORD_SIZE);     // write element quantity (32bits)
 end;
 
-
+function TRFAFile.GetFragmentation: Integer;
+begin
+  Result := DataSize - FIndexedDataSize - INIT_DATA_SIZE;
+end;
 
 procedure TRFAFile.SetOnProgress(const Value: TRFAProgress);
 begin
