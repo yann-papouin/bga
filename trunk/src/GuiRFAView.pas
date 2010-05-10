@@ -161,6 +161,16 @@ type
     ArchiveSize: TSpTBXLabelItem;
     SpTBXSeparatorItem5: TSpTBXSeparatorItem;
     ArchiveFileCount: TSpTBXLabelItem;
+    ExpandAll: TAction;
+    CollapseAll: TAction;
+    ExpandSelected: TAction;
+    CollapseSelected: TAction;
+    SpTBXSeparatorItem6: TSpTBXSeparatorItem;
+    SpTBXItem18: TSpTBXItem;
+    SpTBXItem19: TSpTBXItem;
+    SpTBXItem20: TSpTBXItem;
+    SpTBXItem21: TSpTBXItem;
+    SpTBXSeparatorItem7: TSpTBXSeparatorItem;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -211,6 +221,10 @@ type
     procedure DefragExecute(Sender: TObject);
     procedure NewVersionAvailableExecute(Sender: TObject);
     procedure CancelExecute(Sender: TObject);
+    procedure ExpandSelectedExecute(Sender: TObject);
+    procedure CollapseSelectedExecute(Sender: TObject);
+    procedure ExpandAllExecute(Sender: TObject);
+    procedure CollapseAllExecute(Sender: TObject);
   private
     { Déclarations privées }
     FApplicationTitle : string;
@@ -228,6 +242,8 @@ type
     procedure SyncAll;
     procedure CheckStatus(Node : PVirtualNode);
     function FindFileByName(Filename :string) : PVirtualNode;
+
+    procedure ExpandSelection(Value : boolean);
 
     function IsFile(FileType : TFileType) : boolean;
     function GetTitle: string;
@@ -567,6 +583,44 @@ begin
   FLastNode := Node;
 end;
 
+
+procedure TRFAViewForm.ExpandSelection(Value: boolean);
+var
+  Node : PVirtualNode;
+begin
+  RFAList.BeginUpdate;
+  Node := RFAList.GetFirstSelected(true);
+  while Node <> nil do
+  begin
+    ExtendSelection(Node);
+    RFAList.Expanded[Node] := Value;
+    Node := RFAList.GetNextSelected(Node, true);
+  end;
+  RFAList.EndUpdate;
+end;
+
+
+procedure TRFAViewForm.CollapseAllExecute(Sender: TObject);
+begin
+  RFAList.SelectAll(false);
+  CollapseSelected.Execute;
+end;
+
+procedure TRFAViewForm.CollapseSelectedExecute(Sender: TObject);
+begin
+  ExpandSelection(false);
+end;
+
+procedure TRFAViewForm.ExpandAllExecute(Sender: TObject);
+begin
+  RFAList.SelectAll(false);
+  ExpandSelected.Execute;
+end;
+
+procedure TRFAViewForm.ExpandSelectedExecute(Sender: TObject);
+begin
+  ExpandSelection(true);
+end;
 
 procedure TRFAViewForm.ExportFile(Node: PVirtualNode; OutputStream : TStream);
 var
@@ -2033,6 +2087,20 @@ end;
 
 procedure TRFAViewForm.RFAListKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 begin
+  if (ssCtrl in Shift) then
+  begin
+    if CharCode = VK_ADD then
+    begin
+      DoDefault := false;
+      ExpandSelected.Execute;
+    end;
+    if CharCode = VK_SUBTRACT then
+    begin
+      DoDefault := false;
+      CollapseSelected.Execute;
+    end;
+  end;
+
   if CharCode = VK_DELETE then
   begin
     DeleteSelection;
