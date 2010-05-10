@@ -54,8 +54,6 @@ object RFAViewForm: TRFAViewForm
     OnGetNodeDataSize = RFAListGetNodeDataSize
     OnKeyAction = RFAListKeyAction
     OnStartDrag = RFAListStartDrag
-    ExplicitWidth = 632
-    ExplicitHeight = 338
     Columns = <
       item
         MinWidth = 300
@@ -93,8 +91,6 @@ object RFAViewForm: TRFAViewForm
     Top = 428
     Width = 624
     Height = 25
-    ExplicitTop = 430
-    ExplicitWidth = 632
     object ArchiveSize: TSpTBXLabelItem
       Caption = 'ArchiveSize'
     end
@@ -114,7 +110,6 @@ object RFAViewForm: TRFAViewForm
     Top = 0
     Width = 624
     Height = 25
-    ExplicitWidth = 632
     object tbMenuBar: TSpTBXToolbar
       Left = 0
       Top = 0
@@ -227,7 +222,6 @@ object RFAViewForm: TRFAViewForm
     TabOrder = 3
     Visible = False
     Borders = False
-    ExplicitWidth = 632
     object SubProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
       Left = 362
@@ -248,7 +242,6 @@ object RFAViewForm: TRFAViewForm
       CaptionGlow = gldNone
       CaptionType = pctNone
       Smooth = True
-      ExplicitLeft = 370
     end
     object TotalProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
@@ -270,7 +263,6 @@ object RFAViewForm: TRFAViewForm
       CaptionGlow = gldNone
       CaptionType = pctNone
       Smooth = True
-      ExplicitWidth = 292
     end
     object TotalProgressLabel: TSpTBXLabel
       AlignWithMargins = True
@@ -296,7 +288,6 @@ object RFAViewForm: TRFAViewForm
       TabOrder = 3
       Images = ExplorerImg
       ImageIndex = 85
-      ExplicitLeft = 549
     end
   end
   object SearchBar: TSpTBXPanel
@@ -318,7 +309,6 @@ object RFAViewForm: TRFAViewForm
     TabOrder = 4
     Visible = False
     Borders = False
-    ExplicitWidth = 632
     object Search: TSpTBXEdit
       Left = 80
       Top = 7
@@ -328,7 +318,6 @@ object RFAViewForm: TRFAViewForm
       TabOrder = 0
       Text = '*.*'
       OnChange = SearchChange
-      ExplicitWidth = 545
     end
     object SpTBXLabel1: TSpTBXLabel
       AlignWithMargins = True
@@ -357,7 +346,6 @@ object RFAViewForm: TRFAViewForm
     AppStorage = AppStorage
     AppStoragePath = '%FORM_NAME%\'
     StoredProps.Strings = (
-      'Browse.Directory'
       'NewVersionAvailable.Visible')
     StoredValues = <>
     Left = 8
@@ -33815,10 +33803,6 @@ object RFAViewForm: TRFAViewForm
       Action = Preview
     end
   end
-  object Browse: TJvBrowseForFolderDialog
-    Left = 8
-    Top = 248
-  end
   object AppStorage: TJvAppRegistryStorage
     StorageOptions.BooleanStringTrueValues = 'TRUE, YES, Y'
     StorageOptions.BooleanStringFalseValues = 'FALSE, NO, N'
@@ -33826,5 +33810,10 @@ object RFAViewForm: TRFAViewForm
     SubStorages = <>
     Left = 40
     Top = 56
+  end
+  object DropFileSource: TDropFileSource
+    DragTypes = [dtCopy]
+    Left = 8
+    Top = 248
   end
 end
