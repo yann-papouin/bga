@@ -79,6 +79,9 @@
 			<DCCReference Include="GuiUpdateManager.pas">
 				<Form>UpdateManagerForm</Form>
 			</DCCReference>
+			<DCCReference Include="GuiBrowse.pas">
+				<Form>BrowseForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

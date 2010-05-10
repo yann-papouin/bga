@@ -29,7 +29,7 @@ uses
   JclFileUtils, PngImageList, ExtCtrls, ActiveX, Types, SpTBXControls, SpTBXItem,
   TB2Item, TB2Dock, TB2Toolbar, ActnList, JvMRUList, JvAppInst,
   Menus, RFALib, SpTBXEditors, JvBaseDlg, JvBrowseFolder, JvAppStorage,
-  JvAppRegistryStorage, GuiUpdateManager;
+  JvAppRegistryStorage, GuiUpdateManager, DragDrop, DropSource, DragDropFile;
 
 type
 
@@ -143,7 +143,6 @@ type
     SpTBXItem12: TSpTBXItem;
     Preview: TAction;
     SpTBXItem14: TSpTBXItem;
-    Browse: TJvBrowseForFolderDialog;
     AppStorage: TJvAppRegistryStorage;
     Defrag: TAction;
     Action1: TAction;
@@ -171,6 +170,7 @@ type
     SpTBXItem20: TSpTBXItem;
     SpTBXItem21: TSpTBXItem;
     SpTBXSeparatorItem7: TSpTBXSeparatorItem;
+    DropFileSource: TDropFileSource;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -306,9 +306,9 @@ implementation
 {$R *.dfm}
 
 uses
-  GuiAbout, GuiMain, GuiRAWView, GuiSMView, Masks,
+  GuiAbout, GuiMain, GuiRAWView, GuiSMView, GuiBrowse, Masks,
   Math, StringFunction,
-  DragDropFile, CommonLib, AppLib, MD5Api;
+  CommonLib, AppLib, MD5Api;
 
 
 var
@@ -1454,11 +1454,12 @@ end;
 
 procedure TRFAViewForm.PackDirectoryExecute(Sender: TObject);
 begin
-  if Browse.Execute then
-  begin
-    Reset;
-    Add(RFAList.RootNode, nil, Browse.Directory);
-  end;
+  if (BrowseForm.ShowModal = mrOk) then
+    if DirectoryExists(BrowseForm.Directory) then
+    begin
+      Reset;
+      Add(RFAList.RootNode, nil, BrowseForm.Directory);
+    end;
 end;
 
 procedure TRFAViewForm.ExtendSelection(Node : PVirtualNode);
@@ -1478,6 +1479,7 @@ begin
   ExtractSelected.Execute;
 end;
 
+
 procedure TRFAViewForm.ExtractSelectedExecute(Sender: TObject);
 var
   Data : pFse;
@@ -1486,7 +1488,7 @@ var
   ExternFile : TFileStream;
 begin
   Cancel.Enabled := true;
-  if Browse.Execute then
+  if (BrowseForm.ShowModal = mrOk) then
   begin
     TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);
     Node := RFAList.GetFirstSelected;
@@ -1500,7 +1502,7 @@ begin
 
       if IsFile(Data.FileType) then
       begin
-        ExternalFilePath := IncludeTrailingBackslash(Browse.Directory);
+        ExternalFilePath := IncludeTrailingBackslash(BrowseForm.Directory);
         ExternalFilePath := ExternalFilePath + Data.W32Path;
         ForceDirectories(ExtractFilePath(ExternalFilePath));
 
@@ -2110,6 +2112,7 @@ end;
 procedure TRFAViewForm.RFAListStartDrag(Sender: TObject; var DragObject: TDragObject);
 begin
   (Sender as TBaseVirtualTree).CancelEditNode;
+
 end;
 
 procedure TRFAViewForm.RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
