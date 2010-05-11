@@ -1959,7 +1959,7 @@ begin
   end
     else
   begin
-
+(*
     SourceNode := Sender.GetFirstSelected;
     TargetNode := Sender.DropTargetNode;
 
@@ -1994,7 +1994,7 @@ begin
         SourceNode :=  Sender.GetFirstSelected;
       end;
     end
-
+*)
   end;
 
   Sort;
@@ -2089,7 +2089,7 @@ begin
   Data2 := Sender.GetNodeData(Node2);
 
   if IsFile(Data1.FileType) = IsFile(Data2.FileType) then
-    Result := CompareStr(UpperCase(Data1.BF42FullName), UpperCase(Data2.BF42FullName))
+    Result := CompareStr(UpperCase(Data1.W32Name), UpperCase(Data2.W32Name))
   else
   if IsFile(Data1.FileType) then
     Result := GreaterThanValue
