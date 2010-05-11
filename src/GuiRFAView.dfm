@@ -42,17 +42,21 @@ object RFAViewForm: TRFAViewForm
     PopupMenu = ViewerPopup
     TabOrder = 0
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking]
+    TreeOptions.MiscOptions = [toAcceptOLEDrop, toEditable, toFullRepaintOnResize, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
     TreeOptions.SelectionOptions = [toMultiSelect, toRightClickSelect]
     OnBeforeCellPaint = RFAListBeforeCellPaint
     OnCompareNodes = RFAListCompareNodes
     OnDblClick = RFAListDblClick
     OnDragOver = RFAListDragOver
     OnDragDrop = RFAListDragDrop
+    OnEdited = RFAListEdited
+    OnEditing = RFAListEditing
     OnFreeNode = RFAListFreeNode
     OnGetText = RFAListGetText
     OnGetImageIndex = RFAListGetImageIndex
     OnGetNodeDataSize = RFAListGetNodeDataSize
     OnKeyAction = RFAListKeyAction
+    OnNewText = RFAListNewText
     OnStartDrag = RFAListStartDrag
     Columns = <
       item
@@ -33756,6 +33760,11 @@ object RFAViewForm: TRFAViewForm
       ImageIndex = 205
       OnExecute = CollapseSelectedExecute
     end
+    object NewFolder: TAction
+      Caption = 'Create a new folder'
+      ImageIndex = 28
+      OnExecute = NewFolderExecute
+    end
   end
   object RecentList: TJvMruList
     SubKeyUnicode = 'Software\Battlefield 1942\BGA\Recent'
@@ -33791,6 +33800,11 @@ object RFAViewForm: TRFAViewForm
     Images = ExplorerImg
     Left = 40
     Top = 152
+    object SpTBXItem22: TSpTBXItem
+      Action = NewFolder
+    end
+    object SpTBXSeparatorItem8: TSpTBXSeparatorItem
+    end
     object SpTBXItem21: TSpTBXItem
       Action = ExpandSelected
     end

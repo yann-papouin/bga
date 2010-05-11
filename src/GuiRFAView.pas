@@ -171,6 +171,9 @@ type
     SpTBXItem21: TSpTBXItem;
     SpTBXSeparatorItem7: TSpTBXSeparatorItem;
     DropFileSource: TDropFileSource;
+    NewFolder: TAction;
+    SpTBXSeparatorItem8: TSpTBXSeparatorItem;
+    SpTBXItem22: TSpTBXItem;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -225,6 +228,10 @@ type
     procedure CollapseSelectedExecute(Sender: TObject);
     procedure ExpandAllExecute(Sender: TObject);
     procedure CollapseAllExecute(Sender: TObject);
+    procedure NewFolderExecute(Sender: TObject);
+    procedure RFAListEditing(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
+    procedure RFAListNewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
+    procedure RFAListEdited(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
   private
     { Déclarations privées }
     FApplicationTitle : string;
@@ -876,6 +883,21 @@ begin
 end;
 
 
+
+procedure TRFAViewForm.NewFolderExecute(Sender: TObject);
+var
+  Node : pVirtualNode;
+  Data : pFse;
+begin
+  Node := RFAList.AddChild(RFAList.GetFirstSelected);
+  Data := RFAList.GetNodeData(Node);
+  //Data.W32Path := Filename;
+  //Data.W32Name := ExtractFileName(Filename);
+  Data.W32Name := 'New folder';
+  Data.FileType := ftFolder;
+  //Sort;
+  RFAList.EditNode(Node,0);
+end;
 
 procedure MakePathVisible(Table : TBaseVirtualTree; Node: PVirtualNode);
 begin
@@ -2006,6 +2028,34 @@ begin
 end;
 
 
+procedure TRFAViewForm.RFAListEdited(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
+begin
+  Sort;
+end;
+
+procedure TRFAViewForm.RFAListEditing(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
+var
+  Data : pFse;
+begin
+  Allowed := false;
+  Data := Sender.GetNodeData(Node);
+  if (Data.FileType = ftFolder) then
+  begin
+    Allowed := true;
+  end;
+end;
+
+procedure TRFAViewForm.RFAListNewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
+var
+  Data : pFse;
+begin
+  Data := Sender.GetNodeData(Node);
+  if (Data.FileType = ftFolder) then
+  begin
+    Data.W32Name := NewText;
+  end;
+end;
+
 procedure TRFAViewForm.RFAListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
 var
   Data : pFse;
@@ -2108,6 +2158,8 @@ begin
     DeleteSelection;
   end;
 end;
+
+
 
 procedure TRFAViewForm.RFAListStartDrag(Sender: TObject; var DragObject: TDragObject);
 begin
