@@ -88,6 +88,9 @@
 			<DCCReference Include="GuiBrowsePack.pas">
 				<Form>BrowsePackForm</Form>
 			</DCCReference>
+			<DCCReference Include="GuiBrowseExtract.pas">
+				<Form>BrowseExtractForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
