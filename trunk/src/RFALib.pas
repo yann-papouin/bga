@@ -261,10 +261,19 @@ begin
   Result := -1;
   Release;
 
-  FHandle := TFileStream.Create(Filename, fmOpenReadWrite or fmCreate);
-  FHandle.Size := INIT_DATA_SIZE + DWORD_SIZE;
+  try
+    FHandle := TFileStream.Create(Filename, fmOpenReadWrite or fmCreate);
+  except
+    on e:exception do
+    begin
+      FreeAndNil(FHandle);
+      Result := -3;
+    end;
+  end;
+
   if Assigned(FHandle) then
   begin
+    FHandle.Size := INIT_DATA_SIZE + DWORD_SIZE;
     DataSize := INIT_DATA_SIZE;
     ElementQuantity := 0;
 

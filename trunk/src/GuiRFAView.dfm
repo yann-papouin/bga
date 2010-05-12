@@ -50,7 +50,6 @@ object RFAViewForm: TRFAViewForm
     OnDragOver = RFAListDragOver
     OnDragDrop = RFAListDragDrop
     OnEdited = RFAListEdited
-    OnEditing = RFAListEditing
     OnFreeNode = RFAListFreeNode
     OnGetText = RFAListGetText
     OnGetImageIndex = RFAListGetImageIndex
