@@ -12,7 +12,7 @@ type
     Folder: TSpTBXButtonEdit;
     Recents: TSpTBXListBox;
     FormStorage: TJvFormStorage;
-    ActionList1: TActionList;
+    Actions: TActionList;
     Ok: TAction;
     Cancel: TAction;
     ButtonOk: TSpTBXButton;

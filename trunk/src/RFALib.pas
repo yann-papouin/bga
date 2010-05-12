@@ -22,7 +22,7 @@ unit RFALib;
 
 interface
 
-{$DEFINE DEBUG_RFA}
+{.$DEFINE DEBUG_RFA}
 {$DEFINE USE_BUFFER}
 
 uses

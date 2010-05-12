@@ -68,7 +68,6 @@ object BrowseForm: TBrowseForm
     Padding.Right = 5
     Padding.Bottom = 5
     TabOrder = 2
-    ExplicitTop = 319
     object ButtonOk: TSpTBXButton
       AlignWithMargins = True
       Left = 142
@@ -118,16 +117,16 @@ object BrowseForm: TBrowseForm
   end
   object FormStorage: TJvFormStorage
     AppStorage = RFAViewForm.AppStorage
-    AppStoragePath = '%FORM_NAME%\'
+    AppStoragePath = 'BrowseCommon\'
     Options = [fpSize]
     StoredProps.Strings = (
-      'Browse.Directory'
-      'Recents.Items')
+      'Recents.Items'
+      'Folder.Text')
     StoredValues = <>
     Left = 16
     Top = 144
   end
-  object ActionList1: TActionList
+  object Actions: TActionList
     Images = RFAViewForm.ExplorerImg
     Left = 16
     Top = 176

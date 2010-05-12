@@ -22,7 +22,8 @@ uses
   SvnInfo in 'Lib\SvnInfo.pas',
   GuiUpdateManager in 'GuiUpdateManager.pas' {UpdateManagerForm},
   GuiBrowse in 'GuiBrowse.pas' {BrowseForm},
-  GuiSkinDialog in 'GuiSkinDialog.pas' {SkinDialogForm};
+  GuiSkinDialog in 'GuiSkinDialog.pas' {SkinDialogForm},
+  GuiBrowsePack in 'GuiBrowsePack.pas' {BrowsePackForm};
 
 {$R *.res}
 
@@ -40,5 +41,6 @@ begin
   Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
   Application.CreateForm(TBrowseForm, BrowseForm);
   Application.CreateForm(TSkinDialogForm, SkinDialogForm);
+  Application.CreateForm(TBrowsePackForm, BrowsePackForm);
   Application.Run;
 end.
