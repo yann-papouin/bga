@@ -51,7 +51,6 @@ uses
 procedure TBrowseForm.FormActivate(Sender: TObject);
 begin
   ActiveControl := ButtonOk;
-  Position := poScreenCenter;
 end;
 
 procedure TBrowseForm.FormShow(Sender: TObject);
