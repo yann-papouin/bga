@@ -215,7 +215,6 @@ object UpdateManagerForm: TUpdateManagerForm
     Action = CloseForm
     Anchors = [akRight, akBottom]
     TabOrder = 2
-    ExplicitTop = 266
   end
   object SpTBXLabel2: TSpTBXLabel
     Left = 8
@@ -245,6 +244,16 @@ object UpdateManagerForm: TUpdateManagerForm
       OnExecute = CloseFormExecute
     end
   end
+  object CheckThread: TJvThread
+    Exclusive = True
+    MaxCount = 0
+    RunOnCreate = True
+    FreeOnTerminate = True
+    OnExecute = CheckThreadExecute
+    OnFinish = CheckThreadFinish
+    Left = 392
+    Top = 40
+  end
   object wget: TIdHTTP
     AllowCookies = True
     ProxyParams.BasicAuthentication = False
@@ -256,15 +265,5 @@ object UpdateManagerForm: TUpdateManagerForm
     HTTPOptions = [hoForceEncodeParams]
     Left = 360
     Top = 8
-  end
-  object CheckThread: TJvThread
-    Exclusive = True
-    MaxCount = 0
-    RunOnCreate = True
-    FreeOnTerminate = True
-    OnExecute = CheckThreadExecute
-    OnFinish = CheckThreadFinish
-    Left = 392
-    Top = 40
   end
 end

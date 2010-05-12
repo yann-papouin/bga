@@ -25,6 +25,7 @@ type
     Id : string;
     Link : string;
     Title : string;
+    Revision : integer;
   end;
 
 
@@ -32,7 +33,6 @@ type
 
   TUpdateManagerForm = class(TForm)
     Actions: TActionList;
-    wget: TIdHTTP;
     Check: TAction;
     Shape1: TShape;
     SpTBXLabel1: TLabel;
@@ -46,6 +46,7 @@ type
     Image1: TImage;
     SpTBXLabel2: TSpTBXLabel;
     CheckThread: TJvThread;
+    wget: TIdHTTP;
     procedure CheckExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -86,6 +87,7 @@ var
   HtmlDoc : TXMLDocument;
   Feed, Entry : IXMLNode;
   UpdateEntry : TUpdateEntry;
+  LatestEntry : TUpdateEntry;
 
   i: integer;
   VersionList : TStringList;
@@ -126,35 +128,50 @@ begin
   HtmlDoc.Active := false;
   HtmlDoc.Free;
 
-  for i:= Entries.Count-1 to 0 do
+  LatestEntry := nil;
+  for i:= 0 to Entries.Count-1 do
   begin
     UpdateEntry := Entries[i];
     Revision := SFRight('BGA_rev_', UpdateEntry.link);
     Revision := SFLeft('.zip', Revision);
+    UpdateEntry.Revision := StrToIntDef(Revision,0);
 
-    if StrToIntDef(Revision,0) > SVN_REVISION then
+    if UpdateEntry.Revision > SVN_REVISION then
     begin
-      VersionLink.Caption := trim(UpdateEntry.title);
-      VersionLink.LinkText := UpdateEntry.link;
-      VersionDateTime.Caption := UpdateEntry.datetime;
-      Result := rs_UpdateFound;
-      Break;
+      if LatestEntry = nil then
+        LatestEntry := UpdateEntry
+      else
+      if UpdateEntry.Revision > LatestEntry.Revision then
+        LatestEntry := UpdateEntry;
     end;
   end;
 
+  if LatestEntry <> nil then
+  begin
+    VersionLink.Caption := trim(LatestEntry.title);
+    VersionLink.LinkText := LatestEntry.link;
+    VersionDateTime.Caption := LatestEntry.datetime;
+    Result := rs_UpdateFound;
+  end;
 end;
 
 procedure TUpdateManagerForm.CheckThreadExecute(Sender: TObject; Params: Pointer);
 var
   TickCapture : cardinal;
+
+  function ThreadCanceled :boolean;
+  begin
+    Result := CheckThread.Terminated or (csDestroying in ComponentState);
+  end;
+
 begin
   TickCapture := GetTickCount;
   repeat
     if GetTickCount-TickCapture>5000 then
       Break;
-  until (csDestroying in ComponentState);
+  until ThreadCanceled;
 
-  if not (csDestroying in ComponentState) then
+  if not ThreadCanceled then
   begin
     CoInitialize(nil);
     FUpdateResult := UpdateProcess;
@@ -180,6 +197,8 @@ end;
 
 procedure TUpdateManagerForm.FormDestroy(Sender: TObject);
 begin
+  CheckThread.Terminate;
+  CheckThread.WaitFor;
   Entries.Free;
 end;
 
