@@ -23,6 +23,7 @@ inherited BrowsePackForm: TBrowsePackForm
     Top = 103
     Width = 368
     Height = 21
+    Anchors = [akLeft, akTop, akRight]
     TabOrder = 5
     Text = 'bf1942'
   end
