@@ -67,18 +67,28 @@ type
     ftFileTM
   );
 
-  TFseStatus =
+  TEntryModification =
   (
-    fs_No_Change,
-    fs_New,
-    fs_Modified,
-    fs_Delete
+    fsNew,
+    fsDelete,
+    fsEntry,
+    fsExternal,
+    fsConflict
   );
+
+  TEntryStatus = set of TEntryModification;
 
   TShiftWay =
   (
     shLeft,
     shRight
+  );
+
+  TEditResult =
+  (
+    edCancel,
+    edOk,
+    edInvalid
   );
 
   TRFAViewForm = class(TForm)
@@ -232,14 +242,16 @@ type
     procedure RFAListEditing(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
     procedure RFAListNewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
     procedure RFAListEdited(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
+    procedure RFAListNodeMoved(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
     { Déclarations privées }
+    FEditResult : TEditResult;
     FApplicationTitle : string;
     FSearchText: string;
     FSyncNode : PVirtualNode;
     FArchive : TRFAFile;
     procedure RemoveEmptyFolders;
-    function CountFilesByStatus(Node: PVirtualNode; Status:TFseStatus) : cardinal;
+    function CountFilesByStatus(Node: PVirtualNode; Status: TEntryStatus; IncludeWithoutStatus : boolean = false) : cardinal;
     //procedure DeleteSelectionByData;
     procedure DeleteSelection;
     procedure ExtendSelection(Node : PVirtualNode);
@@ -248,6 +260,8 @@ type
     procedure SyncStop;
     procedure SyncAll;
     procedure CheckStatus(Node : PVirtualNode);
+    procedure PropagateStatus(Node : PVirtualNode; Status : TEntryModification);
+
     function FindFileByName(Filename :string) : PVirtualNode;
 
     procedure ExpandSelection(Value : boolean);
@@ -265,7 +279,6 @@ type
 
     function ExtractTemporary(Node : PVirtualNode) : string;
     procedure EditSelection;
-    function CreateNew(Filename : string = ''): boolean;
     procedure Reset;
 
     procedure UpdateInfobar;
@@ -288,7 +301,8 @@ type
   rFse = record
     RFAFile : TRFAFile;
     // Data fields
-    BF42FullName : AnsiString;
+    //BF42FullName : AnsiString;
+    EntryName : AnsiString; (* == BF42FullName*)
     Offset : Int64;
     Size : Int64;
     Compressed : boolean;
@@ -298,7 +312,7 @@ type
     W32Name : string[255];
     W32Ext : string[255];
     FileType : TFileType;
-    Status : TFseStatus;
+    Status : TEntryStatus;
     // External fields
     ExternalFilePath : string[255];
     ExternalMD5 : Ansistring;
@@ -407,7 +421,7 @@ begin
 end;
 
 
-function BuildFullPathFromTree(Node : PVirtualNode) : string;
+function BuildEntryNameFromTree(Node : PVirtualNode) : string;
 var
   Data : pFse;
 begin
@@ -427,37 +441,47 @@ begin
   end;
 end;
 
-function FindFile(BF42FullName : AnsiString) : PVirtualNode;
-var
-  Data : pFse;
-begin
-  Result := RFAViewForm.RFAList.GetFirst;
-
-  while Result <> nil do
-  begin
-    Data := RFAViewForm.RFAList.GetNodeData(Result);
-
-    if AnsiCompareText(Data.BF42FullName, BF42FullName) = 0 then
-      Exit
-    else
-      Result := RFAViewForm.RFAList.GetNext(Result, true);
-  end;
-
-end;
-
 
 procedure TRFAViewForm.ReadEntry(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
 var
   Node: PVirtualNode;
   Data : pFse;
   W32Path : AnsiString;
-  Updating : boolean;
+  //Updating : boolean;
+
+  (*
+  function FindFile(BF42FullName : AnsiString) : PVirtualNode;
+  var
+    Data : pFse;
+  begin
+    Result := RFAViewForm.RFAList.GetFirst;
+
+    while Result <> nil do
+    begin
+      Data := RFAViewForm.RFAList.GetNodeData(Result);
+
+      if AnsiCompareText(Data.BF42FullName, BF42FullName) = 0 then
+        Exit
+      else
+        Result := RFAViewForm.RFAList.GetNext(Result, true);
+    end;
+
+  end;
+  *)
+
 begin
   TotalProgress(roLoad, PG_AUTO, Sender.Count);
 
   W32Path := StringReplace(Name,'/','\',[rfReplaceAll]);
   BuildTreeFromFullPath(W32Path);
 
+  Node := FindPath(W32Path);
+  if Node = nil then
+    Node := RFAList.RootNode;
+
+  Node := RFAList.AddChild(Node);
+
+(*
   Node := FindFile(Name);
 
   if Node = nil then
@@ -472,10 +496,10 @@ begin
   end
     else
       Updating := true;
-
+*)
   Data := RFAList.GetNodeData(Node);
   Data.RFAFile := Sender;
-
+(*
   if Updating then
   begin
     if  Data.Size <> ucSize then
@@ -487,8 +511,10 @@ begin
     if  Data.W32Path <> W32Path then
       Showmessage(Data.W32Path + #10+#13 + W32Path);
   end;
+*)
 
-  Data.BF42FullName := Name;
+  Data.EntryName := Name;
+  //Data.EntryName := EmptyStr;
   Data.Offset := Offset;
   Data.Size := ucSize;
   Data.Compressed := Compressed;
@@ -816,28 +842,56 @@ end;
 procedure TRFAViewForm.CheckStatus(Node: PVirtualNode);
 var
   Data : pFse;
-  PreviousStatus : TFseStatus;
+  PreviousStatus : TEntryStatus;
   FileDateTime: TDateTime;
+  ConflictFound : boolean;
+  Child : PVirtualNode;
+  ChildData : pFse;
 begin
   if Node <> nil then
   begin
     Data := RFAList.GetNodeData(Node);
     PreviousStatus := Data.Status;
-    if IsFile(Data.FileType) and (Data.ExternalFilePath <> EmptyStr) and not (Data.Status = fs_New) then
+    if IsFile(Data.FileType) then
     begin
-      // Note : file age can change without data change
-      if FileAge(Data.ExternalFilePath, FileDateTime) then
+      if (Data.ExternalFilePath <> EmptyStr) and not (fsNew in Data.Status) then
       begin
-        if (FileDateTime <> Data.ExternalAge) then
+        // Note : file age can change without data change
+        if FileAge(Data.ExternalFilePath, FileDateTime) then
         begin
-          if MD5FromFile(Data.ExternalFilePath) <> Data.ExternalMD5 then
-            Data.Status := fs_Modified
+          if (FileDateTime <> Data.ExternalAge) then
+          begin
+            if MD5FromFile(Data.ExternalFilePath) <> Data.ExternalMD5 then
+              Include(Data.Status, fsExternal)
+            else
+              Exclude(Data.Status, fsExternal)
+          end;
+        end
           else
-            Data.Status := fs_No_Change;
+            Exclude(Data.Status, fsExternal)
+      end;
+
+      if (fsEntry in Data.Status) and (Node.Parent <> nil) then
+      begin
+        ConflictFound := false;
+        Child := Node.Parent.FirstChild;
+        while Child <> nil do
+        begin
+          if Child <> Node then
+          begin
+            ChildData := RFAList.GetNodeData(Child);
+            if ChildData.W32Name = Data.W32Name then
+            begin
+              Include(Data.Status, fsConflict);
+              ConflictFound := true;
+              Break;
+            end;
+          end;
+          Child := RFAList.GetNextSibling(Child);
         end;
-      end
-        else
-          Data.Status := fs_No_Change;
+        if not ConflictFound then
+          Exclude(Data.Status, fsConflict);
+      end;
     end;
 
     if PreviousStatus <> Data.Status then
@@ -846,34 +900,17 @@ begin
 end;
 
 
-
-function TRFAViewForm.CreateNew(Filename : string = ''): boolean;
+procedure TRFAViewForm.PropagateStatus(Node: PVirtualNode; Status: TEntryModification);
 var
-  Newfile : string;
-  TmpRFA : TRFAFile;
+  Data : pFse;
 begin
-  Result := false;
-
-  if Filename <> Emptystr then
-    Newfile := Filename
-  else
-    Newfile := SaveDialog.FileName;
-
-  SaveDialog.InitialDir := ExtractFilePath(Newfile);
-  SaveDialog.FileName := ExtractFileName(Newfile);
-
-  if (Filename <> Emptystr ) or SaveDialog.Execute then
+  Node := RFAList.GetFirstChild(Node);
+  while Node <> nil do
   begin
-    OpenDialog.FileName := SaveDialog.FileName;
-    Save.Enabled := true;
-    Defrag.Enabled := true;
-
-    TmpRFA := TRFAFile.Create;
-    TmpRFA.New(SaveDialog.FileName);
-    TmpRFA.Free;
-
-    QuickOpen.Execute;
-    Result := true;
+    PropagateStatus(Node, Status);
+    Data := RFAList.GetNodeData(Node);
+    Include(Data.Status, fsEntry);
+    Node := RFAList.GetNextSibling(Node);
   end;
 end;
 
@@ -1096,7 +1133,7 @@ begin
         Data.Offset := Data.Offset + ShiftData.size;
       end;
 
-      FArchive.UpdateEntry(Data.BF42FullName, Data.Offset, Data.Size, Data.CompSize);
+      FArchive.UpdateEntry(Data.EntryName, Data.Offset, Data.Size, Data.CompSize);
       RFAList.InvalidateNode(Node);
     end;
     Node := RFAList.GetNext(Node);
@@ -1137,8 +1174,10 @@ var
   Size : int64;
   TmpArchive : TRFAFile;
   TmpFilename : string;
+
 begin
   SyncStop;
+  RemoveEmptyFolders;
   SyncAll;
 
   Cancel.Enabled := true;
@@ -1158,9 +1197,9 @@ begin
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
-      if (Data.Status = fs_Delete) and IsFile(Data.FileType) then
+      if (fsDelete in Data.Status) and IsFile(Data.FileType) then
       begin
-        DeleteResult := FArchive.DeleteEntry(Data.BF42FullName);
+        DeleteResult := FArchive.DeleteEntry(Data.EntryName);
         //ShiftData(DeleteResult, shLeft);
         RFAList.DeleteNode(Node);
       end;
@@ -1169,8 +1208,8 @@ begin
       Node := NextNode;
     end;
 
-    /// Step-2 : Update edited files
 
+    /// Step-2 : Update edited files
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
@@ -1180,7 +1219,7 @@ begin
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
-      if (Data.Status = fs_Modified) and IsFile(Data.FileType) then
+      if (fsExternal in Data.Status) and IsFile(Data.FileType) then
       begin
 
         // if the file is the last one then remove it first
@@ -1196,17 +1235,14 @@ begin
         ShiftData(InsertResult, shRight, Node);
         ExternalFile.Free;
 
-        FArchive.UpdateEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size);
+        FArchive.UpdateEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size);
 
+        Exclude(Data.Status, fsExternal);
         Data.Size := Size;
         Data.Offset := InsertResult.offset;
         Data.Compressed := COMPRESSED_DATA;
         Data.CompSize := InsertResult.size;
         Data.ExternalMD5 := MD5FromFile(Data.ExternalFilePath);
-        Data.Status := fs_No_Change;
-        //Data.ExternalFilePath := EmptyStr;
-        //Data.ExternalMD5 := EmptyStr;
-        //DeleteFile(Data.ExternalFilePath);
         RFAList.InvalidateNode(Node);
       end;
 
@@ -1224,7 +1260,7 @@ begin
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
-      if (Data.Status = fs_New) and IsFile(Data.FileType) then
+      if (fsNew in Data.Status) and IsFile(Data.FileType) then
       begin
         ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
         Size := ExternalFile.Size;
@@ -1232,18 +1268,39 @@ begin
         ShiftData(InsertResult, shRight, Node);
         ExternalFile.Free;
 
-        Data.BF42FullName := BuildFullPathFromTree(Node); // a drag/drop can change this value
-        FArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+        Data.EntryName := BuildEntryNameFromTree(Node);
+        FArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
 
-        Data.Status := fs_No_Change;
+        Exclude(Data.Status, fsNew);
+        Exclude(Data.Status, fsEntry);
         Data.Size := Size;
         Data.Offset := InsertResult.offset;
         Data.Compressed := COMPRESSED_DATA;
         Data.CompSize := InsertResult.size;
-        Data.Status := fs_No_Change;
         Data.ExternalFilePath := EmptyStr;
         Data.ExternalMD5 := EmptyStr;
         RFAList.InvalidateNode(Node);
+      end;
+
+      TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
+      Node := NextNode;
+    end;
+
+    /// Step-4 : Update modified entries
+    Node := RFAList.GetFirst;
+    while Node <> nil do
+    begin
+      if not Cancel.Enabled then
+        Break;
+
+      NextNode := RFAList.GetNext(Node);
+      Data := RFAList.GetNodeData(Node);
+
+      if (fsEntry in Data.Status) and IsFile(Data.FileType) then
+      begin
+        FArchive.DeleteEntry(Data.EntryName);
+        Data.EntryName := BuildEntryNameFromTree(Node);
+        FArchive.InsertEntry(Data.EntryName, Data.offset, Data.Size, Data.CompSize, 0);
       end;
 
       TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
@@ -1269,7 +1326,27 @@ begin
     else
       TmpArchive.New(Path);
 
-    TotalProgress(roBegin, 0, RFAList.TotalCount*3);
+    TotalProgress(roBegin, 0, RFAList.TotalCount*4);
+
+    /// Step-0 : Immediatly update all needed entries
+    Node := RFAList.GetFirst;
+    while Node <> nil do
+    begin
+      if not Cancel.Enabled then
+        Break;
+
+      NextNode := RFAList.GetNext(Node);
+      Data := RFAList.GetNodeData(Node);
+
+      if (fsEntry in Data.Status) and IsFile(Data.FileType) then
+      begin
+        Data.EntryName := BuildEntryNameFromTree(Node);
+        Exclude(Data.Status, fsEntry);
+      end;
+
+      TotalProgress(roSave, PG_AUTO, PG_SAME);
+      Node := NextNode;
+    end;
 
     /// Step-1 : Add same files without lost data
     Node := RFAList.GetFirst;
@@ -1281,7 +1358,7 @@ begin
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
-      if (Data.Status = fs_No_Change) and IsFile(Data.FileType) then
+      if not (Data.Status = []) and IsFile(Data.FileType) then
       begin
         //SendDebugFmt('File %s exported',[Data.W32Name]);
         InternalFile := TMemoryStream.Create;
@@ -1289,7 +1366,7 @@ begin
         Size := InternalFile.Size;
         InsertResult := TmpArchive.InsertFile(InternalFile, Data.Compressed);
         InternalFile.Free;
-        TmpArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+        TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
       end;
 
       TotalProgress(roSave, PG_AUTO, PG_SAME);
@@ -1306,13 +1383,13 @@ begin
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
-      if (Data.Status = fs_Modified) and IsFile(Data.FileType) then
+      if (fsExternal in Data.Status) and IsFile(Data.FileType) then
       begin
         ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
         Size := ExternalFile.Size;
         InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
         ExternalFile.Free;
-        TmpArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+        TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
       end;
 
       TotalProgress(roSave, PG_AUTO, PG_SAME);
@@ -1329,15 +1406,13 @@ begin
       NextNode := RFAList.GetNext(Node);
       Data := RFAList.GetNodeData(Node);
 
-      if (Data.Status = fs_New) and IsFile(Data.FileType) then
+      if (fsNew in Data.Status) and IsFile(Data.FileType) then
       begin
         ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
         Size := ExternalFile.Size;
         InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
         ExternalFile.Free;
-
-        Data.BF42FullName := BuildFullPathFromTree(Node); // a drag/drop can change this value
-        TmpArchive.InsertEntry(Data.BF42FullName, InsertResult.offset, Size, InsertResult.size, 0);
+        TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
       end;
 
       TotalProgress(roSave, PG_AUTO, PG_SAME);
@@ -1472,6 +1547,7 @@ begin
       ShowMessage('Terrain data not found');
 
 end;
+
 
 
 procedure TRFAViewForm.PackDirectoryExecute(Sender: TObject);
@@ -1676,7 +1752,8 @@ var
       Data.ExternalFilePath := Data.W32Path;
       Data.Size := FileGetSize(Data.W32Path);
       Data.FileType := ftFile;
-      Data.Status := fs_New;
+      Include(Data.Status, fsNew);
+      Include(Data.Status, fsEntry);
     end;
   end;
 
@@ -1704,10 +1781,11 @@ begin
 end;
 
 
-function TRFAViewForm.CountFilesByStatus(Node: PVirtualNode; Status:TFseStatus) : cardinal;
+function TRFAViewForm.CountFilesByStatus(Node: PVirtualNode; Status:TEntryStatus; IncludeWithoutStatus : boolean = false) : cardinal;
 var
   Data : pFse;
   NextNode: PVirtualNode;
+  ModStatus : TEntryModification;
 begin
   Result := 0;
 
@@ -1717,8 +1795,17 @@ begin
   begin
     Data := RFAList.GetNodeData(Node);
 
-    if IsFile(Data.FileType) and (Data.Status = Status) then
-      Inc(Result);
+    if IsFile(Data.FileType) then
+    begin
+      if IncludeWithoutStatus and (Data.Status = []) then
+        Inc(Result)
+      else
+        for ModStatus := Low(TEntryModification) to High(TEntryModification) do
+        begin
+          if (ModStatus in Status) and (ModStatus in Data.Status) then
+            Inc(Result);
+        end;
+    end;
 
     Node := RFAList.GetNext(Node);
 
@@ -1741,11 +1828,11 @@ begin
     NextNode := RFAList.GetNext(Node, true);
     Data := RFAList.GetNodeData(Node);
 
-    if (Data.FileType = ftFolder) and (CountFilesByStatus(Node, fs_No_Change) = 0) and (CountFilesByStatus(Node, fs_New) = 0) then
+    if (Data.FileType = ftFolder) and (CountFilesByStatus(Node, [fsNew, fsEntry, fsExternal], true) = 0) then
     begin
       NextNode := RFAList.GetNextSibling(Node);
       RFAList.FullyVisible[Node] := false;
-      Data.Status := fs_Delete;
+      Include(Data.Status, fsDelete);
     end;
 
     Node := NextNode;
@@ -1773,24 +1860,21 @@ begin
 
     if IsFile(Data.FileType) and (Data.Size > 0) then
     begin
-      case Data.Status of
-        fs_No_Change:
-        begin
-          Data.Status := fs_Delete;
-          RFAList.FullyVisible[Node] := false;
-        end;
-        fs_New:
-        begin
-          RFAList.DeleteNode(Node);
-        end;
-      end;
+      if (Data.Status = []) then
+      begin
+        Include(Data.Status, fsDelete);
+        RFAList.FullyVisible[Node] := false;
+      end
+      else if (fsNew in Data.Status) then
+      begin
+        RFAList.DeleteNode(Node);
+      end
     end;
 
     Node := NextNode;
   end;
 
   RFAList.EndUpdate;
-  RemoveEmptyFolders;
 
 end;
 
@@ -1959,7 +2043,6 @@ begin
   end
     else
   begin
-(*
     SourceNode := Sender.GetFirstSelected;
     TargetNode := Sender.DropTargetNode;
 
@@ -1994,7 +2077,7 @@ begin
         SourceNode :=  Sender.GetFirstSelected;
       end;
     end
-*)
+
   end;
 
   Sort;
@@ -2028,32 +2111,61 @@ begin
 end;
 
 
-procedure TRFAViewForm.RFAListEdited(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
-begin
-  Sort;
-end;
-
 procedure TRFAViewForm.RFAListEditing(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
 var
   Data : pFse;
 begin
+(*
   Allowed := false;
   Data := Sender.GetNodeData(Node);
   if (Data.FileType = ftFolder) then
   begin
     Allowed := true;
   end;
+*)
 end;
 
 procedure TRFAViewForm.RFAListNewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
 var
   Data : pFse;
 begin
+  FEditResult := edCancel;
   Data := Sender.GetNodeData(Node);
-  if (Data.FileType = ftFolder) then
+  if (NewText <> Data.W32Name) then
   begin
-    Data.W32Name := NewText;
+    if ValidFilename(NewText, false) then
+    begin
+      Data.W32Name := NewText;
+      FEditResult := edOk;
+
+      if (Data.FileType = ftFolder) then
+        PropagateStatus(Node, fsEntry)
+      else
+        Include(Data.Status, fsEntry);
+    end
+      else
+    begin
+      FEditResult := edInvalid;
+      Beep;
+    end;
   end;
+end;
+
+procedure TRFAViewForm.RFAListEdited(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
+begin
+  if FEditResult = edInvalid then
+
+  else if FEditResult = edOk then
+    Sort;
+end;
+
+
+procedure TRFAViewForm.RFAListNodeMoved(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  Data : pFse;
+begin
+  Data := RFAList.GetNodeData(Node);
+  Include(Data.Status, fsEntry);
 end;
 
 procedure TRFAViewForm.RFAListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
@@ -2069,11 +2181,14 @@ begin
 
     Brush.Color := clNone;
 
-    if Data.Status = fs_Modified then
+    if fsExternal in Data.Status then
       Brush.Color := $0093DCFF;
 
-    if Data.Status = fs_New then
+    if fsNew in Data.Status then
       Brush.Color := $0080FF80;
+
+    if fsConflict in Data.Status then
+      Brush.Color := $008080FF;
 
     if Brush.Color <> clNone then
       Rectangle(CellRect);
