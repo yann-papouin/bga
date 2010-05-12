@@ -240,7 +240,6 @@ type
     procedure ExpandAllExecute(Sender: TObject);
     procedure CollapseAllExecute(Sender: TObject);
     procedure NewFolderExecute(Sender: TObject);
-    procedure RFAListEditing(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
     procedure RFAListNewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
     procedure RFAListEdited(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
     procedure RFAListNodeMoved(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -796,6 +795,7 @@ begin
     if FArchive.Open(Path) < 0 then
     begin
       ShowError('Archive opening error', 'This file is already used by another application');
+      FreeAndNil(FArchive);
     end
       else
     begin
@@ -816,8 +816,11 @@ begin
     RFAList.EndUpdate;
   end;
 
-  UpdateInfobar;
-  SyncStart;
+  if Result then
+  begin
+    UpdateInfobar;
+    SyncStart;
+  end;
 end;
 
 procedure TRFAViewForm.UpdateInfobar;
@@ -924,6 +927,7 @@ end;
 procedure TRFAViewForm.NewExecute(Sender: TObject);
 begin
   Reset;
+  //Save.Enabled := false;
 end;
 
 
@@ -1100,8 +1104,7 @@ begin
   Begin
     if OpenDialog.FileName = SaveDialog.FileName then
       UseDefrag := true;
-    
-    OpenDialog.FileName := SaveDialog.FileName;
+
     Save.Enabled := true;
     Defrag.Enabled := true;
 
@@ -1117,15 +1120,32 @@ procedure TRFAViewForm.SaveExecute(Sender: TObject);
 begin
   if SaveMap(SaveDialog.FileName) then
   begin
-    //Save.Enabled := false;
+    OpenDialog.FileName := SaveDialog.FileName;
     RecentList.AddString(SaveDialog.FileName);
     RebuildRecentList.Execute;
+  end
+    else
+  begin
+    Save.Enabled := false;
+    Defrag.Enabled := false;
+    SaveDialog.FileName := OpenDialog.FileName;
   end;
 end;
 
 procedure TRFAViewForm.DefragExecute(Sender: TObject);
 begin
-  SaveMap(SaveDialog.FileName, true);
+  if SaveMap(SaveDialog.FileName, true) then
+  begin
+    OpenDialog.FileName := SaveDialog.FileName;
+    RecentList.AddString(SaveDialog.FileName);
+    RebuildRecentList.Execute;
+  end
+    else
+  begin
+    Save.Enabled := false;
+    Defrag.Enabled := false;
+    SaveDialog.FileName := OpenDialog.FileName;
+  end;
 end;
 
 procedure TRFAViewForm.ShiftData(ShiftData: TRFAResult; ShiftWay : TShiftWay; IgnoreNode : PVirtualNode = nil);
@@ -1191,6 +1211,7 @@ var
   ExternalFile : TFileStream;
   InternalFile : TMemoryStream;
   Size : int64;
+  NewResult : integer;
   TmpArchive : TRFAFile;
   TmpFilename : string;
 
@@ -1347,118 +1368,126 @@ begin
         repeat
           TmpFilename := ExtractFilePath(Path) + RandomString('333333') + '.tmp';
         until not FileExists(TmpFilename);
-        TmpArchive.New(TmpFilename);
+        NewResult := TmpArchive.New(TmpFilename);
       end
       else
-        TmpArchive.New(Path);
+        NewResult := TmpArchive.New(Path);
 
-      TotalProgress(roBegin, 0, RFAList.TotalCount*4);
-
-      /// Step-0 : Immediatly update all needed entries
-      Node := RFAList.GetFirst;
-      while Node <> nil do
+      if NewResult < 0 then
       begin
-        if not Cancel.Enabled then
-          Break;
+         ShowError('Archive saving error', 'This file is already used by another application');
+         FreeAndNil(TmpArchive);
+      end
+        else
+      begin
+        TotalProgress(roBegin, 0, RFAList.TotalCount*4);
 
-        NextNode := RFAList.GetNext(Node);
-        Data := RFAList.GetNodeData(Node);
-
-        if (fsEntry in Data.Status) and IsFile(Data.FileType) then
+        /// Step-0 : Immediatly update all needed entries
+        Node := RFAList.GetFirst;
+        while Node <> nil do
         begin
-          Data.EntryName := BuildEntryNameFromTree(Node);
-          Exclude(Data.Status, fsEntry);
+          if not Cancel.Enabled then
+            Break;
+
+          NextNode := RFAList.GetNext(Node);
+          Data := RFAList.GetNodeData(Node);
+
+          if (fsEntry in Data.Status) and IsFile(Data.FileType) then
+          begin
+            Data.EntryName := BuildEntryNameFromTree(Node);
+            Exclude(Data.Status, fsEntry);
+          end;
+
+          TotalProgress(roSave, PG_AUTO, PG_SAME);
+          Node := NextNode;
         end;
 
-        TotalProgress(roSave, PG_AUTO, PG_SAME);
-        Node := NextNode;
-      end;
-
-      /// Step-1 : Add same files without lost data
-      Node := RFAList.GetFirst;
-      while Node <> nil do
-      begin
-        if not Cancel.Enabled then
-          Break;
-
-        NextNode := RFAList.GetNext(Node);
-        Data := RFAList.GetNodeData(Node);
-
-        if not (Data.Status = []) and IsFile(Data.FileType) then
+        /// Step-1 : Add same files without lost data
+        Node := RFAList.GetFirst;
+        while Node <> nil do
         begin
-          //SendDebugFmt('File %s exported',[Data.W32Name]);
-          InternalFile := TMemoryStream.Create;
-          ExportFile(Node, InternalFile);
-          Size := InternalFile.Size;
-          InsertResult := TmpArchive.InsertFile(InternalFile, Data.Compressed);
-          InternalFile.Free;
-          TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
+          if not Cancel.Enabled then
+            Break;
+
+          NextNode := RFAList.GetNext(Node);
+          Data := RFAList.GetNodeData(Node);
+
+          if not (Data.Status = []) and IsFile(Data.FileType) then
+          begin
+            //SendDebugFmt('File %s exported',[Data.W32Name]);
+            InternalFile := TMemoryStream.Create;
+            ExportFile(Node, InternalFile);
+            Size := InternalFile.Size;
+            InsertResult := TmpArchive.InsertFile(InternalFile, Data.Compressed);
+            InternalFile.Free;
+            TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
+          end;
+
+          TotalProgress(roSave, PG_AUTO, PG_SAME);
+          Node := NextNode;
         end;
 
-        TotalProgress(roSave, PG_AUTO, PG_SAME);
-        Node := NextNode;
-      end;
-
-      /// Step-2 : Add edited files
-      Node := RFAList.GetFirst;
-      while Node <> nil do
-      begin
-        if not Cancel.Enabled then
-          Break;
-
-        NextNode := RFAList.GetNext(Node);
-        Data := RFAList.GetNodeData(Node);
-
-        if (fsExternal in Data.Status) and IsFile(Data.FileType) then
+        /// Step-2 : Add edited files
+        Node := RFAList.GetFirst;
+        while Node <> nil do
         begin
-          ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
-          Size := ExternalFile.Size;
-          InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
-          ExternalFile.Free;
-          TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
+          if not Cancel.Enabled then
+            Break;
+
+          NextNode := RFAList.GetNext(Node);
+          Data := RFAList.GetNodeData(Node);
+
+          if (fsExternal in Data.Status) and IsFile(Data.FileType) then
+          begin
+            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+            Size := ExternalFile.Size;
+            InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+            ExternalFile.Free;
+            TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
+          end;
+
+          TotalProgress(roSave, PG_AUTO, PG_SAME);
+          Node := NextNode;
         end;
 
-        TotalProgress(roSave, PG_AUTO, PG_SAME);
-        Node := NextNode;
-      end;
-
-      /// Step-3 : Add new files
-      Node := RFAList.GetFirst;
-      while Node <> nil do
-      begin
-        if not Cancel.Enabled then
-          Break;
-
-        NextNode := RFAList.GetNext(Node);
-        Data := RFAList.GetNodeData(Node);
-
-        if (fsNew in Data.Status) and IsFile(Data.FileType) then
+        /// Step-3 : Add new files
+        Node := RFAList.GetFirst;
+        while Node <> nil do
         begin
-          ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
-          Size := ExternalFile.Size;
-          InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
-          ExternalFile.Free;
-          TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
+          if not Cancel.Enabled then
+            Break;
+
+          NextNode := RFAList.GetNext(Node);
+          Data := RFAList.GetNodeData(Node);
+
+          if (fsNew in Data.Status) and IsFile(Data.FileType) then
+          begin
+            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+            Size := ExternalFile.Size;
+            InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+            ExternalFile.Free;
+            TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
+          end;
+
+          TotalProgress(roSave, PG_AUTO, PG_SAME);
+          Node := NextNode;
         end;
 
-        TotalProgress(roSave, PG_AUTO, PG_SAME);
-        Node := NextNode;
+        TotalProgress(roEnd, PG_NULL, PG_NULL);
+        Result := true;
+
+        TmpArchive.Free;
+
+        if Assigned(FArchive) and Defrag then
+        begin
+          Reset;
+          DeleteFile(Path);
+          RenameFile(TmpFilename, Path);
+        end;
+
+        OpenDialog.FileName := Path;
+        QuickOpen.Execute;
       end;
-
-      TotalProgress(roEnd, PG_NULL, PG_NULL);
-      Result := true;
-
-      TmpArchive.Free;
-
-      if Assigned(FArchive) and Defrag then
-      begin
-        Reset;
-        DeleteFile(Path);
-        RenameFile(TmpFilename, Path);
-      end;
-
-      OpenDialog.FileName := Path;
-      QuickOpen.Execute;
     end;
   end;
 
@@ -2165,20 +2194,6 @@ begin
 
 end;
 
-
-procedure TRFAViewForm.RFAListEditing(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
-var
-  Data : pFse;
-begin
-(*
-  Allowed := false;
-  Data := Sender.GetNodeData(Node);
-  if (Data.FileType = ftFolder) then
-  begin
-    Allowed := true;
-  end;
-*)
-end;
 
 procedure TRFAViewForm.RFAListNewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
 var

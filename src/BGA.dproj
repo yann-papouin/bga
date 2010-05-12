@@ -20,9 +20,9 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_DependencyCheckOutputName>_bin_bga\BGA.exe</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>_bin_bgaa\BGA.exe</DCC_DependencyCheckOutputName>
 			<DCC_DcuOutput>.\_dcu_bga</DCC_DcuOutput>
-			<DCC_ExeOutput>.\_bin_bga</DCC_ExeOutput>
+			<DCC_ExeOutput>.\_bin_bgaa</DCC_ExeOutput>
 			<DCC_BplOutput>.\_bpl_bga</DCC_BplOutput>
 			<DCC_DcpOutput>.\_dcp_bga</DCC_DcpOutput>
 			<DCC_UsePackage>vclx;vcl;vclimg;dbrtl;Rave77VCL;bdertl;rtl;vclactnband;xmlrtl;vcldb;vcldbx;vcltouch;dsnap;dsnapcon;TeeUI;TeeDB;Tee;vclib;ibxpress;adortl;IndyCore;IndySystem;IndyProtocols;inet;intrawebdb_100_140;Intraweb_100_140;VclSmp;vclie;websnap;webdsnap;inetdb;inetdbbde;inetdbxpress;soaprtl;vclribbon;dbexpress;DbxCommonDriver;DataSnapIndy10ServerTransport;DataSnapProviderClient;DbxClientDriver;DataSnapServer;DBXInterBaseDriver;DBXMySQLDriver;dbxcds;DBXFirebirdDriver;DBXSybaseASEDriver;DBXSybaseASADriver;DBXOracleDriver;DBXMSSQLDriver;DBXInformixDriver;DBXDb2Driver;Jcl;JclVcl;JvCoreD14R;JvSystemD14R;JvStdCtrlsD14R;JvAppFrmD14R;JvBandsD14R;JvDBD14R;JvDlgsD14R;JvBDED14R;JvCmpD14R;JvCryptD14R;JvCtrlsD14R;JvCustomD14R;JvDockingD14R;JvDotNetCtrlsD14R;JvEDID14R;JvGlobusD14R;JvHMID14R;JvInterpreterD14R;JvJansD14R;JvManagedThreadsD14R;JvMMD14R;JvNetD14R;JvPageCompsD14R;JvPluginD14R;JvPrintPreviewD14R;JvRuntimeDesignD14R;JvTimeFrameworkD14R;JvValidatorsD14R;JvWizardD14R;JvXPCtrlsD14R;GLScene_RunTime;tb2k_d12;SpTBXLib_d14;VirtualTreesD12;EmbeddedWebBrowser_D2010;PngComponents;GR32_DSGN_BDS2009;GR32_BDS2006;GLDaliComponents;Snoop_D5;dclGraphicEx140</DCC_UsePackage>
@@ -309,7 +309,7 @@ boSaveCompressedCopyInCaseOfError=0
 boHandleSafeCallExceptions=1
 boCallRTLExceptionEvent=1
 boCatchHandledExceptions=0
-loCatchLeaks=1
+loCatchLeaks=0
 loGroupsSonLeaks=1
 loHideBorlandLeaks=1
 loFreeAllLeaks=1
