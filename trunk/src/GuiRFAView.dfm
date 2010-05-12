@@ -3,8 +3,8 @@ object RFAViewForm: TRFAViewForm
   Top = 0
   ActiveControl = RFAList
   Caption = 'RFA View'
-  ClientHeight = 453
-  ClientWidth = 624
+  ClientHeight = 576
+  ClientWidth = 817
   Color = clBtnFace
   Constraints.MinHeight = 480
   Constraints.MinWidth = 640
@@ -24,8 +24,8 @@ object RFAViewForm: TRFAViewForm
   object RFAList: TVirtualStringTree
     Left = 0
     Top = 25
-    Width = 624
-    Height = 336
+    Width = 817
+    Height = 459
     Align = alClient
     DragMode = dmAutomatic
     DragOperations = [doMove]
@@ -57,6 +57,7 @@ object RFAViewForm: TRFAViewForm
     OnGetNodeDataSize = RFAListGetNodeDataSize
     OnKeyAction = RFAListKeyAction
     OnNewText = RFAListNewText
+    OnNodeMoved = RFAListNodeMoved
     OnStartDrag = RFAListStartDrag
     Columns = <
       item
@@ -86,14 +87,14 @@ object RFAViewForm: TRFAViewForm
       item
         Alignment = taRightJustify
         Position = 4
-        Width = 17
+        Width = 210
         WideText = 'Offset'
       end>
   end
   object StatusBar: TSpTBXStatusBar
     Left = 0
-    Top = 428
-    Width = 624
+    Top = 551
+    Width = 817
     Height = 25
     object ArchiveSize: TSpTBXLabelItem
       Caption = 'ArchiveSize'
@@ -112,7 +113,7 @@ object RFAViewForm: TRFAViewForm
   object TopDock: TSpTBXDock
     Left = 0
     Top = 0
-    Width = 624
+    Width = 817
     Height = 25
     object tbMenuBar: TSpTBXToolbar
       Left = 0
@@ -218,8 +219,8 @@ object RFAViewForm: TRFAViewForm
   end
   object ProgressPanel: TSpTBXPanel
     Left = 0
-    Top = 361
-    Width = 624
+    Top = 484
+    Width = 817
     Height = 32
     Caption = 'LoadBar'
     Align = alBottom
@@ -228,7 +229,7 @@ object RFAViewForm: TRFAViewForm
     Borders = False
     object SubProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
-      Left = 362
+      Left = 555
       Top = 7
       Width = 168
       Height = 18
@@ -251,7 +252,7 @@ object RFAViewForm: TRFAViewForm
       AlignWithMargins = True
       Left = 67
       Top = 7
-      Width = 284
+      Width = 477
       Height = 18
       Margins.Top = 7
       Margins.Right = 8
@@ -280,7 +281,7 @@ object RFAViewForm: TRFAViewForm
     end
     object SpTBXButton2: TSpTBXButton
       AlignWithMargins = True
-      Left = 541
+      Left = 734
       Top = 4
       Width = 75
       Height = 24
@@ -297,8 +298,8 @@ object RFAViewForm: TRFAViewForm
   object SearchBar: TSpTBXPanel
     AlignWithMargins = True
     Left = 0
-    Top = 393
-    Width = 624
+    Top = 516
+    Width = 817
     Height = 35
     Margins.Left = 0
     Margins.Top = 0
@@ -316,7 +317,7 @@ object RFAViewForm: TRFAViewForm
     object Search: TSpTBXEdit
       Left = 80
       Top = 7
-      Width = 537
+      Width = 730
       Height = 21
       Align = alClient
       TabOrder = 0
