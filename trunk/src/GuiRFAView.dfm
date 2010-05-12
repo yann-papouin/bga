@@ -33646,9 +33646,6 @@ object RFAViewForm: TRFAViewForm
     object RebuildRecentList: TAction
       OnExecute = RebuildRecentListExecute
     end
-    object QuickOpen: TAction
-      OnExecute = QuickOpenExecute
-    end
     object Quit: TAction
       Caption = 'Exit'
       ImageIndex = 1

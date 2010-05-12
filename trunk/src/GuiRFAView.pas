@@ -117,7 +117,6 @@ type
     RebuildRecentList: TAction;
     RecentMenu: TSpTBXSubmenuItem;
     SpTBXItem4: TSpTBXItem;
-    QuickOpen: TAction;
     Quit: TAction;
     SpTBXItem5: TSpTBXItem;
     SpTBXItem6: TSpTBXItem;
@@ -209,12 +208,10 @@ type
       TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
     procedure OpenExecute(Sender: TObject);
-    procedure SaveExecute(Sender: TObject);
     procedure SaveAsExecute(Sender: TObject);
     procedure RecentListEnumText(Sender: TObject; Value: string; Index: Integer);
     procedure RebuildRecentListExecute(Sender: TObject);
     procedure OpenRecentClick(Sender: TObject);
-    procedure QuickOpenExecute(Sender: TObject);
     procedure RecentExecute(Sender: TObject);
     procedure ApplicationRunExecute(Sender: TObject);
     procedure AppInstancesCmdLineReceived(Sender: TObject; CmdLine: TStrings);
@@ -243,6 +240,7 @@ type
     procedure RFAListNewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);
     procedure RFAListEdited(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
     procedure RFAListNodeMoved(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure SaveExecute(Sender: TObject);
   private
     { Déclarations privées }
     FEditResult : TEditResult;
@@ -280,6 +278,8 @@ type
     function ExtractTemporary(Node : PVirtualNode) : string;
     procedure EditSelection;
     procedure Reset;
+    function QuickSave(Defrag : boolean): boolean;
+    function QuickOpen: boolean;
 
     procedure UpdateInfobar;
 
@@ -725,7 +725,7 @@ begin
     if FileExists(CmdLine[0]) then
     begin
       OpenDialog.FileName := CmdLine[0];
-      QuickOpen.Execute;
+      QuickOpen;
     end;
 end;
 
@@ -744,7 +744,7 @@ begin
   if ParamCount > 0 then
   begin
     OpenDialog.FileName := ParamStr(1);
-    QuickOpen.Execute;
+    QuickOpen;
   end
     else
   if RecentMenu.Enabled then
@@ -1045,7 +1045,7 @@ begin
   if (Sender is TSpTBXItem) then
   begin
     OpenDialog.FileName := (Sender as TSpTBXItem).Caption;
-    QuickOpen.Execute;
+    QuickOpen;
   end;
 end;
 
@@ -1060,16 +1060,16 @@ begin
   OpenDialog.FileName := ExtractFileName(OpenDialog.FileName);
   If OpenDialog.Execute then
   Begin
-    QuickOpen.Execute;
+    QuickOpen;
   End;
 end;
 
-procedure TRFAViewForm.QuickOpenExecute(Sender: TObject);
+function TRFAViewForm.QuickOpen: boolean;
 begin
+  QuickOpen := false;
   if FileExists(OpenDialog.FileName) then
   begin
     // Loading file
-
     if LoadMap(OpenDialog.FileName) then
     begin
       RecentList.AddString(OpenDialog.FileName);
@@ -1078,6 +1078,7 @@ begin
       Save.Enabled := true;
       Defrag.Enabled := true;
       Title := OpenDialog.FileName;
+      QuickOpen := true;
     end;
   end
     else
@@ -1085,6 +1086,7 @@ begin
     ShowError('Open error', Format(_('File (%s) not found'), [OpenDialog.FileName]));
   end;
 end;
+
 
 
 procedure TRFAViewForm.QuitExecute(Sender: TObject);
@@ -1105,47 +1107,40 @@ begin
     if OpenDialog.FileName = SaveDialog.FileName then
       UseDefrag := true;
 
-    Save.Enabled := true;
-    Defrag.Enabled := true;
-
-    if UseDefrag then
-      Defrag.Execute
-    else
-      Save.Execute;
+    if QuickSave(UseDefrag) then
+    begin
+      Save.Enabled := true;
+      Defrag.Enabled := true;
+    end;
   End;
 end;
 
 
-procedure TRFAViewForm.SaveExecute(Sender: TObject);
+
+function TRFAViewForm.QuickSave(Defrag: boolean): boolean;
 begin
+  Result := false;
   if SaveMap(SaveDialog.FileName) then
   begin
     OpenDialog.FileName := SaveDialog.FileName;
     RecentList.AddString(SaveDialog.FileName);
     RebuildRecentList.Execute;
+    Result := true;
   end
     else
   begin
-    Save.Enabled := false;
-    Defrag.Enabled := false;
     SaveDialog.FileName := OpenDialog.FileName;
   end;
 end;
 
+procedure TRFAViewForm.SaveExecute(Sender: TObject);
+begin
+  QuickSave(false);
+end;
+
 procedure TRFAViewForm.DefragExecute(Sender: TObject);
 begin
-  if SaveMap(SaveDialog.FileName, true) then
-  begin
-    OpenDialog.FileName := SaveDialog.FileName;
-    RecentList.AddString(SaveDialog.FileName);
-    RebuildRecentList.Execute;
-  end
-    else
-  begin
-    Save.Enabled := false;
-    Defrag.Enabled := false;
-    SaveDialog.FileName := OpenDialog.FileName;
-  end;
+  QuickSave(true);
 end;
 
 procedure TRFAViewForm.ShiftData(ShiftData: TRFAResult; ShiftWay : TShiftWay; IgnoreNode : PVirtualNode = nil);
@@ -1486,7 +1481,7 @@ begin
         end;
 
         OpenDialog.FileName := Path;
-        QuickOpen.Execute;
+        QuickOpen;
       end;
     end;
   end;
