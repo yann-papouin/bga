@@ -23,7 +23,8 @@ uses
   GuiUpdateManager in 'GuiUpdateManager.pas' {UpdateManagerForm},
   GuiBrowse in 'GuiBrowse.pas' {BrowseForm},
   GuiSkinDialog in 'GuiSkinDialog.pas' {SkinDialogForm},
-  GuiBrowsePack in 'GuiBrowsePack.pas' {BrowsePackForm};
+  GuiBrowsePack in 'GuiBrowsePack.pas' {BrowsePackForm},
+  GuiBrowseExtract in 'GuiBrowseExtract.pas' {BrowseExtractForm};
 
 {$R *.res}
 
@@ -42,5 +43,6 @@ begin
   Application.CreateForm(TBrowseForm, BrowseForm);
   Application.CreateForm(TSkinDialogForm, SkinDialogForm);
   Application.CreateForm(TBrowsePackForm, BrowsePackForm);
+  Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
   Application.Run;
 end.

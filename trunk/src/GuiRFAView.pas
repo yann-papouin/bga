@@ -329,7 +329,7 @@ implementation
 
 uses
   GuiAbout, GuiMain, GuiRAWView, GuiSMView, GuiBrowse, GuiBrowsePack, GuiSkinDialog, Masks,
-  Math, StringFunction,
+  Math, StringFunction, GuiBrowseExtract,
   CommonLib, AppLib, MD5Api;
 
 
@@ -428,7 +428,7 @@ begin
 end;
 
 
-function BuildEntryNameFromTree(Node : PVirtualNode) : string;
+function BuildEntryNameFromTree(Node : PVirtualNode; SelectionOnly : boolean = false) : string;
 var
   Data : pFse;
 begin
@@ -437,9 +437,9 @@ begin
 
   while True do
   begin
-    Node := Node.Parent;
+    Node := RFAViewForm.RFAList.NodeParent[Node];
 
-    if (Node = nil) or (Node = RFAViewForm.RFAList.RootNode)  then
+    if (Node = nil) or (SelectionOnly and not RFAViewForm.RFAList.Selected[Node]) then
       Break;
 
     Result := '/' + Result;
@@ -1630,10 +1630,11 @@ var
   Node: PVirtualNode;
   ExternalFilePath : string;
   ExternFile : TFileStream;
+  W32Path : string;
 begin
   Cancel.Enabled := true;
 
-  if (BrowseForm.ShowModal = mrOk) then
+  if (BrowseExtractForm.ShowModal = mrOk) then
   begin
     TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);
     Node := RFAList.GetFirstSelected;
@@ -1647,8 +1648,15 @@ begin
 
       if IsFile(Data.FileType) then
       begin
-        ExternalFilePath := IncludeTrailingBackslash(BrowseForm.Directory);
-        ExternalFilePath := ExternalFilePath + Data.W32Path;
+        if BrowseExtractForm.RecreateFullPath.Checked then
+          W32Path := Data.W32Path
+        else
+        begin
+          W32Path := BuildEntryNameFromTree(Node, true);
+          W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
+        end;
+
+        ExternalFilePath := IncludeTrailingBackslash(BrowseExtractForm.Directory) + W32Path;
         ForceDirectories(ExtractFilePath(ExternalFilePath));
 
         ExternFile := TFileStream.Create(ExternalFilePath, fmOpenWrite or fmCreate);
