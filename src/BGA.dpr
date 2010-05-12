@@ -21,7 +21,8 @@ uses
   TypesSM in 'GLSceneExt\TypesSM.pas',
   SvnInfo in 'Lib\SvnInfo.pas',
   GuiUpdateManager in 'GuiUpdateManager.pas' {UpdateManagerForm},
-  GuiBrowse in 'GuiBrowse.pas' {BrowseForm};
+  GuiBrowse in 'GuiBrowse.pas' {BrowseForm},
+  GuiSkinDialog in 'GuiSkinDialog.pas' {SkinDialogForm};
 
 {$R *.res}
 
@@ -38,5 +39,6 @@ begin
   Application.CreateForm(TSMViewForm, SMViewForm);
   Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
   Application.CreateForm(TBrowseForm, BrowseForm);
+  Application.CreateForm(TSkinDialogForm, SkinDialogForm);
   Application.Run;
 end.

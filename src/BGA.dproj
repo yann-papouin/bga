@@ -82,6 +82,9 @@
 			<DCCReference Include="GuiBrowse.pas">
 				<Form>BrowseForm</Form>
 			</DCCReference>
+			<DCCReference Include="GuiSkinDialog.pas">
+				<Form>SkinDialogForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

@@ -2,7 +2,7 @@ object BrowseForm: TBrowseForm
   Left = 0
   Top = 0
   Caption = 'Browse for folder'
-  ClientHeight = 362
+  ClientHeight = 366
   ClientWidth = 384
   Color = clBtnFace
   Constraints.MinHeight = 400
@@ -18,7 +18,7 @@ object BrowseForm: TBrowseForm
   OnShow = FormShow
   DesignSize = (
     384
-    362)
+    366)
   PixelsPerInch = 96
   TextHeight = 13
   object Folder: TSpTBXButtonEdit
@@ -54,7 +54,7 @@ object BrowseForm: TBrowseForm
   object Footer: TPanel
     AlignWithMargins = True
     Left = 0
-    Top = 319
+    Top = 323
     Width = 384
     Height = 43
     Margins.Left = 0
@@ -68,6 +68,7 @@ object BrowseForm: TBrowseForm
     Padding.Right = 5
     Padding.Bottom = 5
     TabOrder = 2
+    ExplicitTop = 319
     object ButtonOk: TSpTBXButton
       AlignWithMargins = True
       Left = 142
