@@ -28,7 +28,7 @@ uses
   Dialogs, StdCtrls, VirtualTrees, JvComponentBase, JvFormPlacement, ImgList,
   JclFileUtils, PngImageList, ExtCtrls, ActiveX, Types, SpTBXControls, SpTBXItem,
   TB2Item, TB2Dock, TB2Toolbar, ActnList, JvMRUList, JvAppInst,
-  Menus, RFALib, SpTBXEditors, JvBaseDlg, JvBrowseFolder, JvAppStorage,
+  Menus, RFALib, SpTBXEditors, JvBaseDlg, JvAppStorage,
   JvAppRegistryStorage, GuiUpdateManager, DragDrop, DropSource, DragDropFile;
 
 type
@@ -184,6 +184,7 @@ type
     NewFolder: TAction;
     SpTBXSeparatorItem8: TSpTBXSeparatorItem;
     SpTBXItem22: TSpTBXItem;
+    SpTBXSubmenuItem4: TSpTBXSubmenuItem;
     procedure FormCreate(Sender: TObject);
     procedure RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure RFAListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -327,7 +328,7 @@ implementation
 {$R *.dfm}
 
 uses
-  GuiAbout, GuiMain, GuiRAWView, GuiSMView, GuiBrowse, GuiSkinDialog, Masks,
+  GuiAbout, GuiMain, GuiRAWView, GuiSMView, GuiBrowse, GuiBrowsePack, GuiSkinDialog, Masks,
   Math, StringFunction,
   CommonLib, AppLib, MD5Api;
 
@@ -380,7 +381,7 @@ begin
 end;
 *)
 
-procedure BuildTreeFromFullPath(Path: AnsiString);
+function BuildTreeFromFullPath(Path: AnsiString) : PVirtualNode;
 var
   PvNode, Node: PVirtualNode;
   Data : pFse;
@@ -393,31 +394,37 @@ begin
   for i := 0 to SFCountSubstr(DirDelimiter, Path)-1 do
   begin
     Middle := SFLeftNRight(DirDelimiter, Path, i);
-    Left := IncludeTrailingPathDelimiter(SFNLeft(DirDelimiter, Path, i+1));
+    Middle := trim(Middle);
 
-    PvNode := Node;
-    Node := FindPath(Left);
-
-    if Node = nil then
+    if Length(Middle) > 0 then
     begin
-      if PvNode <> nil then
-        Node := PvNode
-      else
-        if i>0 then
-          Node := RFAViewForm.RFAList.GetFirstLevel(i-1)
+      Left := IncludeTrailingPathDelimiter(SFNLeft(DirDelimiter, Path, i+1));
+
+      PvNode := Node;
+      Node := FindPath(Left);
+
+      if Node = nil then
+      begin
+        if PvNode <> nil then
+          Node := PvNode
         else
-          Node := RFAViewForm.RFAList.RootNode;
+          if i>0 then
+            Node := RFAViewForm.RFAList.GetFirstLevel(i-1)
+          else
+            Node := RFAViewForm.RFAList.RootNode;
 
-      Node := RFAViewForm.RFAList.AddChild(Node);
-      Data := RFAViewForm.RFAList.GetNodeData(Node);
+        Node := RFAViewForm.RFAList.AddChild(Node);
+        Data := RFAViewForm.RFAList.GetNodeData(Node);
 
-      Data.W32Path := SFNLeft(DirDelimiter, Path, i+1);
-      Data.W32Name := Middle;
-      Data.FileType := ftFolder;
+        Data.W32Path := SFNLeft(DirDelimiter, Path, i+1);
+        Data.W32Name := Middle;
+        Data.FileType := ftFolder;
 
-      //CheckValidity(Node);
+        //CheckValidity(Node);
+      end;
     end;
   end;
+  Result := Node;
 end;
 
 
@@ -927,9 +934,13 @@ var
   Data : pFse;
 begin
   Node := RFAList.GetFirstSelected;
-
-  if Node <> nil then
+  while Node <> nil do
+  begin
     Data := RFAList.GetNodeData(Node);
+    if not IsFile(Data.FileType) then
+      Break;
+    Node := RFAList.NodeParent[Node];
+  end;
 
   if (Node = nil) or not IsFile(Data.FileType) then
   begin
@@ -1567,12 +1578,31 @@ end;
 
 
 procedure TRFAViewForm.PackDirectoryExecute(Sender: TObject);
+var
+  BasePath : string;
+  Node : PVirtualNode;
 begin
-  if (BrowseForm.ShowModal = mrOk) then
-    if DirectoryExists(BrowseForm.Directory) then
+  if (BrowsePackForm.ShowModal = mrOk) then
+    if DirectoryExists(BrowsePackForm.Directory) then
     begin
+      Node := RFAList.RootNode;
       Reset;
-      Add(RFAList.RootNode, nil, BrowseForm.Directory);
+
+      if BrowsePackForm.UseBasePath.Checked then
+      begin
+        BasePath := StringReplace(BrowsePackForm.Base.Text,'/','\',[rfReplaceAll]);
+        BasePath := IncludeTrailingBackslash(BasePath);
+
+        if not ValidFilename(BasePath, true) then
+        begin
+          ShowMessage('Base path error', Format('Base file path (%s) is invalid',[BasePath]));
+          Exit;
+        end;
+
+        Node := BuildTreeFromFullPath(BasePath);
+      end;
+
+      Add(Node, nil, BrowsePackForm.Directory);
     end;
 end;
 
@@ -1602,6 +1632,7 @@ var
   ExternFile : TFileStream;
 begin
   Cancel.Enabled := true;
+
   if (BrowseForm.ShowModal = mrOk) then
   begin
     TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);

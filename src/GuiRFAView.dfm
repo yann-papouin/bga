@@ -33804,6 +33804,11 @@ object RFAViewForm: TRFAViewForm
     object SpTBXItem22: TSpTBXItem
       Action = NewFolder
     end
+    object SpTBXSubmenuItem4: TSpTBXSubmenuItem
+      Caption = 'Edit with ...'
+      Enabled = False
+      ImageIndex = 791
+    end
     object SpTBXSeparatorItem8: TSpTBXSeparatorItem
     end
     object SpTBXItem21: TSpTBXItem
