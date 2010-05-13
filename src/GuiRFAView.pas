@@ -243,6 +243,13 @@ type
     procedure SaveExecute(Sender: TObject);
     procedure DropFileSourceDrop(Sender: TObject; DragType: TDragType;
       var ContinueDrop: Boolean);
+    procedure DropFileSourceGetData(Sender: TObject;
+      const FormatEtc: tagFORMATETC; out Medium: tagSTGMEDIUM;
+      var Handled: Boolean);
+    procedure DropFileSourceAfterDrop(Sender: TObject; DragResult: TDragResult;
+      Optimized: Boolean);
+    procedure RFAListMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Déclarations privées }
     FEditResult : TEditResult;
@@ -1688,7 +1695,10 @@ begin
       ForceDirectories(ExtractFilePath(ExternalFilePath));
 
       if Assigned(List) then
+      begin
+        //SendDebug(ExternalFilePath);
         List.Add(ExternalFilePath);
+      end;
 
       ExternFile := TFileStream.Create(ExternalFilePath, fmOpenWrite or fmCreate);
       ExportFile(Node, ExternFile);
@@ -1972,29 +1982,47 @@ begin
 end;
 
 
-procedure TRFAViewForm.DropFileSourceDrop(Sender: TObject; DragType: TDragType;
-  var ContinueDrop: Boolean);
+procedure TRFAViewForm.DropFileSourceDrop(Sender: TObject; DragType: TDragType; var ContinueDrop: Boolean);
 var
   List : TStringList;
   ExternalPath : string;
+  i :integer;
 begin
-  if DropFileSource.InShellDragLoop then
+  DropFileSource.Files.Clear;
+  //if DropFileSource.InShellDragLoop then
+  if true then
   begin
     repeat
       ExternalPath := GetMapTempDirectory + RandomString('333333')
     until not DirectoryExists(ExternalPath);
 
-    List := TStringList.Create;
-    ExtractTo(ExternalPath, List);
+    ExtractTo(ExternalPath);
 
-    if List.Count > 0 then
-      DropFileSource.Files.Text := List.Text;
+    List := TStringList.Create;
+    BuildFileList(IncludeTrailingPathDelimiter(ExternalPath)+'*', faAnyFile - faHidden, List);
+
+    for i := 0 to List.Count - 1 do
+      DropFileSource.Files.Add(IncludeTrailingPathDelimiter(ExternalPath) + List[i]);
 
     List.Free;
   end
     else
   begin
     ContinueDrop := false;
+  end;
+end;
+
+
+procedure TRFAViewForm.DropFileSourceAfterDrop(Sender: TObject; DragResult: TDragResult; Optimized: Boolean);
+begin
+  DropFileSource.Files.Clear;
+end;
+
+procedure TRFAViewForm.DropFileSourceGetData(Sender: TObject; const FormatEtc: tagFORMATETC; out Medium: tagSTGMEDIUM; var Handled: Boolean);
+begin
+  if (FormatEtc.cfFormat = CF_HDROP) then
+  begin
+
   end;
 end;
 
@@ -2379,16 +2407,22 @@ end;
 
 
 
+procedure TRFAViewForm.RFAListMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+(*
+  if not RFAList.Dragging and (DragDetectPlus(TWinControl(Sender))) then
+  begin
+    DropFileSource.Files.Clear;
+    DropFileSource.Files.Add(FArchive.Filepath);
+    DropFileSource.Execute;
+  end;
+*)
+end;
+
 procedure TRFAViewForm.RFAListStartDrag(Sender: TObject; var DragObject: TDragObject);
 begin
   (Sender as TBaseVirtualTree).CancelEditNode;
-
-  if (DragDetectPlus(TWinControl(Sender))) then
-  begin
-    DropFileSource.Files.Clear;
-    DropFileSource.Execute;
-  end;
-
 end;
 
 procedure TRFAViewForm.RFAListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
