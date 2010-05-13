@@ -55,9 +55,11 @@ object RFAViewForm: TRFAViewForm
     OnGetImageIndex = RFAListGetImageIndex
     OnGetNodeDataSize = RFAListGetNodeDataSize
     OnKeyAction = RFAListKeyAction
+    OnMouseDown = RFAListMouseDown
     OnNewText = RFAListNewText
     OnNodeMoved = RFAListNodeMoved
     OnStartDrag = RFAListStartDrag
+    ExplicitTop = 22
     Columns = <
       item
         MinWidth = 300
@@ -33828,8 +33830,10 @@ object RFAViewForm: TRFAViewForm
     Top = 56
   end
   object DropFileSource: TDropFileSource
-    DragTypes = [dtCopy]
+    DragTypes = [dtMove]
     OnDrop = DropFileSourceDrop
+    OnAfterDrop = DropFileSourceAfterDrop
+    OnGetData = DropFileSourceGetData
     Left = 8
     Top = 248
   end

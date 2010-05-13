@@ -434,7 +434,8 @@ begin
       if Assigned(FOnProgress) then
         FOnProgress(Self, roInsert, Data.Position);
     end;
-    FHandle.CopyFrom(Data, FlakedBuffer);
+    if FlakedBuffer > 0 then
+      FHandle.CopyFrom(Data, FlakedBuffer);
   {$Else}
     FHandle.CopyFrom(Data, Data.Size);
   {$EndIf}
@@ -452,7 +453,8 @@ begin
       if Assigned(FOnProgress) then
         FOnProgress(Self, roInsert, Data.Position + Buf.Position);
     end;
-    FHandle.CopyFrom(Buf, FlakedBuffer);
+    if FlakedBuffer > 0 then
+      FHandle.CopyFrom(Buf, FlakedBuffer);
   {$Else}
     FHandle.CopyFrom(Buf, Buf.Size);
   {$EndIf}
@@ -595,7 +597,8 @@ begin
       if Assigned(FOnProgress) then
         FOnProgress(Self, roCompress, SegmentData.Position);
     end;
-    FHandle.CopyFrom(SegmentData, FlakedBuffer);
+    if FlakedBuffer > 0 then
+      FHandle.CopyFrom(SegmentData, FlakedBuffer);
   {$Else}
     FHandle.CopyFrom(SegmentData, SegmentData.Size);
   {$EndIf}
@@ -613,7 +616,8 @@ begin
       if Assigned(FOnProgress) then
         FOnProgress(Self, roCompress, SegmentData.Position + Buf.Position);
     end;
-    FHandle.CopyFrom(Buf, FlakedBuffer);
+    if FlakedBuffer > 0 then
+      FHandle.CopyFrom(Buf, FlakedBuffer);
   {$Else}
     FHandle.CopyFrom(Buf, Buf.Size);
   {$EndIf}
@@ -746,9 +750,6 @@ var
 begin
   Assert(Assigned(Data));
 
-  BufferCount := Size div BUFFER_SIZE;
-  FlakedBuffer := Size mod BUFFER_SIZE;
-
   Buffer := TMemoryStream.Create;
   Buffer.Size := Size;
   Buffer.Seek(0, soFromBeginning);
@@ -756,11 +757,15 @@ begin
   FHandle.Seek(Offset, soFromBeginning);
 
   {$IfDef USE_BUFFER}
+    BufferCount := Size div BUFFER_SIZE;
+    FlakedBuffer := Size mod BUFFER_SIZE;
+
     for i := 1 to BufferCount do
     begin
       Buffer.CopyFrom(FHandle, BUFFER_SIZE);
     end;
-    Buffer.CopyFrom(FHandle, FlakedBuffer);
+    if FlakedBuffer > 0 then
+      Buffer.CopyFrom(FHandle, FlakedBuffer);
   {$Else}
     Buffer.CopyFrom(FHandle, Size);
   {$EndIf}
