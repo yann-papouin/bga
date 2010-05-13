@@ -33829,6 +33829,7 @@ object RFAViewForm: TRFAViewForm
   end
   object DropFileSource: TDropFileSource
     DragTypes = [dtCopy]
+    OnDrop = DropFileSourceDrop
     Left = 8
     Top = 248
   end

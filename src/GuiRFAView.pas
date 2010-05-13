@@ -241,6 +241,8 @@ type
     procedure RFAListEdited(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
     procedure RFAListNodeMoved(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure SaveExecute(Sender: TObject);
+    procedure DropFileSourceDrop(Sender: TObject; DragType: TDragType;
+      var ContinueDrop: Boolean);
   private
     { Déclarations privées }
     FEditResult : TEditResult;
@@ -262,6 +264,7 @@ type
 
     function FindFileByName(Filename :string) : PVirtualNode;
 
+    procedure ExtractTo(Directory : string; List : TStringList = nil);
     procedure ExpandSelection(Value : boolean);
 
     function IsFile(FileType : TFileType) : boolean;
@@ -1648,7 +1651,7 @@ begin
 end;
 
 
-procedure TRFAViewForm.ExtractSelectedExecute(Sender: TObject);
+procedure TRFAViewForm.ExtractTo(Directory: string; List : TStringList = nil);
 var
   Data : pFse;
   Node: PVirtualNode;
@@ -1658,40 +1661,52 @@ var
 begin
   Cancel.Enabled := true;
 
-  if (BrowseExtractForm.ShowModal = mrOk) then
+  if Assigned(List) then
+    List.Clear;
+
+  TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);
+  Node := RFAList.GetFirstSelected;
+  while Node <> nil do
   begin
-    TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);
-    Node := RFAList.GetFirstSelected;
-    while Node <> nil do
+    if not Cancel.Enabled then
+      Break;
+
+    ExtendSelection(Node);
+    Data := RFAList.GetNodeData(Node);
+
+    if IsFile(Data.FileType) then
     begin
-      if not Cancel.Enabled then
-        Break;
-
-      ExtendSelection(Node);
-      Data := RFAList.GetNodeData(Node);
-
-      if IsFile(Data.FileType) then
+      if BrowseExtractForm.RecreateFullPath.Checked then
+        W32Path := Data.W32Path
+      else
       begin
-        if BrowseExtractForm.RecreateFullPath.Checked then
-          W32Path := Data.W32Path
-        else
-        begin
-          W32Path := BuildEntryNameFromTree(Node, true);
-          W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
-        end;
-
-        ExternalFilePath := IncludeTrailingBackslash(BrowseExtractForm.Directory) + W32Path;
-        ForceDirectories(ExtractFilePath(ExternalFilePath));
-
-        ExternFile := TFileStream.Create(ExternalFilePath, fmOpenWrite or fmCreate);
-        ExportFile(Node, ExternFile);
-        ExternFile.Free;
+        W32Path := BuildEntryNameFromTree(Node, true);
+        W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
       end;
 
-      TotalProgress(roExport, PG_AUTO, RFAList.SelectedCount);
-      Node := RFAList.GetNextSelected(Node);
+      ExternalFilePath := IncludeTrailingBackslash(Directory) + W32Path;
+      ForceDirectories(ExtractFilePath(ExternalFilePath));
+
+      if Assigned(List) then
+        List.Add(ExternalFilePath);
+
+      ExternFile := TFileStream.Create(ExternalFilePath, fmOpenWrite or fmCreate);
+      ExportFile(Node, ExternFile);
+      ExternFile.Free;
     end;
-    TotalProgress(roEnd, PG_NULL, PG_NULL);
+
+    TotalProgress(roExport, PG_AUTO, RFAList.SelectedCount);
+    Node := RFAList.GetNextSelected(Node);
+  end;
+  TotalProgress(roEnd, PG_NULL, PG_NULL);
+end;
+
+
+procedure TRFAViewForm.ExtractSelectedExecute(Sender: TObject);
+begin
+  if (BrowseExtractForm.ShowModal = mrOk) then
+  begin
+    ExtractTo(BrowseExtractForm.Directory);
   end;
 end;
 
@@ -1734,8 +1749,6 @@ begin
     Result := Data.ExternalFilePath;
   end;
 end;
-
-
 
 procedure TRFAViewForm.EditSelection;
 var
@@ -1959,12 +1972,36 @@ begin
 end;
 
 
+procedure TRFAViewForm.DropFileSourceDrop(Sender: TObject; DragType: TDragType;
+  var ContinueDrop: Boolean);
+var
+  List : TStringList;
+  ExternalPath : string;
+begin
+  if DropFileSource.InShellDragLoop then
+  begin
+    repeat
+      ExternalPath := GetMapTempDirectory + RandomString('333333')
+    until not DirectoryExists(ExternalPath);
+
+    List := TStringList.Create;
+    ExtractTo(ExternalPath, List);
+
+    if List.Count > 0 then
+      DropFileSource.Files.Text := List.Text;
+
+    List.Free;
+  end
+    else
+  begin
+    ContinueDrop := false;
+  end;
+end;
+
 function TRFAViewForm.IsFile(FileType: TFileType): boolean;
 begin
   Result := not (FileType = ftFolder);
 end;
-
-
 
 procedure TRFAViewForm.CloseSearchBarExecute(Sender: TObject);
 begin
@@ -2094,7 +2131,8 @@ var
   Data : pFse;
 begin
   Data := nil;
-  if Source = nil then
+
+  if (Source = nil) and not (DropFileSource.DragInProgress) then
   begin
     FileList := TStringList.Create;
     DataObject.GetData(SOF, DropData);
@@ -2344,6 +2382,12 @@ end;
 procedure TRFAViewForm.RFAListStartDrag(Sender: TObject; var DragObject: TDragObject);
 begin
   (Sender as TBaseVirtualTree).CancelEditNode;
+
+  if (DragDetectPlus(TWinControl(Sender))) then
+  begin
+    DropFileSource.Files.Clear;
+    DropFileSource.Execute;
+  end;
 
 end;
 
