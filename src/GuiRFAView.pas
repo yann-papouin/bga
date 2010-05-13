@@ -1642,7 +1642,9 @@ end;
 
 procedure TRFAViewForm.ExtendSelection(Node : PVirtualNode);
 begin
-  RFAList.Selected[Node] := true;
+  if RFAList.IsVisible[Node] then
+    RFAList.Selected[Node] := true;
+
   Node := Node.FirstChild;
   while Node <> nil do
   begin

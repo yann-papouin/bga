@@ -11,6 +11,7 @@ inherited BrowseExtractForm: TBrowseExtractForm
   end
   inherited Footer: TPanel
     Top = 346
+    ExplicitTop = 346
   end
   inherited SpTBXLabel2: TSpTBXLabel
     Top = 108
@@ -30,7 +31,10 @@ inherited BrowseExtractForm: TBrowseExtractForm
     Top = 216
   end
   inherited FormStorage: TJvFormStorage
-    StoredProps.Strings = ()
+    StoredProps.Strings = (
+      'Folder.Text'
+      'Recents.Items'
+      'RecreateFullPath.Checked')
     Top = 248
   end
   inherited Actions: TActionList
