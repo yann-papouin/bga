@@ -59,7 +59,6 @@ object RFAViewForm: TRFAViewForm
     OnNewText = RFAListNewText
     OnNodeMoved = RFAListNodeMoved
     OnStartDrag = RFAListStartDrag
-    ExplicitTop = 22
     Columns = <
       item
         MinWidth = 300
