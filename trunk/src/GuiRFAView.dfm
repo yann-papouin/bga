@@ -231,106 +231,118 @@ inherited RFAViewForm: TRFAViewForm
     ExplicitTop = 473
   end
   inherited Actions: TActionList
-    object Open: TAction [7]
+    object Open: TAction [5]
       Category = 'Custom'
       Caption = 'Open ...'
       ImageIndex = 8
       ShortCut = 16463
       OnExecute = OpenExecute
     end
-    object Save: TAction [8]
+    object Save: TAction [6]
       Category = 'Custom'
       Caption = 'Save'
       ImageIndex = 1179
       ShortCut = 16467
       OnExecute = SaveExecute
     end
-    object SaveAs: TAction [9]
+    object SaveAs: TAction [7]
       Category = 'Custom'
       Caption = 'Save as ...'
       ImageIndex = 16
       OnExecute = SaveAsExecute
     end
-    object Quit: TAction [10]
+    object Quit: TAction [8]
       Category = 'Custom'
       Caption = 'Exit'
       ImageIndex = 1
       ShortCut = 16465
       OnExecute = QuitExecute
     end
-    object Recent: TAction [11]
+    object Recent: TAction [9]
       Category = 'Custom'
       Caption = 'Recent'
       ImageIndex = 9
       OnExecute = RecentExecute
     end
-    object PackDirectory: TAction [12]
+    object PackDirectory: TAction [10]
       Category = 'Custom'
       Caption = 'Directory...'
       ImageIndex = 109
       OnExecute = PackDirectoryExecute
     end
-    object ExtractModFolder: TAction [13]
+    object ExtractModFolder: TAction [11]
       Category = 'Custom'
       Caption = 'Mod folder'
       ImageIndex = 124
     end
-    object About: TAction [14]
+    object About: TAction [12]
       Category = 'Custom'
       Caption = 'About'
       ImageIndex = 95
       ShortCut = 112
       OnExecute = AboutExecute
     end
-    object ApplicationRun: TAction [15]
+    object ApplicationRun: TAction [13]
       Category = 'Custom'
       OnExecute = ApplicationRunExecute
     end
-    object Settings: TAction [16]
+    object Settings: TAction [14]
       Category = 'Custom'
       Caption = 'Settings'
       ImageIndex = 13
       ShortCut = 123
     end
-    object PreviewRAW: TAction [17]
+    object PreviewRAW: TAction [15]
       Category = 'Custom'
       Caption = 'RAW map'
       ImageIndex = 172
       ShortCut = 16461
       OnExecute = PreviewRAWExecute
     end
-    object Defrag: TAction [18]
+    object Defrag: TAction [16]
       Category = 'Custom'
       Caption = 'Save (Defrag)'
       ImageIndex = 15
       ShortCut = 49235
       OnExecute = DefragExecute
     end
-    object New: TAction [19]
+    object New: TAction [17]
       Category = 'Custom'
       Caption = 'New'
       ImageIndex = 7
       OnExecute = NewExecute
     end
-    object NewVersionAvailable: TAction [20]
+    object NewVersionAvailable: TAction [18]
       Category = 'Custom'
       Caption = 'New version available !'
       Enabled = False
       Visible = False
       OnExecute = NewVersionAvailableExecute
     end
-    object Cancel: TAction [21]
+    object Cancel: TAction [19]
       Category = 'Custom'
       Caption = 'Cancel'
       Enabled = False
       ImageIndex = 85
       OnExecute = CancelExecute
     end
-    object NewFolder: TAction [22]
+    object NewFolder: TAction [20]
       Category = 'Custom'
       Caption = 'Create a new folder'
       ImageIndex = 28
       OnExecute = NewFolderExecute
+    end
+    object ExtractAll: TAction
+      Category = 'Common'
+      Caption = 'All'
+      ImageIndex = 1041
+      OnExecute = ExtractAllExecute
+    end
+    object ExtractSelected: TAction
+      Category = 'Common'
+      Caption = 'Selected'
+      ImageIndex = 796
+      OnExecute = ExtractSelectedExecute
     end
   end
   object DropFileSource: TDropFileSource

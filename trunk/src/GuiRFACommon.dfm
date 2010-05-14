@@ -130,18 +130,6 @@ object RFACommonForm: TRFACommonForm
     Images = ResourcesForm.Images16x16
     Left = 8
     Top = 96
-    object ExtractAll: TAction
-      Category = 'Common'
-      Caption = 'All'
-      ImageIndex = 1041
-      OnExecute = ExtractAllExecute
-    end
-    object ExtractSelected: TAction
-      Category = 'Common'
-      Caption = 'Selected'
-      ImageIndex = 796
-      OnExecute = ExtractSelectedExecute
-    end
     object Preview: TAction
       Category = 'Common'
       Caption = 'Preview'

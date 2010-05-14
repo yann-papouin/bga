@@ -4,10 +4,10 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs;
+  Dialogs, GuiRFACommon, ActnList, SpTBXControls, StdCtrls, SpTBXEditors, SpTBXItem, VirtualTrees;
 
 type
-  TForm1 = class(TForm)
+  TFSViewForm = class(TRFACommonForm)
   private
     { Déclarations privées }
   public
@@ -15,7 +15,7 @@ type
   end;
 
 var
-  Form1: TForm1;
+  FSViewForm: TFSViewForm;
 
 implementation
 

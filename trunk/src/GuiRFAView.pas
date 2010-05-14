@@ -120,6 +120,8 @@ type
     TotalProgressBar: TSpTBXProgressBar;
     TotalProgressLabel: TSpTBXLabel;
     SpTBXButton2: TSpTBXButton;
+    ExtractAll: TAction;
+    ExtractSelected: TAction;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -153,6 +155,8 @@ type
     procedure RFAListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
     procedure RFAListStartDrag(Sender: TObject; var DragObject: TDragObject);
     procedure NewVersionAvailableExecute(Sender: TObject);
+    procedure ExtractAllExecute(Sender: TObject);
+    procedure ExtractSelectedExecute(Sender: TObject);
   private
     FApplicationTitle : string;
     FEditResult : TEditResult;
@@ -176,6 +180,7 @@ type
     procedure RemoveEmptyFolders;
     procedure Reset;
     function SaveMap(Path: string; Defrag: boolean = false): boolean;
+    procedure ExtractTo(Directory: string; List: TStringList = nil);
     procedure ShiftData(ShiftData: TRFAResult; ShiftWay: TShiftWay; IgnoreNode: PVirtualNode = nil);
     procedure SyncAll;
     procedure SyncStart;
@@ -196,9 +201,8 @@ implementation
 
 uses
   DbugIntf,
-  GuiAbout, GuiMain, GuiRAWView, GuiSMView, GuiBrowse, GuiBrowsePack, GuiSkinDialog, Resources, Masks,
-  Math, StringFunction, GuiBrowseExtract,
-  CommonLib, AppLib, MD5Api;
+  GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, Resources, Masks,
+  Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
 var
   FLastNode : PVirtualNode;
@@ -1070,6 +1074,74 @@ begin
 
     Node := RFAList.GetNextSelected(Node, true);
   end;
+end;
+
+procedure TRFAViewForm.ExtractAllExecute(Sender: TObject);
+begin
+  RFAList.SelectAll(false);
+  ExtractSelected.Execute;
+end;
+
+procedure TRFAViewForm.ExtractSelectedExecute(Sender: TObject);
+begin
+  if (BrowseExtractForm.ShowModal = mrOk) then
+  begin
+    ExtractTo(BrowseExtractForm.Directory);
+  end;
+end;
+
+
+procedure TRFAViewForm.ExtractTo(Directory: string; List : TStringList = nil);
+var
+  Data : pFse;
+  Node: PVirtualNode;
+  ExternalFilePath : string;
+  ExternFile : TFileStream;
+  W32Path : string;
+begin
+  Cancel.Enabled := true;
+
+  if Assigned(List) then
+    List.Clear;
+
+  TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);
+  Node := RFAList.GetFirstSelected;
+  while Node <> nil do
+  begin
+    if not Cancel.Enabled then
+      Break;
+
+    ExtendSelection(Node);
+    Data := RFAList.GetNodeData(Node);
+
+    if IsFile(Data.FileType) then
+    begin
+      if BrowseExtractForm.RecreateFullPath.Checked then
+        W32Path := Data.W32Path
+      else
+      begin
+        W32Path := BuildEntryNameFromTree(Node, true);
+        W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
+      end;
+
+      ExternalFilePath := IncludeTrailingBackslash(Directory) + W32Path;
+      ForceDirectories(ExtractFilePath(ExternalFilePath));
+
+      if Assigned(List) then
+      begin
+        //SendDebug(ExternalFilePath);
+        List.Add(ExternalFilePath);
+      end;
+
+      ExternFile := TFileStream.Create(ExternalFilePath, fmOpenWrite or fmCreate);
+      ExportFile(Node, ExternFile);
+      ExternFile.Free;
+    end;
+
+    TotalProgress(roExport, PG_AUTO, RFAList.SelectedCount);
+    Node := RFAList.GetNextSelected(Node);
+  end;
+  TotalProgress(roEnd, PG_NULL, PG_NULL);
 end;
 
 procedure TRFAViewForm.DeleteSelection;
