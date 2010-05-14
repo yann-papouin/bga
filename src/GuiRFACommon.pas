@@ -24,7 +24,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, VirtualTrees, ActnList, JCLFileUtils, RFALib, Types, SpTBXControls, StdCtrls, SpTBXEditors, SpTBXItem;
+  Dialogs, VirtualTrees, ActnList, JCLFileUtils, RFALib, Types, SpTBXControls,
+  StdCtrls, SpTBXEditors, SpTBXItem;
 
 type
   TFileType =
@@ -85,13 +86,11 @@ type
   TRFACommonForm = class(TForm)
     RFAList: TVirtualStringTree;
     Actions: TActionList;
-    ExtractSelected: TAction;
     Preview: TAction;
     ExpandAll: TAction;
     CollapseAll: TAction;
     ExpandSelected: TAction;
     CollapseSelected: TAction;
-    ExtractAll: TAction;
     SearchBar: TSpTBXPanel;
     Search: TSpTBXEdit;
     SpTBXLabel1: TSpTBXLabel;
@@ -110,8 +109,6 @@ type
     procedure RFAListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: String);
     procedure RFAListKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
     procedure PreviewExecute(Sender: TObject);
-    procedure ExtractSelectedExecute(Sender: TObject);
-    procedure ExtractAllExecute(Sender: TObject);
     procedure SearchStartExecute(Sender: TObject);
     procedure SearchStopExecute(Sender: TObject);
     procedure SearchChange(Sender: TObject);
@@ -126,7 +123,6 @@ type
   protected
     procedure MakePathVisible(Table: TBaseVirtualTree; Node: PVirtualNode);
     function FindFileByName(Filename: string): PVirtualNode;
-    procedure ExtractTo(Directory: string; List: TStringList = nil);
     procedure PropagateStatus(Node: PVirtualNode; Status: TEntryModification);
     procedure ExportFile(Node: PVirtualNode; OutputStream: TStream);
     function FindPath(Path: String) : PVirtualNode;
@@ -177,9 +173,7 @@ implementation
 {$R *.dfm}
 
 uses
-  GuiAbout, GuiMain, GuiRAWView, GuiSMView, GuiBrowse, GuiBrowsePack, GuiSkinDialog, Resources, Masks,
-  Math, StringFunction, GuiBrowseExtract,
-  CommonLib, AppLib, MD5Api;
+  GuiSMView, GuiSkinDialog, Resources, Masks, Math, StringFunction, CommonLib, AppLib, MD5Api;
 
 
 function TRFACommonForm.IsFolder(Name: String) : boolean;
@@ -332,20 +326,6 @@ begin
 end;
 
 
-procedure TRFACommonForm.ExtractAllExecute(Sender: TObject);
-begin
-  RFAList.SelectAll(false);
-  ExtractSelected.Execute;
-end;
-
-procedure TRFACommonForm.ExtractSelectedExecute(Sender: TObject);
-begin
-  if (BrowseExtractForm.ShowModal = mrOk) then
-  begin
-    ExtractTo(BrowseExtractForm.Directory);
-  end;
-end;
-
 function TRFACommonForm.ExtractTemporary(Node: PVirtualNode): string;
 var
   Data : pFse;
@@ -490,60 +470,6 @@ begin
 end;
 
 
-procedure TRFACommonForm.ExtractTo(Directory: string; List : TStringList = nil);
-var
-  Data : pFse;
-  Node: PVirtualNode;
-  ExternalFilePath : string;
-  ExternFile : TFileStream;
-  W32Path : string;
-begin
-  //Cancel.Enabled := true;
-
-  if Assigned(List) then
-    List.Clear;
-
-  //TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);
-  Node := RFAList.GetFirstSelected;
-  while Node <> nil do
-  begin
-    (*
-    if not Cancel.Enabled then
-      Break;
-    *)
-
-    ExtendSelection(Node);
-    Data := RFAList.GetNodeData(Node);
-
-    if IsFile(Data.FileType) then
-    begin
-      if BrowseExtractForm.RecreateFullPath.Checked then
-        W32Path := Data.W32Path
-      else
-      begin
-        W32Path := BuildEntryNameFromTree(Node, true);
-        W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
-      end;
-
-      ExternalFilePath := IncludeTrailingBackslash(Directory) + W32Path;
-      ForceDirectories(ExtractFilePath(ExternalFilePath));
-
-      if Assigned(List) then
-      begin
-        //SendDebug(ExternalFilePath);
-        List.Add(ExternalFilePath);
-      end;
-
-      ExternFile := TFileStream.Create(ExternalFilePath, fmOpenWrite or fmCreate);
-      ExportFile(Node, ExternFile);
-      ExternFile.Free;
-    end;
-
-    //TotalProgress(roExport, PG_AUTO, RFAList.SelectedCount);
-    Node := RFAList.GetNextSelected(Node);
-  end;
-  //TotalProgress(roEnd, PG_NULL, PG_NULL);
-end;
 
 
 procedure TRFACommonForm.PreviewExecute(Sender: TObject);
