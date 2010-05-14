@@ -73,7 +73,7 @@ implementation
 {$R *.dfm}
 
 uses
- SvnInfo, ActiveX, StringFunction;
+ SvnInfo, ActiveX, StringFunction, Resources;
 
 
 procedure TUpdateManagerForm.CheckExecute(Sender: TObject);

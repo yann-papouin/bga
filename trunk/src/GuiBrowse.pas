@@ -45,7 +45,7 @@ implementation
 {$R *.dfm}
 
 uses
-  GuiRFAView;
+  GuiRFAView, Resources;
 
 
 procedure TBrowseForm.FormActivate(Sender: TObject);

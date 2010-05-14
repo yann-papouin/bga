@@ -4,7 +4,6 @@ uses
   ExceptionLog,
   Forms,
   GuiRFASettings in 'GuiRFASettings.pas' {RFASettingsForm},
-  GuiRFAView in 'GuiRFAView.pas' {RFAViewForm},
   AppLib in 'Lib\AppLib.pas',
   CommonLib in 'Lib\CommonLib.pas',
   MD5Api in 'Lib\MD5Api.pas',
@@ -24,7 +23,11 @@ uses
   GuiBrowse in 'GuiBrowse.pas' {BrowseForm},
   GuiSkinDialog in 'GuiSkinDialog.pas' {SkinDialogForm},
   GuiBrowsePack in 'GuiBrowsePack.pas' {BrowsePackForm},
-  GuiBrowseExtract in 'GuiBrowseExtract.pas' {BrowseExtractForm};
+  GuiBrowseExtract in 'GuiBrowseExtract.pas' {BrowseExtractForm},
+  GuiFSView in 'GuiFSView.pas' {Form1},
+  GuiRFACommon in 'GuiRFACommon.pas' {RFACommonForm},
+  Resources in 'Resources.pas' {ResourcesForm},
+  GuiRFAView in 'GuiRFAView.pas' {RFAViewForm};
 
 {$R *.res}
 
@@ -44,5 +47,8 @@ begin
   Application.CreateForm(TSkinDialogForm, SkinDialogForm);
   Application.CreateForm(TBrowsePackForm, BrowsePackForm);
   Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
+  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TRFACommonForm, RFACommonForm);
+  Application.CreateForm(TResourcesForm, ResourcesForm);
   Application.Run;
 end.

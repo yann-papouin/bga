@@ -77,7 +77,7 @@ object BrowseForm: TBrowseForm
       Action = Ok
       Align = alRight
       TabOrder = 0
-      Images = RFAViewForm.ExplorerImg
+      Images = ResourcesForm.Images16x16
       ImageIndex = 1118
     end
     object ButtonCancel: TSpTBXButton
@@ -89,26 +89,24 @@ object BrowseForm: TBrowseForm
       Action = Cancel
       Align = alRight
       TabOrder = 1
-      Images = RFAViewForm.ExplorerImg
+      Images = ResourcesForm.Images16x16
       ImageIndex = 143
     end
   end
   object SpTBXLabel1: TSpTBXLabel
     Left = 8
     Top = 12
-    Width = 116
-    Height = 22
+    Width = 96
+    Height = 19
     Caption = 'Current directory :'
-    Images = RFAViewForm.ExplorerImg
     ImageIndex = 8
   end
   object SpTBXLabel2: TSpTBXLabel
     Left = 8
     Top = 76
-    Width = 103
-    Height = 22
+    Width = 83
+    Height = 19
     Caption = 'Recent folders :'
-    Images = RFAViewForm.ExplorerImg
     ImageIndex = 165
   end
   object Browse: TJvBrowseForFolderDialog
@@ -127,7 +125,7 @@ object BrowseForm: TBrowseForm
     Top = 144
   end
   object Actions: TActionList
-    Images = RFAViewForm.ExplorerImg
+    Images = ResourcesForm.Images16x16
     Left = 16
     Top = 176
     object Ok: TAction
