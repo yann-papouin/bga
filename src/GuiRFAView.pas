@@ -280,7 +280,6 @@ begin
 *)
 
   Data.EntryName := Name;
-  //Data.EntryName := EmptyStr;
   Data.Offset := Offset;
   Data.Size := ucSize;
   Data.Compressed := Compressed;
@@ -289,96 +288,9 @@ begin
   Data.W32Path := W32Path;
   Data.W32Name := ExtractFileName(W32Path);
   Data.W32Ext := ExtractFileExt(LowerCase(W32Path));
-
-  if Data.W32Ext = '.con' then
-    Data.FileType := ftFileCON
-  else
-  if Data.W32Ext = '.inc' then
-    Data.FileType := ftFileINC
-  else
-  if Data.W32Ext = '.ssc' then
-    Data.FileType := ftFileSSC
-  else
-  if Data.W32Ext = '.txt' then
-    Data.FileType := ftFileTXT
-  else
-  if Data.W32Ext = '.bak' then
-    Data.FileType := ftFileBAK
-  else
-  if Data.W32Ext = '.wav' then
-    Data.FileType := ftFileWAV
-  else
-  if Data.W32Ext = '.bik' then
-    Data.FileType := ftFileBIK
-  else
-  if Data.W32Ext = '.dds' then
-    Data.FileType := ftFileDDS
-  else
-  if Data.W32Ext = '.tga' then
-    Data.FileType := ftFileTGA
-  else
-  if Data.W32Ext = '.raw' then
-    Data.FileType := ftFileRAW
-  else
-  if Data.W32Ext = '.dat' then
-    Data.FileType := ftFileDAT
-  else
-  if Data.W32Ext = '.rs' then
-    Data.FileType := ftFileRS
-  else
-  if Data.W32Ext = '.rcm' then
-    Data.FileType := ftFileRCM
-  else
-  if Data.W32Ext = '.lsb' then
-    Data.FileType := ftFileLSB
-  else
-  if Data.W32Ext = '.pal' then
-    Data.FileType := ftFilePAL
-  else
-  if Data.W32Ext = '.zip' then
-    Data.FileType := ftFileZIP
-  else
-  if Data.W32Ext = '.rar' then
-    Data.FileType := ftFileRAR
-  else
-  if Data.W32Ext = '.gz' then
-    Data.FileType := ftFileGZ
-  else
-  if Data.W32Ext = '.bz2' then
-    Data.FileType := ftFileBZ2
-  else
-  if Data.W32Ext = '.7z' then
-    Data.FileType := ftFile7Z
-  else
-  if Data.W32Ext = '.dif' then
-    Data.FileType := ftFileDIF
-  else
-  if Data.W32Ext = '.font' then
-    Data.FileType := ftFileFONT
-  else
-  if Data.W32Ext = '.baf' then
-    Data.FileType := ftFileBAF
-  else
-  if Data.W32Ext = '.skn' then
-    Data.FileType := ftFileSKN
-  else
-  if Data.W32Ext = '.ske' then
-    Data.FileType := ftFileSKE
-  else
-  if Data.W32Ext = '.vso' then
-    Data.FileType := ftFileVSO
-  else
-  if Data.W32Ext = '.sm' then
-    Data.FileType := ftFileSM
-  else
-  if Data.W32Ext = '.tm' then
-    Data.FileType := ftFileTM
-  else
-    Data.FileType := ftFile;
-
+  Data.FileType := ExtensionToType(Data.W32Ext);
   Data.ExternalFilePath := EmptyStr;
 
- // if CheckValidity(Node) then
   FLastNode := Node;
 end;
 

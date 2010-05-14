@@ -134,6 +134,7 @@ type
     procedure ExtendSelection(Node: PVirtualNode);
     function ExtractTemporary(Node: PVirtualNode): string;
     function CountFilesByStatus(Node: PVirtualNode; Status: TEntryStatus; IncludeWithoutStatus: boolean = false): cardinal;
+    function ExtensionToType(Ext : string): TFileType;
   public
     { Déclarations publiques }
 
@@ -310,6 +311,96 @@ begin
   end;
 end;
 
+
+
+function TRFACommonForm.ExtensionToType(Ext: string): TFileType;
+begin
+  if Ext = '.con' then
+    Result := ftFileCON
+  else
+  if Ext = '.inc' then
+    Result := ftFileINC
+  else
+  if Ext = '.ssc' then
+    Result := ftFileSSC
+  else
+  if Ext = '.txt' then
+    Result := ftFileTXT
+  else
+  if Ext = '.bak' then
+    Result := ftFileBAK
+  else
+  if Ext = '.wav' then
+    Result := ftFileWAV
+  else
+  if Ext = '.bik' then
+    Result := ftFileBIK
+  else
+  if Ext = '.dds' then
+    Result := ftFileDDS
+  else
+  if Ext = '.tga' then
+    Result := ftFileTGA
+  else
+  if Ext = '.raw' then
+    Result := ftFileRAW
+  else
+  if Ext = '.dat' then
+    Result := ftFileDAT
+  else
+  if Ext = '.rs' then
+    Result := ftFileRS
+  else
+  if Ext = '.rcm' then
+    Result := ftFileRCM
+  else
+  if Ext = '.lsb' then
+    Result := ftFileLSB
+  else
+  if Ext = '.pal' then
+    Result := ftFilePAL
+  else
+  if Ext = '.zip' then
+    Result := ftFileZIP
+  else
+  if Ext = '.rar' then
+    Result := ftFileRAR
+  else
+  if Ext = '.gz' then
+    Result := ftFileGZ
+  else
+  if Ext = '.bz2' then
+    Result := ftFileBZ2
+  else
+  if Ext = '.7z' then
+    Result := ftFile7Z
+  else
+  if Ext = '.dif' then
+    Result := ftFileDIF
+  else
+  if Ext = '.font' then
+    Result := ftFileFONT
+  else
+  if Ext = '.baf' then
+    Result := ftFileBAF
+  else
+  if Ext = '.skn' then
+    Result := ftFileSKN
+  else
+  if Ext = '.ske' then
+    Result := ftFileSKE
+  else
+  if Ext = '.vso' then
+    Result := ftFileVSO
+  else
+  if Ext = '.sm' then
+    Result := ftFileSM
+  else
+  if Ext = '.tm' then
+    Result := ftFileTM
+  else
+    Result := ftFile;
+end;
 
 procedure TRFACommonForm.PropagateStatus(Node: PVirtualNode; Status: TEntryModification);
 var
