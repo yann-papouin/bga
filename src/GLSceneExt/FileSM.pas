@@ -22,7 +22,7 @@ unit FileSM;
 
 interface
 
-{.$DEFINE DEBUG_SM}
+{$DEFINE DEBUG_SM}
 
 uses Classes, TypesSM, VectorTypes;
 
@@ -178,7 +178,7 @@ begin
 
         for j := 0 to FCollMeshes[i].VertexCount-1 do
         begin
-          {$IfDef DEBUG_SM}
+          {$IfDef DEBUG_SM_DETAILS}
           SendDebugFmt('Current vertex is %d/%d',[j+1,FCollMeshes[i].VertexCount]);
           {$EndIf}
 
@@ -194,7 +194,7 @@ begin
           aStream.Read(ptVertex.MaterialID, WORD_SIZE); //MatID
           aStream.Position := aStream.Position+(2); //Stuff of vert1 Repeated
 
-          {$IfDef DEBUG_SM}
+          {$IfDef DEBUG_SM_DETAILS}
           SendDebugFmt('Vertex %d :: X=%.3f, Y=%.3f, Z=%.3f',[j+1, ptVertex.Value[0], ptVertex.Value[1], ptVertex.Value[2]]);
           {$EndIf}
         end;
@@ -204,7 +204,7 @@ begin
 
         for j := 0 to FCollMeshes[i].FaceCount-1 do
         begin
-          {$IfDef DEBUG_SM}
+          {$IfDef DEBUG_SM_DETAILS}
           SendDebugFmt('Current face is %d/%d',[j+1,FCollMeshes[i].FaceCount]);
           {$EndIf}
 
@@ -220,7 +220,7 @@ begin
           if ptFace.MaterialID = 0 then
             ptFace.MaterialID := 10000; // 10000 equals 0
 
-          {$IfDef DEBUG_SM}
+          {$IfDef DEBUG_SM_DETAILS}
           SendDebugFmt('Face %d is a set of(%d,%d,%d)',[j+1, ptFace.A, ptFace.B, ptFace.C]);
           {$EndIf}
         end;
@@ -233,7 +233,7 @@ begin
 
         for j := 0 to FCollMeshes[i].NormaleCount-1 do
         begin
-          {$IfDef DEBUG_SM}
+          {$IfDef DEBUG_SM_DETAILS}
           SendDebugFmt('Current normale is %d/%d',[j+1,FCollMeshes[i].NormaleCount]);
           {$EndIf}
 
@@ -266,16 +266,20 @@ begin
         SendDebugFmt('Current Mesh is %d/%d',[i+1, FMeshCount]);
         {$EndIf}
 
-        aStream.Read(FMeshes[i].LodMeshCount, DWORD_SIZE);
+        aStream.Read(FMeshes[i].MatMeshCount, DWORD_SIZE);
 
-        if FMeshes[i].LodMeshCount > 0 then
+        if FMeshes[i].MatMeshCount > 0 then
         begin
-          SetLength(FMeshes[i].LodMeshes, FMeshes[i].LodMeshCount);
+          SetLength(FMeshes[i].MatMeshes, FMeshes[i].MatMeshCount);
 
-          for j := 0 to FMeshes[i].LodMeshCount-1 do
+          for j := 0 to FMeshes[i].MatMeshCount-1 do
           begin
-            ptMaterial := @(FMeshes[i].LodMeshes[j].Material);
-            ptMeshdata := @(FMeshes[i].LodMeshes[j].MeshData);
+            {$IfDef DEBUG_SM}
+            SendDebugFmt('Current MatMesh is %d/%d',[j+1, FMeshes[i].MatMeshCount]);
+            {$EndIf}
+
+            ptMaterial := @(FMeshes[i].MatMeshes[j].Material);
+            ptMeshdata := @(FMeshes[i].MatMeshes[j].MeshData);
 
             ptMaterial.Name := StringFrom(aStream);
 
@@ -304,10 +308,10 @@ begin
           end;
 
           /// Read geometry data
-          for j := 0 to FMeshes[i].LodMeshCount-1 do
+          for j := 0 to FMeshes[i].MatMeshCount-1 do
           begin
-            ptMaterial := @(FMeshes[i].LodMeshes[j].Material);
-            ptMeshdata := @(FMeshes[i].LodMeshes[j].MeshData);
+            ptMaterial := @(FMeshes[i].MatMeshes[j].Material);
+            ptMeshdata := @(FMeshes[i].MatMeshes[j].MeshData);
 
             SetLength(ptMeshdata.Vertex, ptMeshdata.VertexCount);
             SetLength(ptMeshdata.Normales, ptMeshdata.NormaleCount);
@@ -317,7 +321,7 @@ begin
 
             for k := 0 to ptMeshdata.VertexCount - 1 do
             begin
-              {$IfDef DEBUG_SM}
+              {$IfDef DEBUG_SM_DETAILS}
               SendDebugFmt('Current vertex is %d/%d',[k+1, ptMeshdata.VertexCount]);
               {$EndIf}
 
@@ -353,7 +357,7 @@ begin
             SetLength(ptMeshdata.Faces, ptMeshdata.FaceCount);
             for k := 0 to ptMeshdata.FaceCount-1 do
             begin
-              {$IfDef DEBUG_SM}
+              {$IfDef DEBUG_SM_DETAILS}
               SendDebugFmt('Current face is %d/%d',[k+1,ptMeshdata.FaceCount]);
               {$EndIf}
               ptFace := @ptMeshdata.Faces[k];
@@ -382,11 +386,11 @@ function TFileSM.MeshVertexFromLodFaceId(MeshID, LodID, FaceID: Longword): TMatr
 var
   Face : TSMFace;
 begin
-  Face := FMeshes[MeshID].LodMeshes[LodID].MeshData.Faces[FaceID];
+  Face := FMeshes[MeshID].MatMeshes[LodID].MeshData.Faces[FaceID];
 
-  Result[0] := FMeshes[MeshID].LodMeshes[LodID].MeshData.Vertex[Face.A].Value;
-  Result[1] := FMeshes[MeshID].LodMeshes[LodID].MeshData.Vertex[Face.B].Value;
-  Result[2] := FMeshes[MeshID].LodMeshes[LodID].MeshData.Vertex[Face.C].Value;
+  Result[0] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.A].Value;
+  Result[1] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.B].Value;
+  Result[2] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.C].Value;
 end;
 
 function TFileSM.CollVertexFromFaceId(CollMeshID : Longword; FaceID: Longword): TMatrix3f;

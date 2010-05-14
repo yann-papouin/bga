@@ -52,15 +52,19 @@ type
       NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex;
       var Allowed: Boolean);
     procedure MeshListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure MeshListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
     { Déclarations privées }
     FColRootNode : PVirtualNode;
-    FLodRootNode : PVirtualNode;
+    FMeshRootNode : PVirtualNode;
     FApplicationTitle : string;
     FFilename : string;
     function GetTitle: string;
     procedure SetTitle(const Value: string);
     procedure LoadSMData;
+  protected
+    function FindNodeID(ID : integer) : PVirtualNode;
+    function BranchSelected(Sender: TBaseVirtualTree; Node : PVirtualNode) : boolean;
   public
     { Déclarations publiques }
     procedure LoadStandardMesh(Filename: string);
@@ -81,7 +85,9 @@ uses
 type
   pData = ^rData;
   rData = record
+    MeshID : integer;
     Text : string[255];
+    MeshType : TSMMeshType;
     Mesh : TGLSMMeshObject;
     Img : integer;
   end;
@@ -90,31 +96,56 @@ type
 { TSMViewForm }
 
 
+
+
 procedure TSMViewForm.FormCreate(Sender: TObject);
 begin
   FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
 end;
 
+function TSMViewForm.FindNodeID(ID: integer): PVirtualNode;
+var
+  ColCounter, MeshCounter : integer;
+  Node : PVirtualNode;
+  Data : pData;
+  i :integer;
+begin
+  Result := nil;
+  Node := MeshList.GetFirst;
+  while Node <> nil do
+  begin
+    Data := MeshList.GetNodeData(Node);
+    if (Data.MeshType = mtMesh) and (Data.MeshID = ID) then
+    begin
+      Result := Node;
+      break;
+    end;
+    Node := MeshList.GetNext(Node);
+  end;
+end;
+
 procedure TSMViewForm.LoadSMData;
 var
-  ColCounter, LodCounter : integer;
-  Node : PVirtualNode;
+  ColCounter, MeshCounter, MatCounter : integer;
+  Node, NodeID : PVirtualNode;
   Data : pData;
   i :integer;
 begin
   MeshList.Clear;
 
   ColCounter := 0;
-  LodCounter := 0;
+  MeshCounter := 0;
 
   FColRootNode := MeshList.AddChild(nil);
   Data := MeshList.GetNodeData(FColRootNode);
+  Data.MeshType := mtNone;
   Data.Text := 'Collisions';
   Data.Img := 7;
 
-  FLodRootNode := MeshList.AddChild(nil);
-  Data := MeshList.GetNodeData(FLodRootNode);
-  Data.Text := 'Lods';
+  FMeshRootNode := MeshList.AddChild(nil);
+  Data := MeshList.GetNodeData(FMeshRootNode);
+  Data.MeshType := mtNone;
+  Data.Text := 'Meshes';
   Data.Img := 5;
 
   for i := 0 to FreeMesh.MeshObjects.Count - 1 do
@@ -124,6 +155,7 @@ begin
       Inc(ColCounter);
       Node := MeshList.AddChild(FColRootNode);
       Data := MeshList.GetNodeData(Node);
+      Data.MeshType := mtCollision;
       Data.Text := Format('Collision %d',[ColCounter]);
 
       Data.Mesh := (FreeMesh.MeshObjects[i] as TGLSMMeshObject);
@@ -132,15 +164,28 @@ begin
 
     end;
 
-    if FreeMesh.MeshObjects[i] is TGLSMLodMeshObject then
+    if FreeMesh.MeshObjects[i] is TGLSMMatMeshObject then
     begin
-      Inc(LodCounter);
-      Node := MeshList.AddChild(FLodRootNode);
-      Data := MeshList.GetNodeData(Node);
-      Data.Text := Format('Lod %d',[LodCounter]);
+      NodeID := FindNodeID((FreeMesh.MeshObjects[i] as TGLSMMatMeshObject).ParentMeshID);
+      if NodeID = nil then
+      begin
+        MatCounter := 0;
+        Inc(MeshCounter);
+        NodeID := MeshList.AddChild(FMeshRootNode);
+        Data := MeshList.GetNodeData(NodeID);
+        Data.MeshType := mtMesh;
+        Data.Mesh := nil;
+        Data.MeshID := (FreeMesh.MeshObjects[i] as TGLSMMatMeshObject).ParentMeshID;
+        Data.Text := Format('Mesh %d',[MeshCounter]);
+      end;
 
+      Inc(MatCounter);
+      Node := MeshList.AddChild(NodeID);
+      Data := MeshList.GetNodeData(Node);
+      Data.MeshType := mtMat;
       Data.Mesh := (FreeMesh.MeshObjects[i] as TGLSMMeshObject);
       Data.Mesh.Visible := false;
+      Data.Text := Format('Mat %d',[MatCounter]);
       Data.Img := 111;
     end;
   end;
@@ -153,12 +198,12 @@ begin
     MeshList.FocusedNode := FColRootNode.LastChild;
   end;
 
-  if LodCounter = 0 then
-    MeshList.DeleteNode(FLodRootNode)
+  if MeshCounter = 0 then
+    MeshList.DeleteNode(FMeshRootNode)
   else
   begin
-    MeshList.Expanded[FLodRootNode] := true;
-    MeshList.FocusedNode := FLodRootNode.FirstChild;
+    MeshList.Expanded[FMeshRootNode] := true;
+    MeshList.FocusedNode := FMeshRootNode.FirstChild;
   end;
 end;
 
@@ -171,13 +216,46 @@ begin
   LoadSMData;
 end;
 
-procedure TSMViewForm.MeshListFocusChanging(Sender: TBaseVirtualTree; OldNode,
-  NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex;
-  var Allowed: Boolean);
+
+function TSMViewForm.BranchSelected(Sender: TBaseVirtualTree; Node: PVirtualNode): boolean;
+begin
+  Result := false;
+  repeat
+    begin
+      if Sender.Selected[Node] then
+      begin
+        Result := true;
+        Break;
+      end;
+      Node := Sender.NodeParent[Node];
+    end
+  until Node = nil;
+end;
+
+procedure TSMViewForm.MeshListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+var
+  Data : pData;
+begin
+  Node := Sender.GetFirst;
+  while Node <> nil do
+  begin
+    Data := Sender.GetNodeData(Node);
+    if (Data.MeshType = mtCollision) or (Data.MeshType = mtMat) then
+    begin
+      Data.Mesh.Visible := BranchSelected(Sender, Node);
+    end;
+    Node := Sender.GetNext(Node, true);
+  end;
+
+  FreeMesh.StructureChanged;
+end;
+
+procedure TSMViewForm.MeshListFocusChanging(Sender: TBaseVirtualTree; OldNode, NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex; var Allowed: Boolean);
 var
   OldData, NewData : pData;
   FNeedRecalc : boolean;
 begin
+Exit;
   FNeedRecalc := false;
 
   if OldNode <> NewNode then
@@ -240,6 +318,7 @@ begin
   Data := Sender.GetNodeData(Node);
   CellText := Data.Text;
 end;
+
 
 function TSMViewForm.GetTitle: string;
 begin

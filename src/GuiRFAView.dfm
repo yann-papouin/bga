@@ -4,22 +4,68 @@ inherited RFAViewForm: TRFAViewForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  ExplicitWidth = 949
+  ExplicitHeight = 571
   PixelsPerInch = 96
   TextHeight = 13
-  inherited RFAList: TVirtualStringTree
+  inherited Container: TPanel
     Top = 25
-    Height = 416
-    PopupMenu = ViewerPopup
-    OnBeforeCellPaint = RFAListBeforeCellPaint
-    OnDblClick = RFAListDblClick
-    OnDragOver = RFAListDragOver
-    OnDragDrop = RFAListDragDrop
-    OnEdited = RFAListEdited
-    OnNewText = RFAListNewText
-    OnNodeMoved = RFAListNodeMoved
-    OnStartDrag = RFAListStartDrag
+    Height = 451
+    ExplicitLeft = 0
     ExplicitTop = 25
-    ExplicitHeight = 416
+    ExplicitWidth = 933
+    ExplicitHeight = 451
+    inherited RFAList: TVirtualStringTree
+      Height = 414
+      PopupMenu = ViewerPopup
+      OnBeforeCellPaint = RFAListBeforeCellPaint
+      OnDblClick = RFAListDblClick
+      OnDragOver = RFAListDragOver
+      OnDragDrop = RFAListDragDrop
+      OnEdited = RFAListEdited
+      OnNewText = RFAListNewText
+      OnNodeMoved = RFAListNodeMoved
+      OnStartDrag = RFAListStartDrag
+      ExplicitLeft = 1
+      ExplicitTop = 1
+      ExplicitWidth = 931
+      ExplicitHeight = 414
+      Columns = <
+        item
+          MinWidth = 300
+          Position = 0
+          Width = 350
+          WideText = 'Filename'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 1
+          Width = 90
+          WideText = 'Size'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 2
+          Width = 90
+          WideText = 'Compressed'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 3
+          Width = 73
+          WideText = 'Ratio'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 4
+          Width = 324
+          WideText = 'Offset'
+        end>
+    end
+    inherited SearchBar: TSpTBXPanel
+      Top = 415
+      ExplicitTop = 415
+    end
   end
   object TopDock: TSpTBXDock [1]
     Left = 0
@@ -149,7 +195,7 @@ inherited RFAViewForm: TRFAViewForm
   end
   object ProgressPanel: TSpTBXPanel [3]
     Left = 0
-    Top = 441
+    Top = 476
     Width = 933
     Height = 32
     Caption = 'LoadBar'
@@ -224,11 +270,6 @@ inherited RFAViewForm: TRFAViewForm
       Images = ResourcesForm.Images16x16
       ImageIndex = 85
     end
-  end
-  inherited SearchBar: TSpTBXPanel
-    Top = 473
-    TabOrder = 4
-    ExplicitTop = 473
   end
   inherited Actions: TActionList
     object Open: TAction [5]

@@ -42,7 +42,8 @@ type
   (
     mtNone,
     mtCollision,
-    mtLod
+    mtMesh,
+    mtMat
   );
 
   TGLSMMeshObject = class (TMeshObject)
@@ -60,11 +61,10 @@ type
 
   end;
 
-  TGLSMLodMeshObject = class(TGLSMMeshObject)
+  TGLSMMatMeshObject = class(TGLSMMeshObject)
   private
     FTexturePath: string;
     FParentMeshID: integer;
-
   public
     property TexturePath : string read FTexturePath;
     property ParentMeshID : integer read FParentMeshID;
@@ -91,7 +91,7 @@ var
    i, j, k : Integer;
    SMFile : TFileSM;
    ColMesh : TGLSMColMeshObject;
-   LodMesh : TGLSMLodMeshObject;
+   MatMesh : TGLSMMatMeshObject;
    Mat : TMatrix3f;
 begin
   inherited;
@@ -126,19 +126,19 @@ begin
       // retrieve LodMesh data
       for i := 0 to SMFile.MeshCount - 1 do
       begin
-        for j:=0 to SMFile.Meshes[i].LodMeshCount-1 do
+        for j:=0 to SMFile.Meshes[i].MatMeshCount-1 do
         begin
-          LodMesh := TGLSMLodMeshObject.CreateOwned(Owner.MeshObjects);
-          LodMesh.FTexturePath := SMFile.Meshes[i].LodMeshes[j].Material.Name;
-          LodMesh.FParentMeshID := i;
+          MatMesh := TGLSMMatMeshObject.CreateOwned(Owner.MeshObjects);
+          MatMesh.FTexturePath := SMFile.Meshes[i].MatMeshes[j].Material.Name;
+          MatMesh.FParentMeshID := i;
 
-          for k:=0 to SMFile.Meshes[i].LodMeshes[j].MeshData.FaceCount-1 do
+          for k:=0 to SMFile.Meshes[i].MatMeshes[j].MeshData.FaceCount-1 do
           begin
             Mat := SMFile.MeshVertexFromLodFaceId(i, j, k);
 
-            LodMesh.Vertices.Add(Mat[0]);
-            LodMesh.Vertices.Add(Mat[1]);
-            LodMesh.Vertices.Add(Mat[2]);
+            MatMesh.Vertices.Add(Mat[0]);
+            MatMesh.Vertices.Add(Mat[1]);
+            MatMesh.Vertices.Add(Mat[2]);
           end;
 
           //SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[LodMesh.Vertices.Capacity]);
@@ -161,8 +161,8 @@ begin
   if Self is TGLSMColMeshObject then
     result := mtCollision
   else
-  if Self is TGLSMLodMeshObject then
-    result := mtLod
+  if Self is TGLSMMatMeshObject then
+    result := mtMat
   else
     result := mtNone
 end;

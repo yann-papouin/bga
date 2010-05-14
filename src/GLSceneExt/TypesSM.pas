@@ -69,16 +69,16 @@ type
     Normales : array of TSMVertex;
   end;
 
-  PSMLodMesh = ^TSMLodMesh;
-  TSMLodMesh = record
+  PSMMatMesh = ^TSMMatMesh;
+  TSMMatMesh = record
     MeshData : TSMMeshData;
     Material : TSMMaterial;
   end;
 
   PSMMesh = ^TSMMesh;
   TSMMesh = record
-    LodMeshCount : Longword;
-    LodMeshes : array of TSMLodMesh;
+    MatMeshCount : Longword;
+    MatMeshes : array of TSMMatMesh;
   end;
 
 implementation
