@@ -25,7 +25,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, VirtualTrees, ActnList, JCLFileUtils, RFALib, Types, SpTBXControls,
-  StdCtrls, SpTBXEditors, SpTBXItem;
+  StdCtrls, SpTBXEditors, SpTBXItem, ExtCtrls;
 
 type
   TFileType =
@@ -97,6 +97,7 @@ type
     SpTBXButton1: TSpTBXButton;
     SearchStart: TAction;
     SearchStop: TAction;
+    Container: TPanel;
     procedure CollapseSelectedExecute(Sender: TObject);
     procedure ExpandSelectedExecute(Sender: TObject);
     procedure CollapseAllExecute(Sender: TObject);
