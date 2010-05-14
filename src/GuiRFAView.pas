@@ -265,6 +265,7 @@ begin
 *)
   Data := RFAList.GetNodeData(Node);
   Data.RFAFileHandle := Sender;
+  Data.RFAFileName := Data.RFAFileHandle.Filepath;
 (*
   if Updating then
   begin
