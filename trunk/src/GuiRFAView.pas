@@ -910,7 +910,7 @@ begin
           NextNode := RFAList.GetNext(Node);
           Data := RFAList.GetNodeData(Node);
 
-          if not (Data.Status = []) and IsFile(Data.FileType) then
+          if (Data.Status = []) and IsFile(Data.FileType) then
           begin
             //SendDebugFmt('File %s exported',[Data.W32Name]);
             InternalFile := TMemoryStream.Create;
@@ -1613,6 +1613,7 @@ end;
 
 procedure TRFAViewForm.PackDirectoryExecute(Sender: TObject);
 var
+  FileDrive : string;
   BasePath : string;
   Node : PVirtualNode;
 begin
@@ -1626,12 +1627,17 @@ begin
       begin
         BasePath := StringReplace(BrowsePackForm.Base.Text,'/','\',[rfReplaceAll]);
         BasePath := IncludeTrailingBackslash(BasePath);
+        FileDrive := ExtractFileDrive(BasePath);
 
-        if not ValidFilename(BasePath, true) then
+        if FileDrive <> EmptyStr then
+          BasePath := SFRight(FileDrive, BasePath);
+
+        if not ValidDirectoryname(BasePath) then
         begin
           ShowMessage('Base path error', Format('Base file path (%s) is invalid',[BasePath]));
           Exit;
         end;
+
 
         Node := BuildTreeFromFullPath(BasePath);
       end;

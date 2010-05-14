@@ -125,6 +125,8 @@ type
   function Mince(PathToMince :String; InSpace :Integer): String;
 
   function ValidFilename(Filename: String; islong: Boolean = true) : Boolean;
+  function ValidDirectoryname(Filename: String; islong: Boolean = true) : Boolean;
+
   function GetNetUser : Ansistring;
 
 
@@ -167,11 +169,12 @@ var
   DllGetVersion: function(dvi: PDLLVerInfo): PDLLVerInfo; stdcall;
 
 const
-  { for short 8.3 file names }
-  ShortForbiddenChars : set of Char = [';', '=', '+', '<', '>', '|','"', '[', ']', '\', '/', ''''];
-  { for long file names }
-  LongForbiddenChars  : set of Char = ['<', '>', '|', '"', '\', '/', ':', '*', '?'];
 
+  ShortFileForbiddenChars : set of Char = [';', '=', '+', '<', '>', '|','"', '[', ']', '\', '/', '''']; { for short 8.3 file names }
+  LongFileForbiddenChars  : set of Char = ['<', '>', '|', '"', '\', '/', ':', '*', '?']; { for long file names }
+
+  ShortDirForbiddenChars : set of Char = [';', '=', '+', '<', '>', '|','"', '[', ']', '''']; { for short 8.3 file names }
+  LongDirForbiddenChars  : set of Char = ['<', '>', '|', '"', ':', '*', '?']; { for long file names }
 
 	WithAccent     : set of Char = ['À','Á','Â','Ã','Ä','Å','à','á','â','ã','ä','å','Ò','Ó','Ô','Õ','Ö','Ø','ò','ó','ô','õ','ö','ø','È','É','Ê','Ë','è','é','ê','ë','Ì','Í','Î','Ï','ì','í','î','ï','Ù','Ú','Û','Ü','ù','ú','û','ü','ÿ','Ñ','ñ','Ç','ç'];
 	WithoutAccent  : set of Char = ['A','A','A','A','A','A','a','a','a','a','a','a','O','O','O','O','O','O','o','o','o','o','o','o','E','E','E','E','e','e','e','e','I','I','I','I','i','i','i','i','U','U','U','U','u','u','u','u','y','N','n','C','c'];
@@ -184,12 +187,30 @@ begin
   if islong then
   begin
     for I := 1 to Length(Filename) do
-      Result := Result and not (Filename[I] in LongForbiddenChars);
+      Result := Result and not (Filename[I] in LongFileForbiddenChars);
   end
   else
   begin
     for I := 1 to Length(Filename) do
-      Result := Result and not (Filename[I] in ShortForbiddenChars);
+      Result := Result and not (Filename[I] in ShortFileForbiddenChars);
+  end;
+end;
+
+
+function ValidDirectoryname(Filename: String; islong: Boolean = true) : Boolean;
+var
+  I: integer;
+begin
+  Result := Filename <> '';
+  if islong then
+  begin
+    for I := 1 to Length(Filename) do
+      Result := Result and not (Filename[I] in LongDirForbiddenChars);
+  end
+  else
+  begin
+    for I := 1 to Length(Filename) do
+      Result := Result and not (Filename[I] in ShortDirForbiddenChars);
   end;
 end;
 

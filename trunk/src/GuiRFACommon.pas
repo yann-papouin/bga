@@ -70,6 +70,15 @@ type
     fsConflict
   );
 
+  TSortBy =
+  (
+    sbFilename,
+    sbSize,
+    sbCompressed,
+    sbRatio,
+    sbOffset
+  );
+
   TEntryStatus = set of TEntryModification;
 
 
@@ -106,8 +115,11 @@ type
     procedure SearchStartExecute(Sender: TObject);
     procedure SearchStopExecute(Sender: TObject);
     procedure SearchChange(Sender: TObject);
+    procedure RFAListHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
   private
     FSearchText: string;
+    FSortBy : TSortBy;
+    FSortDirection : TSortDirection;
     { Déclarations privées }
     function IsFolder(Name: String) : boolean;
     procedure SetSearchText(const Value: string);
@@ -569,18 +581,76 @@ end;
 procedure TRFACommonForm.RFAListCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
 var
   Data1, Data2 : pFse;
+  FloatValue1 : single;
+  FloatValue2 : single;
 begin
   Data1 := Sender.GetNodeData(Node1);
   Data2 := Sender.GetNodeData(Node2);
 
-  if IsFile(Data1.FileType) = IsFile(Data2.FileType) then
-    Result := CompareStr(UpperCase(Data1.W32Name), UpperCase(Data2.W32Name))
-  else
-  if IsFile(Data1.FileType) then
-    Result := GreaterThanValue
-  else
-  if IsFile(Data2.FileType) then
-    Result := LessThanValue
+
+  if FSortby = sbFilename then
+  begin
+    if IsFile(Data1.FileType) = IsFile(Data2.FileType) then
+      Result := CompareStr(UpperCase(Data1.W32Name), UpperCase(Data2.W32Name))
+    else
+    if IsFile(Data1.FileType) then
+      Result := GreaterThanValue
+    else
+    if IsFile(Data2.FileType) then
+      Result := LessThanValue;
+  end;
+
+  if FSortby = sbSize then
+  begin
+    if IsFile(Data1.FileType) = IsFile(Data2.FileType) then
+      Result := CompareValue(Data1.Size, Data2.Size)
+    else
+    if IsFile(Data1.FileType) then
+      Result := GreaterThanValue
+    else
+    if IsFile(Data2.FileType) then
+      Result := LessThanValue;
+  end;
+
+  if FSortby = sbCompressed then
+  begin
+    if IsFile(Data1.FileType) = IsFile(Data2.FileType) then
+      Result := CompareValue(Data1.CompSize, Data2.CompSize)
+    else
+    if IsFile(Data1.FileType) then
+      Result := GreaterThanValue
+    else
+    if IsFile(Data2.FileType) then
+      Result := LessThanValue;
+  end;
+
+  if FSortby = sbRatio then
+  begin
+    if IsFile(Data1.FileType) = IsFile(Data2.FileType) then
+    begin
+      FloatValue1 := Data1.CompSize / Data1.Size  * 100;
+      FloatValue2 := Data2.CompSize / Data2.Size  * 100;
+      Result := CompareValue(FloatValue1, FloatValue2);
+    end
+    else
+    if IsFile(Data1.FileType) then
+      Result := GreaterThanValue
+    else
+    if IsFile(Data2.FileType) then
+      Result := LessThanValue;
+  end;
+
+  if FSortby = sbOffset then
+  begin
+    if IsFile(Data1.FileType) = IsFile(Data2.FileType) then
+      Result := CompareValue(Data1.Offset, Data2.Offset)
+    else
+    if IsFile(Data1.FileType) then
+      Result := GreaterThanValue
+    else
+    if IsFile(Data2.FileType) then
+      Result := LessThanValue;
+  end;
 
 end;
 
@@ -620,6 +690,36 @@ begin
       CellText := EmptyStr;
   end;
 
+end;
+
+procedure TRFACommonForm.RFAListHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  NewSort : TSortBy;
+begin
+
+  case Column of
+    0: NewSort := sbFilename;
+    1: NewSort := sbSize;
+    2: NewSort := sbCompressed;
+    3: NewSort := sbRatio;
+    4: NewSort := sbOffset;
+  end;
+
+  if NewSort = FSortBy then
+  begin
+    if FSortDirection = sdAscending then
+      FSortDirection := sdDescending
+    else
+    if FSortDirection = sdDescending then
+      FSortDirection := sdAscending
+  end
+    else
+  begin
+    FSortDirection := sdAscending;
+  end;
+
+  FSortBy := NewSort;
+  Sort;
 end;
 
 procedure TRFACommonForm.RFAListKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
@@ -783,7 +883,7 @@ end;
 
 procedure TRFACommonForm.Sort;
 begin
-  RFAList.SortTree(0, sdAscending);
+  RFAList.SortTree(0, FSortDirection);
 end;
 
 

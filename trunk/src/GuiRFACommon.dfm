@@ -40,6 +40,7 @@ object RFACommonForm: TRFACommonForm
     OnGetText = RFAListGetText
     OnGetImageIndex = RFAListGetImageIndex
     OnGetNodeDataSize = RFAListGetNodeDataSize
+    OnHeaderClick = RFAListHeaderClick
     OnKeyAction = RFAListKeyAction
     Columns = <
       item
