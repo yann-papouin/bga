@@ -309,7 +309,8 @@ type
 
   pFse = ^rFse;
   rFse = record
-    RFAFile : TRFAFile;
+    RFAFileHandle : TRFAFile;
+    RFAFileName : string[255];
     // Data fields
     //BF42FullName : AnsiString;
     EntryName : AnsiString; (* == BF42FullName*)
@@ -514,7 +515,7 @@ begin
       Updating := true;
 *)
   Data := RFAList.GetNodeData(Node);
-  Data.RFAFile := Sender;
+  Data.RFAFileHandle := Sender;
 (*
   if Updating then
   begin
@@ -679,11 +680,11 @@ begin
 
   if Data.Compressed then
   begin
-    Data.RFAFile.DecompressToStream(OutputStream, Data.Offset, Data.CompSize);
+    Data.RFAFileHandle.DecompressToStream(OutputStream, Data.Offset, Data.CompSize);
   end
     else
   begin
-    Data.RFAFile.ExtractToStream(OutputStream, Data.Offset, Data.CompSize, Data.Size);
+    Data.RFAFileHandle.ExtractToStream(OutputStream, Data.Offset, Data.CompSize, Data.Size);
   end
 end;
 
@@ -1177,7 +1178,7 @@ begin
         Data.Offset := Data.Offset + ShiftData.size;
       end;
 
-      FArchive.UpdateEntry(Data.EntryName, Data.Offset, Data.Size, Data.CompSize);
+      Data.RFAFileHandle.UpdateEntry(Data.EntryName, Data.Offset, Data.Size, Data.CompSize);
       RFAList.InvalidateNode(Node);
     end;
     Node := RFAList.GetNext(Node);
@@ -1251,7 +1252,7 @@ begin
 
         if (fsDelete in Data.Status) and IsFile(Data.FileType) then
         begin
-          DeleteResult := FArchive.DeleteEntry(Data.EntryName);
+          DeleteResult := Data.RFAFileHandle.DeleteEntry(Data.EntryName);
           //ShiftData(DeleteResult, shLeft);
           RFAList.DeleteNode(Node);
         end;
@@ -1277,17 +1278,17 @@ begin
           // if the file is the last one then remove it first
           if LastOne(Data.Offset) then
           begin
-            DeleteResult := FArchive.DeleteFile(Data.Offset, Data.CompSize);
+            DeleteResult := Data.RFAFileHandle.DeleteFile(Data.Offset, Data.CompSize);
             ShiftData(DeleteResult, shLeft, Node);
           end;
 
           ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
           Size := ExternalFile.Size;
-          InsertResult := FArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+          InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, COMPRESSED_DATA);
           ShiftData(InsertResult, shRight, Node);
           ExternalFile.Free;
 
-          FArchive.UpdateEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size);
+          Data.RFAFileHandle.UpdateEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size);
 
           Exclude(Data.Status, fsExternal);
           Data.Size := Size;
@@ -1321,7 +1322,8 @@ begin
           ExternalFile.Free;
 
           Data.EntryName := BuildEntryNameFromTree(Node);
-          FArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
+          Data.RFAFileHandle := FArchive;
+          Data.RFAFileHandle.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
 
           Exclude(Data.Status, fsNew);
           Exclude(Data.Status, fsEntry);
@@ -1350,9 +1352,9 @@ begin
 
         if (fsEntry in Data.Status) and IsFile(Data.FileType) then
         begin
-          FArchive.DeleteEntry(Data.EntryName);
+          Data.RFAFileHandle.DeleteEntry(Data.EntryName);
           Data.EntryName := BuildEntryNameFromTree(Node);
-          FArchive.InsertEntry(Data.EntryName, Data.offset, Data.Size, Data.CompSize, 0);
+          Data.RFAFileHandle.InsertEntry(Data.EntryName, Data.offset, Data.Size, Data.CompSize, 0);
         end;
 
         TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
