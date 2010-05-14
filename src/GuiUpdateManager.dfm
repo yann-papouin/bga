@@ -208,13 +208,15 @@ object UpdateManagerForm: TUpdateManagerForm
     ParentFont = False
   end
   object SpTBXButton1: TSpTBXButton
-    Left = 357
+    Left = 336
     Top = 167
-    Width = 75
+    Width = 96
     Height = 25
     Action = CloseForm
     Anchors = [akRight, akBottom]
     TabOrder = 2
+    Images = ResourcesForm.Images16x16
+    ImageIndex = 143
   end
   object SpTBXLabel2: TSpTBXLabel
     Left = 8
@@ -233,6 +235,7 @@ object UpdateManagerForm: TUpdateManagerForm
     LinkText = 'http://code.google.com/p/bga/'
   end
   object Actions: TActionList
+    Images = ResourcesForm.Images16x16
     Left = 392
     Top = 8
     object Check: TAction
@@ -241,6 +244,7 @@ object UpdateManagerForm: TUpdateManagerForm
     end
     object CloseForm: TAction
       Caption = 'Close'
+      ImageIndex = 143
       OnExecute = CloseFormExecute
     end
   end

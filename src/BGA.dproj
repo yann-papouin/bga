@@ -52,9 +52,6 @@
 			<DCCReference Include="GuiRFASettings.pas">
 				<Form>RFASettingsForm</Form>
 			</DCCReference>
-			<DCCReference Include="GuiRFAView.pas">
-				<Form>RFAViewForm</Form>
-			</DCCReference>
 			<DCCReference Include="Lib\AppLib.pas"/>
 			<DCCReference Include="Lib\CommonLib.pas"/>
 			<DCCReference Include="Lib\MD5Api.pas"/>
@@ -90,6 +87,18 @@
 			</DCCReference>
 			<DCCReference Include="GuiBrowseExtract.pas">
 				<Form>BrowseExtractForm</Form>
+			</DCCReference>
+			<DCCReference Include="GuiFSView.pas">
+				<Form>Form1</Form>
+			</DCCReference>
+			<DCCReference Include="GuiRFACommon.pas">
+				<Form>RFACommonForm</Form>
+			</DCCReference>
+			<DCCReference Include="Resources.pas">
+				<Form>ResourcesForm</Form>
+			</DCCReference>
+			<DCCReference Include="GuiRFAView.pas">
+				<Form>RFAViewForm</Form>
 			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
