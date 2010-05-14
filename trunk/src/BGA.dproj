@@ -88,9 +88,6 @@
 			<DCCReference Include="GuiBrowseExtract.pas">
 				<Form>BrowseExtractForm</Form>
 			</DCCReference>
-			<DCCReference Include="GuiFSView.pas">
-				<Form>Form1</Form>
-			</DCCReference>
 			<DCCReference Include="GuiRFACommon.pas">
 				<Form>RFACommonForm</Form>
 			</DCCReference>
@@ -99,6 +96,9 @@
 			</DCCReference>
 			<DCCReference Include="GuiRFAView.pas">
 				<Form>RFAViewForm</Form>
+			</DCCReference>
+			<DCCReference Include="GuiFSView.pas">
+				<Form>FSViewForm</Form>
 			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

@@ -24,10 +24,10 @@ uses
   GuiSkinDialog in 'GuiSkinDialog.pas' {SkinDialogForm},
   GuiBrowsePack in 'GuiBrowsePack.pas' {BrowsePackForm},
   GuiBrowseExtract in 'GuiBrowseExtract.pas' {BrowseExtractForm},
-  GuiFSView in 'GuiFSView.pas' {Form1},
   GuiRFACommon in 'GuiRFACommon.pas' {RFACommonForm},
   Resources in 'Resources.pas' {ResourcesForm},
-  GuiRFAView in 'GuiRFAView.pas' {RFAViewForm};
+  GuiRFAView in 'GuiRFAView.pas' {RFAViewForm},
+  GuiFSView in 'GuiFSView.pas' {FSViewForm};
 
 {$R *.res}
 
@@ -47,8 +47,8 @@ begin
   Application.CreateForm(TSkinDialogForm, SkinDialogForm);
   Application.CreateForm(TBrowsePackForm, BrowsePackForm);
   Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
-  Application.CreateForm(TForm1, Form1);
   Application.CreateForm(TRFACommonForm, RFACommonForm);
   Application.CreateForm(TResourcesForm, ResourcesForm);
+  Application.CreateForm(TFSViewForm, FSViewForm);
   Application.Run;
 end.
