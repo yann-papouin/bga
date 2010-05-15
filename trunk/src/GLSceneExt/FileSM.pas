@@ -44,8 +44,12 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
     procedure LoadFromStream(aStream : TStream);
+
     function CollVertexFromFaceId(CollMeshID : Longword; FaceID: Longword): TMatrix3f;
-    function MeshVertexFromLodFaceId(MeshID : Longword; LodID: Longword; FaceID: Longword): TMatrix3f;
+    function CollNormaleFromFaceId(CollMeshID : Longword; FaceID: Longword): TMatrix3f;
+
+    function MeshVertexFromMatFaceId(MeshID : Longword; LodID: Longword; FaceID: Longword): TMatrix3f;
+    function MeshNormaleFromMatFaceId(MeshID : Longword; LodID: Longword; FaceID: Longword): TMatrix3f;
 
     property Header : Longword read FHeader;
     property CollMeshCount : Longword read FCollMeshCount;
@@ -382,7 +386,7 @@ begin
 
 end;
 
-function TFileSM.MeshVertexFromLodFaceId(MeshID, LodID, FaceID: Longword): TMatrix3f;
+function TFileSM.MeshVertexFromMatFaceId(MeshID, LodID, FaceID: Longword): TMatrix3f;
 var
   Face : TSMFace;
 begin
@@ -393,23 +397,38 @@ begin
   Result[2] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.C].Value;
 end;
 
+function TFileSM.MeshNormaleFromMatFaceId(MeshID, LodID, FaceID: Longword): TMatrix3f;
+var
+  Face : TSMFace;
+begin
+  Face := FMeshes[MeshID].MatMeshes[LodID].MeshData.Faces[FaceID];
+
+  Result[0] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Normales[Face.A].Value;
+  Result[1] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Normales[Face.B].Value;
+  Result[2] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Normales[Face.C].Value;
+end;
+
+
 function TFileSM.CollVertexFromFaceId(CollMeshID : Longword; FaceID: Longword): TMatrix3f;
 var
   Face : TSMFace;
 begin
-(*
-  Assert(CollMeshID<FCollMeshCount);
-  Assert(FaceID<FCollMeshes[CollMeshID].FaceCount);
-*)
   Face := FCollMeshes[CollMeshID].Faces[FaceID];
-(*
-  Assert(Face.A<FCollMeshes[CollMeshID].VertexCount);
-  Assert(Face.B<FCollMeshes[CollMeshID].VertexCount);
-  Assert(Face.C<FCollMeshes[CollMeshID].VertexCount);
-*)
+
   Result[0] := FCollMeshes[CollMeshID].Vertex[Face.A].Value;
   Result[1] := FCollMeshes[CollMeshID].Vertex[Face.B].Value;
   Result[2] := FCollMeshes[CollMeshID].Vertex[Face.C].Value;
+end;
+
+function TFileSM.CollNormaleFromFaceId(CollMeshID : Longword; FaceID: Longword): TMatrix3f;
+var
+  Face : TSMFace;
+begin
+  Face := FCollMeshes[CollMeshID].Faces[FaceID];
+
+  Result[0] := FCollMeshes[CollMeshID].Normales[Face.A].Value;
+  Result[1] := FCollMeshes[CollMeshID].Normales[Face.B].Value;
+  Result[2] := FCollMeshes[CollMeshID].Normales[Face.C].Value;
 end;
 
 end.

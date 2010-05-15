@@ -73,7 +73,7 @@ type
 implementation
 
 uses
-  Dbugintf, VectorTypes;
+  Dbugintf, VectorTypes, GLColor;
 
 
 // ------------------------------------------------------------------
@@ -92,7 +92,10 @@ var
    SMFile : TFileSM;
    ColMesh : TGLSMColMeshObject;
    MatMesh : TGLSMMatMeshObject;
-   Mat : TMatrix3f;
+   MatVert : TMatrix3f;
+   MatNorm : TMatrix3f;
+   FaceGroup : TFGIndexTexCoordList;
+   Color : TGLColor;
 begin
   inherited;
   SMFile:=TFileSM.Create;
@@ -110,11 +113,15 @@ begin
         if SMFile.CollMeshes[i].FaceCount > 0 then
           for j:=0 to SMFile.CollMeshes[i].FaceCount-1 do
           begin
-            Mat := SMFile.CollVertexFromFaceId(i, j);
+            MatVert := SMFile.CollVertexFromFaceId(i, j);
+            ColMesh.Vertices.Add(MatVert[0]);
+            ColMesh.Vertices.Add(MatVert[1]);
+            ColMesh.Vertices.Add(MatVert[2]);
 
-            ColMesh.Vertices.Add(Mat[0]);
-            ColMesh.Vertices.Add(Mat[1]);
-            ColMesh.Vertices.Add(Mat[2]);
+            MatNorm := SMFile.CollNormaleFromFaceId(i, j);
+            ColMesh.Vertices.Add(MatNorm[0]);
+            ColMesh.Vertices.Add(MatNorm[1]);
+            ColMesh.Vertices.Add(MatNorm[2]);
           end;
 
         //SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[ColMesh.Vertices.Capacity]);
@@ -133,16 +140,22 @@ begin
         for j:=0 to SMFile.Meshes[i].MatMeshCount-1 do
           begin
             MatMesh := TGLSMMatMeshObject.CreateOwned(Owner.MeshObjects);
+            MatMesh.Mode := momTriangles;
+
             MatMesh.FTexturePath := SMFile.Meshes[i].MatMeshes[j].Material.Name;
             MatMesh.FParentMeshID := i;
 
             for k:=0 to SMFile.Meshes[i].MatMeshes[j].MeshData.FaceCount-1 do
             begin
-              Mat := SMFile.MeshVertexFromLodFaceId(i, j, k);
+              MatVert := SMFile.MeshVertexFromMatFaceId(i, j, k);
+              MatMesh.Vertices.Add(MatVert[0]);
+              MatMesh.Vertices.Add(MatVert[1]);
+              MatMesh.Vertices.Add(MatVert[2]);
 
-              MatMesh.Vertices.Add(Mat[0]);
-              MatMesh.Vertices.Add(Mat[1]);
-              MatMesh.Vertices.Add(Mat[2]);
+              MatNorm := SMFile.MeshNormaleFromMatFaceId(i, j, k);
+              MatMesh.Normals.Add(MatNorm[0]);
+              MatMesh.Normals.Add(MatNorm[1]);
+              MatMesh.Normals.Add(MatNorm[2]);
             end;
 
             //SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[LodMesh.Vertices.Capacity]);
