@@ -18,19 +18,20 @@ object SMViewForm: TSMViewForm
     Left = 222
     Top = 0
     Width = 562
-    Height = 513
+    Height = 479
     Camera = Camera
     Buffer.BackgroundColor = 4737096
     Buffer.FaceCulling = False
-    FieldOfView = 149.470855712890600000
+    FieldOfView = 147.415298461914100000
     Align = alClient
     TabOrder = 0
+    ExplicitHeight = 472
   end
   object MeshList: TVirtualStringTree
     Left = 0
     Top = 0
     Width = 217
-    Height = 513
+    Height = 479
     Align = alLeft
     Ctl3D = True
     DragMode = dmAutomatic
@@ -45,7 +46,7 @@ object SMViewForm: TSMViewForm
     Header.Height = 24
     Header.MainColumn = -1
     Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs]
-    Images = ExplorerImg
+    Images = ResourcesForm.Images16x16
     ParentCtl3D = False
     TabOrder = 1
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking]
@@ -56,14 +57,57 @@ object SMViewForm: TSMViewForm
     OnGetText = MeshListGetText
     OnGetImageIndex = MeshListGetImageIndex
     OnGetNodeDataSize = MeshListGetNodeDataSize
+    ExplicitHeight = 513
     Columns = <>
   end
   object Splitter: TSpTBXSplitter
     Left = 217
     Top = 0
-    Height = 513
+    Height = 479
     Cursor = crSizeWE
     MinSize = 200
+    ExplicitHeight = 513
+  end
+  object Panel1: TPanel
+    Left = 0
+    Top = 479
+    Width = 784
+    Height = 34
+    Align = alBottom
+    Caption = ' '
+    TabOrder = 3
+    ExplicitTop = 485
+    object Label1: TSpTBXLabel
+      Left = 8
+      Top = 6
+      Width = 214
+      Height = 19
+      Caption = 'Need a real battlefield mesh viewer ?'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      ParentColor = True
+      ParentFont = False
+    end
+    object Label2: TSpTBXLabel
+      Left = 228
+      Top = 6
+      Width = 397
+      Height = 19
+      Caption = 
+        'Download Remdul'#39's BfMeshView on http://www.buijs-leur.nl/bfstuff' +
+        '/bfmeshview/ '
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clBlue
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsUnderline]
+      ParentColor = True
+      ParentFont = False
+      LinkText = 'http://www.buijs-leur.nl/bfstuff/bfmeshview/'
+    end
   end
   object Navigation: TGLSimpleNavigation
     Form = Owner
@@ -101,10 +145,10 @@ object SMViewForm: TSMViewForm
       EdgeColor.Color = {029F1F3FBEBEBE3E999F1F3F0000803F}
     end
     object Camera: TGLCamera
-      DepthOfView = 1000.000000000000000000
+      DepthOfView = 10000.000000000000000000
       FocalLength = 70.000000000000000000
       TargetObject = CameraTarget
-      Position.Coordinates = {4874874248748742487487420000803F}
+      Position.Coordinates = {4974874249748742497487420000803F}
       object CamLight: TGLLightSource
         ConstAttenuation = 1.000000000000000000
         Diffuse.Color = {8D8C0C3F8D8C0C3F8D8C0C3F0000803F}

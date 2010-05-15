@@ -24,7 +24,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses, GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels;
+  Dialogs, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses, GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels,
+  StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls;
 
 type
   TSMViewForm = class(TForm)
@@ -40,6 +41,9 @@ type
     ExplorerImg: TPngImageList;
     MeshList: TVirtualStringTree;
     Splitter: TSpTBXSplitter;
+    Panel1: TPanel;
+    Label1: TSpTBXLabel;
+    Label2: TSpTBXLabel;
     procedure FormCreate(Sender: TObject);
     procedure MeshListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
@@ -55,6 +59,7 @@ type
     procedure MeshListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
     { Déclarations privées }
+    FWorldRootNode : PVirtualNode;
     FColRootNode : PVirtualNode;
     FMeshRootNode : PVirtualNode;
     FApplicationTitle : string;
@@ -80,7 +85,7 @@ implementation
 {$R *.dfm}
 
 uses
-  GLFileSM, AppLib;
+  GLFileSM, AppLib, Resources;
 
 type
   pData = ^rData;
@@ -136,17 +141,23 @@ begin
   ColCounter := 0;
   MeshCounter := 0;
 
-  FColRootNode := MeshList.AddChild(nil);
+  FWorldRootNode := MeshList.AddChild(nil);
+  Data := MeshList.GetNodeData(FWorldRootNode);
+  Data.MeshType := mtNone;
+  Data.Text := 'World';
+  Data.Img := 1162;
+
+  FColRootNode := MeshList.AddChild(FWorldRootNode);
   Data := MeshList.GetNodeData(FColRootNode);
   Data.MeshType := mtNone;
   Data.Text := 'Collisions';
-  Data.Img := 7;
+  Data.Img := 971;
 
-  FMeshRootNode := MeshList.AddChild(nil);
+  FMeshRootNode := MeshList.AddChild(FWorldRootNode);
   Data := MeshList.GetNodeData(FMeshRootNode);
   Data.MeshType := mtNone;
   Data.Text := 'Meshes';
-  Data.Img := 5;
+  Data.Img := 571;
 
   for i := 0 to FreeMesh.MeshObjects.Count - 1 do
   begin
@@ -160,7 +171,7 @@ begin
 
       Data.Mesh := (FreeMesh.MeshObjects[i] as TGLSMMeshObject);
       Data.Mesh.Visible := false;
-      Data.Img := 112;
+      Data.Img := 779;
 
     end;
 
@@ -177,6 +188,7 @@ begin
         Data.Mesh := nil;
         Data.MeshID := (FreeMesh.MeshObjects[i] as TGLSMMatMeshObject).ParentMeshID;
         Data.Text := Format('Mesh %d',[MeshCounter]);
+        Data.Img := 290;
       end;
 
       Inc(MatCounter);
@@ -186,7 +198,7 @@ begin
       Data.Mesh := (FreeMesh.MeshObjects[i] as TGLSMMeshObject);
       Data.Mesh.Visible := false;
       Data.Text := Format('Mat %d',[MatCounter]);
-      Data.Img := 111;
+      Data.Img := 283;
     end;
   end;
 
