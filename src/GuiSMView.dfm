@@ -25,7 +25,6 @@ object SMViewForm: TSMViewForm
     FieldOfView = 147.415298461914100000
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 472
   end
   object MeshList: TVirtualStringTree
     Left = 0
@@ -57,7 +56,6 @@ object SMViewForm: TSMViewForm
     OnGetText = MeshListGetText
     OnGetImageIndex = MeshListGetImageIndex
     OnGetNodeDataSize = MeshListGetNodeDataSize
-    ExplicitHeight = 513
     Columns = <>
   end
   object Splitter: TSpTBXSplitter
@@ -66,7 +64,6 @@ object SMViewForm: TSMViewForm
     Height = 479
     Cursor = crSizeWE
     MinSize = 200
-    ExplicitHeight = 513
   end
   object Panel1: TPanel
     Left = 0
@@ -76,7 +73,6 @@ object SMViewForm: TSMViewForm
     Align = alBottom
     Caption = ' '
     TabOrder = 3
-    ExplicitTop = 485
     object Label1: TSpTBXLabel
       Left = 8
       Top = 6
