@@ -107,14 +107,15 @@ begin
       begin
         ColMesh := TGLSMColMeshObject.CreateOwned(Owner.MeshObjects);
 
-        for j:=0 to SMFile.CollMeshes[i].FaceCount-1 do
-        begin
-          Mat := SMFile.CollVertexFromFaceId(i, j);
+        if SMFile.CollMeshes[i].FaceCount > 0 then
+          for j:=0 to SMFile.CollMeshes[i].FaceCount-1 do
+          begin
+            Mat := SMFile.CollVertexFromFaceId(i, j);
 
-          ColMesh.Vertices.Add(Mat[0]);
-          ColMesh.Vertices.Add(Mat[1]);
-          ColMesh.Vertices.Add(Mat[2]);
-        end;
+            ColMesh.Vertices.Add(Mat[0]);
+            ColMesh.Vertices.Add(Mat[1]);
+            ColMesh.Vertices.Add(Mat[2]);
+          end;
 
         //SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[ColMesh.Vertices.Capacity]);
         //SendDebugFmt('Current Mesh.TriangleCount is %d',[ColMesh.TriangleCount]);
@@ -126,24 +127,27 @@ begin
       // retrieve LodMesh data
       for i := 0 to SMFile.MeshCount - 1 do
       begin
+        SendInteger('MatMeshCount', SMFile.Meshes[i].MatMeshCount);
+
+        if SMFile.Meshes[i].MatMeshCount > 0 then
         for j:=0 to SMFile.Meshes[i].MatMeshCount-1 do
-        begin
-          MatMesh := TGLSMMatMeshObject.CreateOwned(Owner.MeshObjects);
-          MatMesh.FTexturePath := SMFile.Meshes[i].MatMeshes[j].Material.Name;
-          MatMesh.FParentMeshID := i;
-
-          for k:=0 to SMFile.Meshes[i].MatMeshes[j].MeshData.FaceCount-1 do
           begin
-            Mat := SMFile.MeshVertexFromLodFaceId(i, j, k);
+            MatMesh := TGLSMMatMeshObject.CreateOwned(Owner.MeshObjects);
+            MatMesh.FTexturePath := SMFile.Meshes[i].MatMeshes[j].Material.Name;
+            MatMesh.FParentMeshID := i;
 
-            MatMesh.Vertices.Add(Mat[0]);
-            MatMesh.Vertices.Add(Mat[1]);
-            MatMesh.Vertices.Add(Mat[2]);
+            for k:=0 to SMFile.Meshes[i].MatMeshes[j].MeshData.FaceCount-1 do
+            begin
+              Mat := SMFile.MeshVertexFromLodFaceId(i, j, k);
+
+              MatMesh.Vertices.Add(Mat[0]);
+              MatMesh.Vertices.Add(Mat[1]);
+              MatMesh.Vertices.Add(Mat[2]);
+            end;
+
+            //SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[LodMesh.Vertices.Capacity]);
+            //SendDebugFmt('Current Mesh.TriangleCount is %d',[LodMesh.TriangleCount]);
           end;
-
-          //SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[LodMesh.Vertices.Capacity]);
-          //SendDebugFmt('Current Mesh.TriangleCount is %d',[LodMesh.TriangleCount]);
-        end;
       end;
     end;
 
