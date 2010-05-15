@@ -52,10 +52,10 @@ type
     RenderType : Longword;
     VertFormat : Longword;  //vertexFormat
     VertStride : Longword;  //VertByteSize
-    TexCoord1 : array of TTexPoint;
-    TexCoord1Count : Longword;
-    TexCoord2 : array of TTexPoint;
-    TexCoord2Count : Longword;
+    TextureCoord : array of TTexPoint;
+    TextureCoordCount : Longword;
+    LightmapCoord : array of TTexPoint;
+    LightmapCoordCount : Longword;
     IndexNum : Longword;    //numVertices = numFaces*3
   end;
 

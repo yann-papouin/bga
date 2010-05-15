@@ -22,7 +22,7 @@ object SMViewForm: TSMViewForm
     Camera = Camera
     Buffer.BackgroundColor = 4737096
     Buffer.FaceCulling = False
-    FieldOfView = 147.415298461914100000
+    FieldOfView = 138.809280395507800000
     Align = alClient
     TabOrder = 0
   end
@@ -142,7 +142,7 @@ object SMViewForm: TSMViewForm
     end
     object Camera: TGLCamera
       DepthOfView = 10000.000000000000000000
-      FocalLength = 70.000000000000000000
+      FocalLength = 90.000000000000000000
       TargetObject = CameraTarget
       Position.Coordinates = {4974874249748742497487420000803F}
       object CamLight: TGLLightSource

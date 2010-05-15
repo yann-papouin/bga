@@ -215,8 +215,13 @@ begin
   else
   begin
     MeshList.Expanded[FMeshRootNode] := true;
-    MeshList.FocusedNode := FMeshRootNode.FirstChild;
+    MeshList.Selected[FMeshRootNode.FirstChild] := true;
   end;
+
+  Camera.Position.X := FreeMesh.BoundingSphereRadius;
+  Camera.Position.Y := FreeMesh.BoundingSphereRadius;
+  Camera.Position.Z := FreeMesh.BoundingSphereRadius;
+
 end;
 
 procedure TSMViewForm.LoadStandardMesh(Filename: string);
