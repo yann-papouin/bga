@@ -93,6 +93,7 @@ var
    ColMesh : TGLSMColMeshObject;
    MatMesh : TGLSMMatMeshObject;
    MatVert : TMatrix3f;
+   ColNorm : TVector3f;
    MatNorm : TMatrix3f;
    FaceGroup : TFGIndexTexCoordList;
    Color : TGLColor;
@@ -117,13 +118,17 @@ begin
             ColMesh.Vertices.Add(MatVert[0]);
             ColMesh.Vertices.Add(MatVert[1]);
             ColMesh.Vertices.Add(MatVert[2]);
-
-            MatNorm := SMFile.CollNormaleFromFaceId(i, j);
-            ColMesh.Vertices.Add(MatNorm[0]);
-            ColMesh.Vertices.Add(MatNorm[1]);
-            ColMesh.Vertices.Add(MatNorm[2]);
           end;
-
+(*
+        if SMFile.CollMeshes[i].NormaleCount > 0 then
+          for j:=0 to SMFile.CollMeshes[i].NormaleCount-1 do
+          begin
+            MatNorm := SMFile.CollNormaleFromFaceId(i, j);
+            ColMesh.Normals.Add(MatNorm[0]);
+            ColMesh.Normals.Add(MatNorm[1]);
+            ColMesh.Normals.Add(MatNorm[2]);
+          end;
+*)
         //SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[ColMesh.Vertices.Capacity]);
         //SendDebugFmt('Current Mesh.TriangleCount is %d',[ColMesh.TriangleCount]);
       end;

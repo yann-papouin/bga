@@ -301,8 +301,8 @@ begin
             aStream.Read(ptMeshdata.VertexCount, DWORD_SIZE);
 
             ptMeshdata.NormaleCount := ptMeshdata.VertexCount;
-            ptMaterial.TexCoord1Count := ptMeshdata.VertexCount;
-            ptMaterial.TexCoord2Count := ptMeshdata.VertexCount;
+            ptMaterial.TextureCoordCount := ptMeshdata.VertexCount;
+            ptMaterial.LightmapCoordCount := ptMeshdata.VertexCount;
 
             aStream.Read(ptMaterial.IndexNum, DWORD_SIZE);
             ptMeshdata.FaceCount := ptMaterial.IndexNum div 3;
@@ -320,8 +320,8 @@ begin
             SetLength(ptMeshdata.Vertex, ptMeshdata.VertexCount);
             SetLength(ptMeshdata.Normales, ptMeshdata.NormaleCount);
 
-            SetLength(ptMaterial.TexCoord1, ptMaterial.TexCoord1Count);
-            SetLength(ptMaterial.TexCoord2, ptMaterial.TexCoord2Count);
+            SetLength(ptMaterial.TextureCoord, ptMaterial.TextureCoordCount);
+            SetLength(ptMaterial.LightmapCoord, ptMaterial.LightmapCoordCount);
 
             for k := 0 to ptMeshdata.VertexCount - 1 do
             begin
@@ -338,6 +338,11 @@ begin
               aStream.Read(ptVertex.Value[2] , FLOAT_SIZE);
               ptVertex.Value[2] := ptVertex.Value[2] * DSM_SCALE;
 
+
+              {$IfDef DEBUG_SM_DETAILS}
+              SendDebugFmt('Current normale is %d/%d',[k+1, ptMeshdata.NormaleCount]);
+              {$EndIf}
+
               ptVertex := @(ptMeshdata.Normales[k]);
 
               aStream.Read(ptVertex.Value[0] , FLOAT_SIZE);
@@ -347,13 +352,13 @@ begin
               aStream.Read(ptVertex.Value[2] , FLOAT_SIZE);
               ptVertex.Value[2] := ptVertex.Value[2];
 
-              aStream.Read(ptMaterial.TexCoord1[k].S , FLOAT_SIZE);
-              aStream.Read(ptMaterial.TexCoord1[k].T , FLOAT_SIZE); //ty = (1.0 - (ReadFloat fp)) - 1.0
+              aStream.Read(ptMaterial.TextureCoord[k].S , FLOAT_SIZE);
+              aStream.Read(ptMaterial.TextureCoord[k].T , FLOAT_SIZE); //ty = (1.0 - (ReadFloat fp)) - 1.0
 
               if ptMaterial.VertStride > 32 then
               begin
-                aStream.Read(ptMaterial.TexCoord2[k].S , FLOAT_SIZE);
-                aStream.Read(ptMaterial.TexCoord2[k].T , FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
+                aStream.Read(ptMaterial.LightmapCoord[k].S , FLOAT_SIZE);
+                aStream.Read(ptMaterial.LightmapCoord[k].T , FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
               end;
 
             end;
@@ -424,7 +429,15 @@ function TFileSM.CollNormaleFromFaceId(CollMeshID : Longword; FaceID: Longword):
 var
   Face : TSMFace;
 begin
+
+  Assert(CollMeshID<FCollMeshCount);
+  Assert(FaceID<FCollMeshes[CollMeshID].FaceCount);
+
   Face := FCollMeshes[CollMeshID].Faces[FaceID];
+
+  Assert(Face.A<FCollMeshes[CollMeshID].NormaleCount);
+  Assert(Face.B<FCollMeshes[CollMeshID].NormaleCount);
+  Assert(Face.C<FCollMeshes[CollMeshID].NormaleCount);
 
   Result[0] := FCollMeshes[CollMeshID].Normales[Face.A].Value;
   Result[1] := FCollMeshes[CollMeshID].Normales[Face.B].Value;
