@@ -96,17 +96,19 @@ object BrowseForm: TBrowseForm
   object SpTBXLabel1: TSpTBXLabel
     Left = 8
     Top = 12
-    Width = 96
-    Height = 19
+    Width = 116
+    Height = 22
     Caption = 'Current directory :'
+    Images = ResourcesForm.Images16x16
     ImageIndex = 8
   end
   object SpTBXLabel2: TSpTBXLabel
     Left = 8
     Top = 76
-    Width = 83
-    Height = 19
+    Width = 103
+    Height = 22
     Caption = 'Recent folders :'
+    Images = ResourcesForm.Images16x16
     ImageIndex = 165
   end
   object Browse: TJvBrowseForFolderDialog

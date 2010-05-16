@@ -100,6 +100,9 @@
 			<DCCReference Include="GuiFSView.pas">
 				<Form>FSViewForm</Form>
 			</DCCReference>
+			<DCCReference Include="GuiFSSettings.pas">
+				<Form>FSSettingsForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

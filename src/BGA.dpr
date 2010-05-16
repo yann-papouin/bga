@@ -27,7 +27,8 @@ uses
   GuiRFACommon in 'GuiRFACommon.pas' {RFACommonForm},
   Resources in 'Resources.pas' {ResourcesForm},
   GuiRFAView in 'GuiRFAView.pas' {RFAViewForm},
-  GuiFSView in 'GuiFSView.pas' {FSViewForm};
+  GuiFSView in 'GuiFSView.pas' {FSViewForm},
+  GuiFSSettings in 'GuiFSSettings.pas' {FSSettingsForm};
 
 {$R *.res}
 
@@ -50,5 +51,6 @@ begin
   Application.CreateForm(TRFACommonForm, RFACommonForm);
   Application.CreateForm(TResourcesForm, ResourcesForm);
   Application.CreateForm(TFSViewForm, FSViewForm);
+  Application.CreateForm(TFSSettingsForm, FSSettingsForm);
   Application.Run;
 end.

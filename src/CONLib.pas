@@ -23,9 +23,15 @@ unit CONLib;
 interface
 
 uses
-  Windows;
+  Windows, Classes, Messages, SysUtils, Variants;
+
+procedure GetStringListFromProperty(Data:TStringList; Elt : string; List : TStringList);
+function GetStringFromProperty(Data:TStringList; Elt : string) : string;
+function GetFloatFromProperty(Data:TStringList; Elt : string) : Extended;
+function GetIntFromProperty(Data:TStringList; Elt : string) : integer;
 
 type
+
 
   TBfData = string[255];
 
@@ -746,6 +752,64 @@ type
 
 
 implementation
+
+procedure GetStringListFromProperty(Data:TStringList; Elt : string; List : TStringList);
+var
+  Line, Pos : Integer;
+  Wtd : string;
+begin
+  Assert(List <> nil);
+  for Line := 0 to Data.Count - 1 do
+  begin
+    Pos := AnsiPos(Elt, Data[Line]);
+    if Pos > 0 then
+    begin
+      Wtd := StringReplace(Data[Line], Elt, EmptyStr, [rfReplaceAll, rfIgnoreCase]);
+      Wtd := Trim(Wtd);
+      List.Add(Wtd);
+    end;
+  end;
+end;
+
+
+function GetStringFromProperty(Data:TStringList; Elt : string) : string;
+var
+  Line, Pos : Integer;
+  Wtd : string;
+begin
+  Pos := -1;
+  for Line := 0 to Data.Count - 1 do
+  begin
+    Pos := AnsiPos(Elt, Data[Line]);
+    if Pos > 0 then
+      break;
+  end;
+
+  if (Pos > 0) then
+  begin
+    Wtd := StringReplace(Data[Line], Elt, EmptyStr, [rfReplaceAll, rfIgnoreCase]);
+    Wtd := Trim(Wtd);
+    Result := Wtd;
+  end
+    else
+      Result := EmptyStr;
+end;
+
+function GetFloatFromProperty(Data:TStringList; Elt : string) : Extended;
+var
+  SystemDS : Char;
+begin
+  SystemDS := DecimalSeparator;
+  DecimalSeparator := '.';
+  Result := StrToFloatDef(GetStringFromProperty(Data, Elt), 0);
+  DecimalSeparator := SystemDS;
+end;
+
+function GetIntFromProperty(Data:TStringList; Elt : string) : integer;
+begin
+  Result := StrToIntDef(GetStringFromProperty(Data, Elt), 0);
+end;
+
 
 { TBfObject }
 

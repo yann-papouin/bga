@@ -20,12 +20,12 @@ object RAWViewForm: TRAWViewForm
     Left = 0
     Top = 0
     Width = 647
-    Height = 549
+    Height = 547
     Camera = Camera
     PostRender = ViewerPostRender
     Buffer.BackgroundColor = clSkyBlue
     Buffer.FaceCulling = False
-    FieldOfView = 159.353576660156300000
+    FieldOfView = 159.279708862304700000
     Align = alClient
     TabOrder = 0
   end
@@ -33,7 +33,7 @@ object RAWViewForm: TRAWViewForm
     Left = 647
     Top = 0
     Width = 204
-    Height = 549
+    Height = 547
     Align = alRight
     ItemHeight = 16
     TabStop = True
@@ -41,9 +41,10 @@ object RAWViewForm: TRAWViewForm
   end
   object StatusBar: TSpTBXStatusBar
     Left = 0
-    Top = 549
+    Top = 547
     Width = 851
-    Height = 23
+    Height = 25
+    ExplicitTop = 549
     object XLabel: TSpTBXLabelItem
       Caption = 'X'
     end

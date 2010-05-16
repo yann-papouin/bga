@@ -94,7 +94,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Math, VectorTypes, DbugIntf, StringFunction, AppLib;
+  Math, VectorTypes, DbugIntf, StringFunction, AppLib, CONLib;
 
 { TRAWViewForm }
 
@@ -118,43 +118,6 @@ end;
 
 
 
-function GetStringFromProperty(Data:TStringList; Elt : string) : string;
-var
-  Line, Pos : Integer;
-  Wtd : string;
-begin
-  //Pos := Data.IndexOf(Elt);
-  for Line := 0 to Data.Count - 1 do
-  begin
-    Pos := AnsiPos(Elt, Data[Line]);
-    if Pos > 0 then
-      break;
-  end;
-
-  if (Line > 0) and (Pos > 0) then
-  begin
-    Wtd := StringReplace(Data[Line], Elt, EmptyStr, [rfReplaceAll, rfIgnoreCase]);
-    Wtd := Trim(Wtd);
-    Result := Wtd;
-  end
-    else
-      Result := EmptyStr;
-end;
-
-function GetFloatFromProperty(Data:TStringList; Elt : string) : Extended;
-var
-  SystemDS : Char;
-begin
-  SystemDS := DecimalSeparator;
-  DecimalSeparator := '.';
-  Result := StrToFloatDef(GetStringFromProperty(Data, Elt), 0);
-  DecimalSeparator := SystemDS;
-end;
-
-function GetIntFromProperty(Data:TStringList; Elt : string) : integer;
-begin
-  Result := StrToIntDef(GetStringFromProperty(Data, Elt), 0);
-end;
 
 procedure TRAWViewForm.LoadTerrain(Filename: string);
 var
