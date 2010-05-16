@@ -19,16 +19,13 @@ object RFACommonForm: TRFACommonForm
     Width = 933
     Height = 533
     Align = alClient
+    BevelOuter = bvNone
     TabOrder = 0
-    ExplicitLeft = 416
-    ExplicitTop = 104
-    ExplicitWidth = 185
-    ExplicitHeight = 41
     object RFAList: TVirtualStringTree
-      Left = 1
-      Top = 1
-      Width = 931
-      Height = 496
+      Left = 0
+      Top = 0
+      Width = 933
+      Height = 498
       Align = alClient
       DragMode = dmAutomatic
       DragOperations = [doMove]
@@ -53,10 +50,10 @@ object RFACommonForm: TRFACommonForm
       OnGetNodeDataSize = RFAListGetNodeDataSize
       OnHeaderClick = RFAListHeaderClick
       OnKeyAction = RFAListKeyAction
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 933
-      ExplicitHeight = 498
+      ExplicitLeft = 1
+      ExplicitTop = 1
+      ExplicitWidth = 931
+      ExplicitHeight = 496
       Columns = <
         item
           MinWidth = 300
@@ -85,15 +82,15 @@ object RFACommonForm: TRFACommonForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 324
+          Width = 330
           WideText = 'Offset'
         end>
     end
     object SearchBar: TSpTBXPanel
       AlignWithMargins = True
-      Left = 1
-      Top = 497
-      Width = 931
+      Left = 0
+      Top = 498
+      Width = 933
       Height = 35
       Margins.Left = 0
       Margins.Top = 0
@@ -108,19 +105,19 @@ object RFACommonForm: TRFACommonForm
       TabOrder = 1
       Visible = False
       Borders = False
-      ExplicitLeft = 0
-      ExplicitTop = 498
-      ExplicitWidth = 933
+      ExplicitLeft = 1
+      ExplicitTop = 497
+      ExplicitWidth = 931
       object Search: TSpTBXEdit
         Left = 80
         Top = 7
-        Width = 844
+        Width = 846
         Height = 21
         Align = alClient
         TabOrder = 0
         Text = '*.*'
         OnChange = SearchChange
-        ExplicitWidth = 846
+        ExplicitWidth = 844
       end
       object SpTBXLabel1: TSpTBXLabel
         AlignWithMargins = True

@@ -38,7 +38,6 @@ type
     CamLight: TGLLightSource;
     FreeMesh: TGLFreeForm;
     Grid: TGLXYZGrid;
-    ExplorerImg: TPngImageList;
     MeshList: TVirtualStringTree;
     Splitter: TSpTBXSplitter;
     Panel1: TPanel;

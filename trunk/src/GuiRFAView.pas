@@ -122,6 +122,8 @@ type
     SpTBXButton2: TSpTBXButton;
     ExtractAll: TAction;
     ExtractSelected: TAction;
+    SpTBXItem23: TSpTBXItem;
+    Filesystem: TAction;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -157,6 +159,7 @@ type
     procedure NewVersionAvailableExecute(Sender: TObject);
     procedure ExtractAllExecute(Sender: TObject);
     procedure ExtractSelectedExecute(Sender: TObject);
+    procedure FilesystemExecute(Sender: TObject);
   private
     FApplicationTitle : string;
     FEditResult : TEditResult;
@@ -201,8 +204,8 @@ implementation
 
 uses
   DbugIntf,
-  GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, Resources, Masks,
-  Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
+  GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView,
+  Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
 var
   FLastNode : PVirtualNode;
@@ -1454,6 +1457,11 @@ begin
   Reset;
 end;
 
+
+procedure TRFAViewForm.FilesystemExecute(Sender: TObject);
+begin
+  FSViewForm.Showmodal;
+end;
 
 procedure TRFAViewForm.FormActivate(Sender: TObject);
 begin

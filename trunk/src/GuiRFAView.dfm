@@ -11,12 +11,10 @@ inherited RFAViewForm: TRFAViewForm
   inherited Container: TPanel
     Top = 25
     Height = 451
-    ExplicitLeft = 0
     ExplicitTop = 25
-    ExplicitWidth = 933
     ExplicitHeight = 451
     inherited RFAList: TVirtualStringTree
-      Height = 414
+      Height = 416
       PopupMenu = ViewerPopup
       OnBeforeCellPaint = RFAListBeforeCellPaint
       OnDblClick = RFAListDblClick
@@ -26,10 +24,10 @@ inherited RFAViewForm: TRFAViewForm
       OnNewText = RFAListNewText
       OnNodeMoved = RFAListNodeMoved
       OnStartDrag = RFAListStartDrag
-      ExplicitLeft = 1
-      ExplicitTop = 1
-      ExplicitWidth = 931
-      ExplicitHeight = 414
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 933
+      ExplicitHeight = 416
       Columns = <
         item
           MinWidth = 300
@@ -58,13 +56,18 @@ inherited RFAViewForm: TRFAViewForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 324
+          Width = 326
           WideText = 'Offset'
         end>
     end
     inherited SearchBar: TSpTBXPanel
-      Top = 415
-      ExplicitTop = 415
+      Top = 416
+      ExplicitLeft = 0
+      ExplicitTop = 416
+      ExplicitWidth = 933
+      inherited Search: TSpTBXEdit
+        ExplicitWidth = 846
+      end
     end
   end
   object TopDock: TSpTBXDock [1]
@@ -124,6 +127,9 @@ inherited RFAViewForm: TRFAViewForm
         Caption = 'Edit'
         object SpTBXItem1: TSpTBXItem
           Action = Settings
+        end
+        object SpTBXItem23: TSpTBXItem
+          Action = Filesystem
         end
         object SpTBXItem12: TSpTBXItem
           Action = SearchStart
@@ -329,7 +335,7 @@ inherited RFAViewForm: TRFAViewForm
     end
     object Settings: TAction [14]
       Category = 'Custom'
-      Caption = 'Settings'
+      Caption = 'Settings ...'
       ImageIndex = 13
       ShortCut = 123
     end
@@ -384,6 +390,12 @@ inherited RFAViewForm: TRFAViewForm
       Caption = 'Selected'
       ImageIndex = 796
       OnExecute = ExtractSelectedExecute
+    end
+    object Filesystem: TAction
+      Category = 'Custom'
+      Caption = 'File system ...'
+      ImageIndex = 522
+      OnExecute = FilesystemExecute
     end
   end
   object DropFileSource: TDropFileSource
