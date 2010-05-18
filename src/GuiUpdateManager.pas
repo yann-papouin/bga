@@ -28,8 +28,9 @@ type
     Revision : integer;
   end;
 
-
   TUpdateReply = procedure(Sender: TObject; Result : TUpdateResult) of object;
+
+  TUpdateEntryList = TObjectList<TUpdateEntry>;
 
   TUpdateManagerForm = class(TForm)
     Actions: TActionList;
@@ -61,7 +62,7 @@ type
     procedure SetOnUpdateReply(const Value: TUpdateReply);
   public
     { Déclarations publiques }
-    Entries : TObjectList<TUpdateEntry>;
+    Entries : TUpdateEntryList;
     property OnUpdateReply : TUpdateReply read FOnUpdateReply write SetOnUpdateReply;
   end;
 
@@ -192,7 +193,7 @@ end;
 
 procedure TUpdateManagerForm.FormCreate(Sender: TObject);
 begin
-  Entries := TObjectList<TUpdateEntry>.Create;
+  Entries := TUpdateEntryList.Create;
 end;
 
 procedure TUpdateManagerForm.FormDestroy(Sender: TObject);

@@ -40,6 +40,8 @@ type
     property Filesystem : TBattlefieldFileSystem read FFilesystem;
   end;
 
+  TModEntryList = TObjectList<TBattlefieldModEntry>;
+
   TBattlefieldFileSystem = class
   private
     FVersion: word;

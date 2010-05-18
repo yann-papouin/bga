@@ -124,6 +124,9 @@ type
     ExtractSelected: TAction;
     SpTBXItem23: TSpTBXItem;
     Filesystem: TAction;
+    SpTBXSubmenuItem5: TSpTBXSubmenuItem;
+    SpTBXSkinGroupItem1: TSpTBXSkinGroupItem;
+    Theme: TSpTBXEdit;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -204,7 +207,7 @@ implementation
 
 uses
   DbugIntf,
-  GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView,
+  GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
   Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
 var
@@ -472,6 +475,9 @@ begin
   inherited;
   ApplicationRun.Enabled := false;
   FormStorage.RestoreFormPlacement;
+
+  if Theme.Text <> EmptyStr then
+    SkinManager.SetSkin(Theme.Text);
 
   UpdateManagerForm.OnUpdateReply := UpdateReply;
   UpdateManagerForm.Check.Execute;
@@ -1482,6 +1488,7 @@ end;
 procedure TRFAViewForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   inherited;
+  Theme.Text := SkinManager.CurrentSkinName;
   FormStorage.SaveFormPlacement;
 
   if DirectoryExists(GetAppTempDirectory) then

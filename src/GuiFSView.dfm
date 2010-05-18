@@ -11,15 +11,16 @@ inherited FSViewForm: TFSViewForm
     Top = 58
     Width = 622
     Height = 384
-    ExplicitTop = 33
-    ExplicitHeight = 551
+    ExplicitTop = 58
+    ExplicitWidth = 622
+    ExplicitHeight = 384
     inherited RFAList: TVirtualStringTree
       Width = 622
       Height = 349
       ExplicitLeft = 0
       ExplicitTop = 0
-      ExplicitWidth = 933
-      ExplicitHeight = 516
+      ExplicitWidth = 622
+      ExplicitHeight = 349
       Columns = <
         item
           MinWidth = 300
@@ -56,11 +57,11 @@ inherited FSViewForm: TFSViewForm
       Top = 349
       Width = 622
       ExplicitLeft = 0
-      ExplicitTop = 516
-      ExplicitWidth = 933
+      ExplicitTop = 349
+      ExplicitWidth = 622
       inherited Search: TSpTBXEdit
         Width = 535
-        ExplicitWidth = 846
+        ExplicitWidth = 535
       end
     end
   end
@@ -72,8 +73,6 @@ inherited FSViewForm: TFSViewForm
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitTop = 0
-    ExplicitWidth = 933
     DesignSize = (
       622
       33)
@@ -87,7 +86,6 @@ inherited FSViewForm: TFSViewForm
       TabOrder = 0
       Images = ResourcesForm.Images16x16
       ImageIndex = 330
-      ExplicitLeft = 856
     end
     object FilesystemChoice: TSpTBXComboBox
       Left = 72
@@ -95,10 +93,8 @@ inherited FSViewForm: TFSViewForm
       Width = 467
       Height = 21
       Anchors = [akLeft, akTop, akRight]
-      ItemHeight = 13
       TabOrder = 1
       OnChange = FilesystemChoiceChange
-      ExplicitWidth = 778
     end
     object SpTBXLabel2: TSpTBXLabel
       Left = 7
