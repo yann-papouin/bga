@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, SpTBXEditors, SpTBXItem, SpTBXControls, ActnList, ExtCtrls;
+  Dialogs, StdCtrls, SpTBXEditors, SpTBXItem, SpTBXControls, ActnList, ExtCtrls,
+  GuiFSView;
 
 type
   TOpenMode = (
@@ -32,7 +33,10 @@ type
     procedure CancelExecute(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure BattlefieldDirChange(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
+    ModEntries : TModEntryList;
     function SearchBattleField: boolean;
     { Déclarations privées }
   public
@@ -48,7 +52,7 @@ implementation
 {$R *.dfm}
 
 uses
-  GuiFSView, GuiSkinDialog, CommonLib, Resources, Registry, IOUtils, Types;
+  GuiSkinDialog, CommonLib, Resources, Registry, IOUtils, Types;
 
 
 function TFSSettingsForm.SearchBattleField : boolean;
@@ -73,6 +77,16 @@ begin
     result := true;
 end;
 
+procedure TFSSettingsForm.FormCreate(Sender: TObject);
+begin
+  ModEntries := TModEntryList.Create;
+end;
+
+procedure TFSSettingsForm.FormDestroy(Sender: TObject);
+begin
+  ModEntries.Free;
+end;
+
 procedure TFSSettingsForm.FormShow(Sender: TObject);
 begin
   SearchBattleField;
@@ -85,6 +99,7 @@ var
   i : integer;
   ModEntry : TBattlefieldModEntry;
 begin
+  ModEntries.Clear;
   Mods.Clear;
   ModDir := IncludeTrailingBackslash(BattlefieldDir.Text) +'Mods';
   if DirectoryExists(ModDir) then
@@ -99,6 +114,7 @@ begin
         ModEntry := TBattlefieldModEntry.Create(nil);
         ModEntry.LoadFromConFile(InitFile);
         Mods.AddItem(ModEntry.GameName, ModEntry);
+        ModEntries.Add(ModEntry);
       end;
     end;
   end;

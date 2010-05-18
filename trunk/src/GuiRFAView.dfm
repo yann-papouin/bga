@@ -24,8 +24,8 @@ inherited RFAViewForm: TRFAViewForm
       OnNewText = RFAListNewText
       OnNodeMoved = RFAListNodeMoved
       OnStartDrag = RFAListStartDrag
-      ExplicitLeft = 0
-      ExplicitTop = 0
+      ExplicitLeft = 34
+      ExplicitTop = 6
       ExplicitWidth = 933
       ExplicitHeight = 416
       Columns = <
@@ -68,6 +68,14 @@ inherited RFAViewForm: TRFAViewForm
       inherited Search: TSpTBXEdit
         ExplicitWidth = 846
       end
+    end
+    object Theme: TSpTBXEdit
+      Left = 8
+      Top = 264
+      Width = 69
+      Height = 21
+      TabOrder = 2
+      Visible = False
     end
   end
   object TopDock: TSpTBXDock [1]
@@ -167,6 +175,11 @@ inherited RFAViewForm: TRFAViewForm
         Caption = 'Pack'
         object SpTBXItem8: TSpTBXItem
           Action = PackDirectory
+        end
+      end
+      object SpTBXSubmenuItem5: TSpTBXSubmenuItem
+        Caption = 'Theme'
+        object SpTBXSkinGroupItem1: TSpTBXSkinGroupItem
         end
       end
       object mHelp: TSpTBXSubmenuItem
@@ -474,7 +487,8 @@ inherited RFAViewForm: TRFAViewForm
     AppStorage = AppStorage
     AppStoragePath = '%FORM_NAME%\'
     StoredProps.Strings = (
-      'NewVersionAvailable.Visible')
+      'NewVersionAvailable.Visible'
+      'Theme.Text')
     StoredValues = <>
     Left = 8
     Top = 128
