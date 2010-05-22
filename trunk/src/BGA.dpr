@@ -28,7 +28,8 @@ uses
   Resources in 'Resources.pas' {ResourcesForm},
   GuiRFAView in 'GuiRFAView.pas' {RFAViewForm},
   GuiFSView in 'GuiFSView.pas' {FSViewForm},
-  GuiFSSettings in 'GuiFSSettings.pas' {FSSettingsForm};
+  GuiFSSettings in 'GuiFSSettings.pas' {FSSettingsForm},
+  FSLib in 'FSLib.pas';
 
 {$R *.res}
 

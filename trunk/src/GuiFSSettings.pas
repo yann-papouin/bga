@@ -148,6 +148,7 @@ begin
       begin
         // File system data will be stored in name.fsdata
         // File system settings will be stored in name.fsheader
+        ModalResult := mrOk;
       end
     end
       else
@@ -156,7 +157,6 @@ begin
     else
   ShowError('Filesystem Name invalid', 'The name must be a valid file name');
 
-  ModalResult := mrOk;
 end;
 
 
