@@ -7,7 +7,7 @@ inherited FSViewForm: TFSViewForm
   ExplicitHeight = 480
   PixelsPerInch = 96
   TextHeight = 13
-  inherited Container: TPanel
+  inherited Container: TSpTBXPanel
     Top = 58
     Width = 622
     Height = 384
@@ -15,12 +15,10 @@ inherited FSViewForm: TFSViewForm
     ExplicitWidth = 622
     ExplicitHeight = 384
     inherited RFAList: TVirtualStringTree
-      Width = 622
-      Height = 349
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 622
-      ExplicitHeight = 349
+      Width = 618
+      Height = 345
+      ExplicitWidth = 618
+      ExplicitHeight = 345
       Columns = <
         item
           MinWidth = 300
@@ -49,19 +47,18 @@ inherited FSViewForm: TFSViewForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 15
+          Width = 11
           WideText = 'Offset'
         end>
     end
     inherited SearchBar: TSpTBXPanel
-      Top = 349
-      Width = 622
-      ExplicitLeft = 0
-      ExplicitTop = 349
-      ExplicitWidth = 622
+      Top = 347
+      Width = 618
+      ExplicitTop = 347
+      ExplicitWidth = 618
       inherited Search: TSpTBXEdit
-        Width = 535
-        ExplicitWidth = 535
+        Width = 531
+        ExplicitWidth = 531
       end
     end
   end
@@ -93,6 +90,7 @@ inherited FSViewForm: TFSViewForm
       Width = 467
       Height = 21
       Anchors = [akLeft, akTop, akRight]
+      ItemHeight = 13
       TabOrder = 1
       OnChange = FilesystemChoiceChange
     end
