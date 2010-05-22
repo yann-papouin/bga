@@ -4,6 +4,8 @@ inherited RFAViewForm: TRFAViewForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  ExplicitWidth = 949
+  ExplicitHeight = 571
   PixelsPerInch = 96
   TextHeight = 13
   inherited Container: TSpTBXPanel
@@ -23,6 +25,37 @@ inherited RFAViewForm: TRFAViewForm
       OnNodeMoved = RFAListNodeMoved
       OnStartDrag = RFAListStartDrag
       ExplicitHeight = 416
+      Columns = <
+        item
+          MinWidth = 300
+          Position = 0
+          Width = 350
+          WideText = 'Filename'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 1
+          Width = 90
+          WideText = 'Size'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 2
+          Width = 90
+          WideText = 'Compressed'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 3
+          Width = 73
+          WideText = 'Ratio'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 4
+          Width = 326
+          WideText = 'Offset'
+        end>
     end
     inherited SearchBar: TSpTBXPanel
       Top = 416

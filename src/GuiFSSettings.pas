@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, SpTBXEditors, SpTBXItem, SpTBXControls, ActnList, ExtCtrls,
-  GuiFSView;
+  FSLib;
 
 type
   TOpenMode = (
@@ -35,6 +35,7 @@ type
     procedure BattlefieldDirChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure ModsClick(Sender: TObject);
   private
     ModEntries : TModEntryList;
     function SearchBattleField: boolean;
@@ -92,6 +93,7 @@ begin
   SearchBattleField;
 end;
 
+
 procedure TFSSettingsForm.BattlefieldDirChange(Sender: TObject);
 var
   ModDir, InitFile : string;
@@ -101,6 +103,7 @@ var
 begin
   ModEntries.Clear;
   Mods.Clear;
+  ModPath.Clear;
   ModDir := IncludeTrailingBackslash(BattlefieldDir.Text) +'Mods';
   if DirectoryExists(ModDir) then
   begin
@@ -119,6 +122,18 @@ begin
     end;
   end;
 end;
+
+procedure TFSSettingsForm.ModsClick(Sender: TObject);
+var
+  ModEntry : TBattlefieldModEntry;
+begin
+  if Mods.ItemIndex <> -1 then
+  begin
+    ModEntry := Mods.Items.Objects[Mods.ItemIndex] as TBattlefieldModEntry;
+    ModPath.Items.Assign(ModEntry.PathList);
+  end;
+end;
+
 
 
 procedure TFSSettingsForm.OkExecute(Sender: TObject);
