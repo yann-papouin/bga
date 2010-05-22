@@ -49,14 +49,6 @@ implementation
 uses
   GuiFSSettings, Resources,  IOUtils, Types;
 
-procedure TFSViewForm.AddExecute(Sender: TObject);
-begin
-  FSSettingsForm.OpenMode := omAdd;
-  if FSSettingsForm.ShowModal = mrOk then
-  begin
-
-  end;
-end;
 
 procedure TFSViewForm.ImportExecute(Sender: TObject);
 begin
@@ -75,6 +67,15 @@ begin
   Settings.Enabled := FileExists(FilesystemChoice.Text);
 end;
 
+
+procedure TFSViewForm.AddExecute(Sender: TObject);
+begin
+  FSSettingsForm.OpenMode := omAdd;
+  if FSSettingsForm.ShowModal = mrOk then
+  begin
+
+  end;
+end;
 
 procedure TFSViewForm.SettingsExecute(Sender: TObject);
 begin

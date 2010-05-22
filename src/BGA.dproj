@@ -103,6 +103,7 @@
 			<DCCReference Include="GuiFSSettings.pas">
 				<Form>FSSettingsForm</Form>
 			</DCCReference>
+			<DCCReference Include="FSLib.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
