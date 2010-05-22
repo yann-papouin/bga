@@ -13,14 +13,15 @@ object RFACommonForm: TRFACommonForm
   OldCreateOrder = False
   PixelsPerInch = 96
   TextHeight = 13
-  object Container: TPanel
+  object Container: TSpTBXPanel
     Left = 0
     Top = 0
     Width = 933
     Height = 533
     Align = alClient
-    BevelOuter = bvNone
     TabOrder = 0
+    Borders = False
+    TBXStyleBackground = True
     object RFAList: TVirtualStringTree
       Left = 0
       Top = 0
@@ -50,10 +51,6 @@ object RFACommonForm: TRFACommonForm
       OnGetNodeDataSize = RFAListGetNodeDataSize
       OnHeaderClick = RFAListHeaderClick
       OnKeyAction = RFAListKeyAction
-      ExplicitLeft = 1
-      ExplicitTop = 1
-      ExplicitWidth = 931
-      ExplicitHeight = 496
       Columns = <
         item
           MinWidth = 300
@@ -82,7 +79,7 @@ object RFACommonForm: TRFACommonForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 330
+          Width = 326
           WideText = 'Offset'
         end>
     end
@@ -105,9 +102,7 @@ object RFACommonForm: TRFACommonForm
       TabOrder = 1
       Visible = False
       Borders = False
-      ExplicitLeft = 1
-      ExplicitTop = 497
-      ExplicitWidth = 931
+      TBXStyleBackground = True
       object Search: TSpTBXEdit
         Left = 80
         Top = 7
@@ -117,7 +112,6 @@ object RFACommonForm: TRFACommonForm
         TabOrder = 0
         Text = '*.*'
         OnChange = SearchChange
-        ExplicitWidth = 844
       end
       object SpTBXLabel1: TSpTBXLabel
         AlignWithMargins = True

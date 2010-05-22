@@ -65,14 +65,18 @@ object SMViewForm: TSMViewForm
     Cursor = crSizeWE
     MinSize = 200
   end
-  object Panel1: TPanel
+  object Panel1: TSpTBXPanel
     Left = 0
     Top = 479
     Width = 784
     Height = 34
-    Align = alBottom
     Caption = ' '
+    Color = clBtnFace
+    Align = alBottom
+    UseDockManager = True
     TabOrder = 3
+    Borders = False
+    TBXStyleBackground = True
     object Label1: TSpTBXLabel
       Left = 8
       Top = 6

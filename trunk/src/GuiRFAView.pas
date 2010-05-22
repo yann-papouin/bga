@@ -125,8 +125,9 @@ type
     SpTBXItem23: TSpTBXItem;
     Filesystem: TAction;
     SpTBXSubmenuItem5: TSpTBXSubmenuItem;
-    SpTBXSkinGroupItem1: TSpTBXSkinGroupItem;
+    SkinGroup: TSpTBXSkinGroupItem;
     Theme: TSpTBXEdit;
+    SpTBXSeparatorItem9: TSpTBXSeparatorItem;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -163,6 +164,7 @@ type
     procedure ExtractAllExecute(Sender: TObject);
     procedure ExtractSelectedExecute(Sender: TObject);
     procedure FilesystemExecute(Sender: TObject);
+    procedure SkinGroupSkinChange(Sender: TObject);
   private
     FApplicationTitle : string;
     FEditResult : TEditResult;
@@ -206,7 +208,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf,
+  DbugIntf, SpTBXVirtualTreeview,
   GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
   Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
@@ -601,6 +603,17 @@ begin
   end;
 end;
 
+
+procedure TRFAViewForm.SkinGroupSkinChange(Sender: TObject);
+var
+  i :integer;
+begin
+  for i := 0 to RFAList.Header.Columns.Count - 1 do
+    RFAList.Header.Invalidate(RFAList.Header.Columns[i]);
+    //RFAList.Header.Columns[i].ParentColorChanged;
+
+  RFAList.Invalidate;
+end;
 
 function TRFAViewForm.LastOne(Offset: Int64): boolean;
 var
@@ -1460,6 +1473,7 @@ procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
   FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
+  EnableSkinning(RFAList);
   Reset;
 end;
 

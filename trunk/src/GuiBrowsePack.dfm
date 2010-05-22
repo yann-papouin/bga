@@ -4,39 +4,46 @@ inherited BrowsePackForm: TBrowsePackForm
   ExplicitHeight = 400
   PixelsPerInch = 96
   TextHeight = 13
-  inherited Recents: TSpTBXListBox
-    Top = 176
-    Height = 124
-    ExplicitTop = 176
-    ExplicitHeight = 124
-  end
-  inherited Footer: TPanel
-    Top = 319
-    ExplicitTop = 319
-  end
-  inherited SpTBXLabel2: TSpTBXLabel
-    Top = 148
-    ExplicitTop = 148
-  end
-  object Base: TSpTBXEdit [5]
-    Left = 8
-    Top = 103
-    Width = 368
-    Height = 21
-    Anchors = [akLeft, akTop, akRight]
-    TabOrder = 5
-    Text = 'bf1942'
-  end
-  object UseBasePath: TSpTBXCheckBox [6]
-    Left = 8
-    Top = 76
-    Width = 100
-    Height = 21
-    Caption = 'Use base path :'
-    TabOrder = 6
-    OnClick = UseBasePathClick
-    Checked = True
-    State = cbChecked
+  inherited Background: TSpTBXPanel
+    Height = 362
+    ExplicitLeft = 0
+    ExplicitTop = 0
+    ExplicitWidth = 384
+    ExplicitHeight = 362
+    inherited Footer: TPanel
+      Top = 319
+      ExplicitTop = 319
+    end
+    inherited Recents: TSpTBXListBox
+      Top = 176
+      Height = 124
+      ExplicitTop = 176
+      ExplicitHeight = 124
+    end
+    inherited SpTBXLabel2: TSpTBXLabel
+      Top = 148
+      ExplicitTop = 148
+    end
+    object Base: TSpTBXEdit
+      Left = 8
+      Top = 103
+      Width = 368
+      Height = 21
+      Anchors = [akLeft, akTop, akRight]
+      TabOrder = 5
+      Text = 'bf1942'
+    end
+    object UseBasePath: TSpTBXCheckBox
+      Left = 8
+      Top = 76
+      Width = 100
+      Height = 21
+      Caption = 'Use base path :'
+      TabOrder = 6
+      OnClick = UseBasePathClick
+      Checked = True
+      State = cbChecked
+    end
   end
   inherited Browse: TJvBrowseForFolderDialog
     Top = 184

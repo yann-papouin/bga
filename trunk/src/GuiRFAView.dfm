@@ -4,11 +4,9 @@ inherited RFAViewForm: TRFAViewForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  ExplicitWidth = 949
-  ExplicitHeight = 571
   PixelsPerInch = 96
   TextHeight = 13
-  inherited Container: TPanel
+  inherited Container: TSpTBXPanel
     Top = 25
     Height = 451
     ExplicitTop = 25
@@ -24,50 +22,11 @@ inherited RFAViewForm: TRFAViewForm
       OnNewText = RFAListNewText
       OnNodeMoved = RFAListNodeMoved
       OnStartDrag = RFAListStartDrag
-      ExplicitLeft = 34
-      ExplicitTop = 6
-      ExplicitWidth = 933
       ExplicitHeight = 416
-      Columns = <
-        item
-          MinWidth = 300
-          Position = 0
-          Width = 350
-          WideText = 'Filename'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 1
-          Width = 90
-          WideText = 'Size'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 2
-          Width = 90
-          WideText = 'Compressed'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 3
-          Width = 73
-          WideText = 'Ratio'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 4
-          Width = 326
-          WideText = 'Offset'
-        end>
     end
     inherited SearchBar: TSpTBXPanel
       Top = 416
-      ExplicitLeft = 0
       ExplicitTop = 416
-      ExplicitWidth = 933
-      inherited Search: TSpTBXEdit
-        ExplicitWidth = 846
-      end
     end
     object Theme: TSpTBXEdit
       Left = 8
@@ -133,12 +92,6 @@ inherited RFAViewForm: TRFAViewForm
       end
       object mEdit: TSpTBXSubmenuItem
         Caption = 'Edit'
-        object SpTBXItem1: TSpTBXItem
-          Action = Settings
-        end
-        object SpTBXItem23: TSpTBXItem
-          Action = Filesystem
-        end
         object SpTBXItem12: TSpTBXItem
           Action = SearchStart
         end
@@ -149,6 +102,14 @@ inherited RFAViewForm: TRFAViewForm
         end
         object SpTBXItem18: TSpTBXItem
           Action = CollapseAll
+        end
+        object SpTBXSeparatorItem9: TSpTBXSeparatorItem
+        end
+        object SpTBXItem1: TSpTBXItem
+          Action = Settings
+        end
+        object SpTBXItem23: TSpTBXItem
+          Action = Filesystem
         end
       end
       object SpTBXSubmenuItem1: TSpTBXSubmenuItem
@@ -179,7 +140,8 @@ inherited RFAViewForm: TRFAViewForm
       end
       object SpTBXSubmenuItem5: TSpTBXSubmenuItem
         Caption = 'Theme'
-        object SpTBXSkinGroupItem1: TSpTBXSkinGroupItem
+        object SkinGroup: TSpTBXSkinGroupItem
+          OnSkinChange = SkinGroupSkinChange
         end
       end
       object mHelp: TSpTBXSubmenuItem
@@ -222,6 +184,7 @@ inherited RFAViewForm: TRFAViewForm
     TabOrder = 1
     Visible = False
     Borders = False
+    TBXStyleBackground = True
     object SubProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
       Left = 671

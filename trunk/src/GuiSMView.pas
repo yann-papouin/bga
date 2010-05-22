@@ -40,7 +40,7 @@ type
     Grid: TGLXYZGrid;
     MeshList: TVirtualStringTree;
     Splitter: TSpTBXSplitter;
-    Panel1: TPanel;
+    Panel1: TSpTBXPanel;
     Label1: TSpTBXLabel;
     Label2: TSpTBXLabel;
     procedure FormCreate(Sender: TObject);
@@ -84,7 +84,7 @@ implementation
 {$R *.dfm}
 
 uses
-  GLFileSM, AppLib, Resources;
+  SpTBXVirtualTreeview, GLFileSM, AppLib, Resources;
 
 type
   pData = ^rData;
@@ -105,6 +105,7 @@ type
 procedure TSMViewForm.FormCreate(Sender: TObject);
 begin
   FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
+  EnableSkinning(MeshList);
 end;
 
 function TSMViewForm.FindNodeID(ID: integer): PVirtualNode;

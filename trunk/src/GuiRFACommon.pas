@@ -84,20 +84,20 @@ type
 
 
   TRFACommonForm = class(TForm)
-    RFAList: TVirtualStringTree;
     Actions: TActionList;
     Preview: TAction;
     ExpandAll: TAction;
     CollapseAll: TAction;
     ExpandSelected: TAction;
     CollapseSelected: TAction;
+    SearchStart: TAction;
+    SearchStop: TAction;
+    Container: TSpTBXPanel;
+    RFAList: TVirtualStringTree;
     SearchBar: TSpTBXPanel;
     Search: TSpTBXEdit;
     SpTBXLabel1: TSpTBXLabel;
     SpTBXButton1: TSpTBXButton;
-    SearchStart: TAction;
-    SearchStop: TAction;
-    Container: TPanel;
     procedure CollapseSelectedExecute(Sender: TObject);
     procedure ExpandSelectedExecute(Sender: TObject);
     procedure CollapseAllExecute(Sender: TObject);

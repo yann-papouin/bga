@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, JvBaseDlg, JvBrowseFolder, StdCtrls, SpTBXEditors, JvComponentBase, JvFormPlacement, ActnList, SpTBXItem, SpTBXControls, ExtCtrls;
+  Dialogs, JvBaseDlg, JvBrowseFolder, StdCtrls, SpTBXEditors, JvComponentBase, JvFormPlacement, ActnList, SpTBXItem, SpTBXControls, ExtCtrls,
+  TB2Item, SpTBXTabs;
 
 type
   TBrowseForm = class(TForm)
@@ -20,6 +21,7 @@ type
     Footer: TPanel;
     SpTBXLabel1: TSpTBXLabel;
     SpTBXLabel2: TSpTBXLabel;
+    Background: TSpTBXPanel;
     procedure OkExecute(Sender: TObject);
     procedure CancelExecute(Sender: TObject);
     procedure FormShow(Sender: TObject);
