@@ -72,6 +72,7 @@ object FSSettingsForm: TFSSettingsForm
     IntegralHeight = True
     ItemHeight = 20
     TabOrder = 4
+    OnClick = ModsClick
   end
   object SpTBXLabel3: TSpTBXLabel
     Left = 8
@@ -98,6 +99,7 @@ object FSSettingsForm: TFSSettingsForm
     Width = 417
     Height = 158
     Anchors = [akLeft, akTop, akRight, akBottom]
+    Enabled = False
     ItemHeight = 20
     TabOrder = 7
   end

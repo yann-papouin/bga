@@ -15,10 +15,10 @@ inherited FSViewForm: TFSViewForm
     ExplicitWidth = 622
     ExplicitHeight = 384
     inherited RFAList: TVirtualStringTree
-      Width = 618
-      Height = 345
-      ExplicitWidth = 618
-      ExplicitHeight = 345
+      Width = 622
+      Height = 349
+      ExplicitWidth = 622
+      ExplicitHeight = 349
       Columns = <
         item
           MinWidth = 300
@@ -47,18 +47,18 @@ inherited FSViewForm: TFSViewForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 11
+          Width = 15
           WideText = 'Offset'
         end>
     end
     inherited SearchBar: TSpTBXPanel
-      Top = 347
-      Width = 618
-      ExplicitTop = 347
-      ExplicitWidth = 618
+      Top = 349
+      Width = 622
+      ExplicitTop = 349
+      ExplicitWidth = 622
       inherited Search: TSpTBXEdit
-        Width = 531
-        ExplicitWidth = 531
+        Width = 535
+        ExplicitWidth = 535
       end
     end
   end
