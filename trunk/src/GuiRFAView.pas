@@ -165,6 +165,7 @@ type
     procedure ExtractSelectedExecute(Sender: TObject);
     procedure FilesystemExecute(Sender: TObject);
     procedure SkinGroupSkinChange(Sender: TObject);
+    procedure RFAListKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
   private
     FApplicationTitle : string;
     FEditResult : TEditResult;
@@ -1326,6 +1327,15 @@ begin
 
   else if FEditResult = edOk then
     Sort;
+end;
+
+procedure TRFAViewForm.RFAListKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
+begin
+  inherited;
+  if CharCode = VK_DELETE then
+  begin
+    DeleteSelection;
+  end;
 end;
 
 procedure TRFAViewForm.RFAListNewText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; NewText: string);

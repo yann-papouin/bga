@@ -755,12 +755,6 @@ begin
       CollapseSelected.Execute;
     end;
   end;
-(*
-  if CharCode = VK_DELETE then
-  begin
-    DeleteSelection;
-  end;
-*)
 end;
 
 
