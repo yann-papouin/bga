@@ -4,8 +4,6 @@ inherited RFAViewForm: TRFAViewForm
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  ExplicitWidth = 949
-  ExplicitHeight = 571
   PixelsPerInch = 96
   TextHeight = 13
   inherited Container: TSpTBXPanel
@@ -24,38 +22,8 @@ inherited RFAViewForm: TRFAViewForm
       OnNewText = RFAListNewText
       OnNodeMoved = RFAListNodeMoved
       OnStartDrag = RFAListStartDrag
+      OnStateChange = RFAListStateChange
       ExplicitHeight = 416
-      Columns = <
-        item
-          MinWidth = 300
-          Position = 0
-          Width = 350
-          WideText = 'Filename'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 1
-          Width = 90
-          WideText = 'Size'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 2
-          Width = 90
-          WideText = 'Compressed'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 3
-          Width = 73
-          WideText = 'Ratio'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 4
-          Width = 326
-          WideText = 'Offset'
-        end>
     end
     inherited SearchBar: TSpTBXPanel
       Top = 416
@@ -193,6 +161,7 @@ inherited RFAViewForm: TRFAViewForm
     Top = 508
     Width = 933
     Height = 25
+    ExplicitTop = 511
     object ArchiveSize: TSpTBXLabelItem
       Caption = 'ArchiveSize'
     end
@@ -205,6 +174,11 @@ inherited RFAViewForm: TRFAViewForm
     end
     object ArchiveFileCount: TSpTBXLabelItem
       Caption = 'ArchiveFileCount'
+    end
+    object SpTBXSeparatorItem10: TSpTBXSeparatorItem
+    end
+    object SelectionText: TSpTBXLabelItem
+      Caption = 'aze'
     end
   end
   object ProgressPanel: TSpTBXPanel [3]

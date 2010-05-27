@@ -128,6 +128,8 @@ type
     SkinGroup: TSpTBXSkinGroupItem;
     Theme: TSpTBXEdit;
     SpTBXSeparatorItem9: TSpTBXSeparatorItem;
+    SpTBXSeparatorItem10: TSpTBXSeparatorItem;
+    SelectionText: TSpTBXLabelItem;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -166,6 +168,8 @@ type
     procedure FilesystemExecute(Sender: TObject);
     procedure SkinGroupSkinChange(Sender: TObject);
     procedure RFAListKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
+    procedure RFAListStateChange(Sender: TBaseVirtualTree; Enter,
+      Leave: TVirtualTreeStates);
   private
     FApplicationTitle : string;
     FEditResult : TEditResult;
@@ -950,6 +954,7 @@ begin
     ArchiveSize.Visible := false;
     Fragmentation.Visible := false;
     ArchiveFileCount.Visible := false;
+    SelectionText.Visible := false;
   end;
 end;
 
@@ -1375,6 +1380,26 @@ end;
 procedure TRFAViewForm.RFAListStartDrag(Sender: TObject; var DragObject: TDragObject);
 begin
   (Sender as TBaseVirtualTree).CancelEditNode;
+end;
+
+procedure TRFAViewForm.RFAListStateChange(Sender: TBaseVirtualTree; Enter,
+  Leave: TVirtualTreeStates);
+begin
+  inherited;
+  //SelectionText.Caption := FormatDateTime('hh:nn:zz',now);
+
+  if tsChangePending in Leave then
+  begin
+    SelectionText.Visible := Sender.SelectedCount > 0;
+
+    if SelectionText.Visible then
+    begin
+      if Sender.SelectedCount = 1 then
+        SelectionText.Caption := BuildEntryNameFromTree(Sender.GetFirstSelected)
+      else
+        SelectionText.Caption := Format('%d items in selection',[Sender.SelectedCount]);
+    end;
+  end;
 end;
 
 procedure TRFAViewForm.RFAListDblClick(Sender: TObject);
