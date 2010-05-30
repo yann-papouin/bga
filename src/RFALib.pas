@@ -375,13 +375,17 @@ begin
   NewSize := FHandle.Size - FHandle.Position;
   Buf.Size := NewSize;
   Buf.Seek(0, soBeginning);
-  Buf.CopyFrom(FHandle, Buf.Size);
+
+  if Buf.Size > 0 then
+    Buf.CopyFrom(FHandle, Buf.Size);
 
   // Write back shifted data into stream
   Buf.Seek(0, soBeginning);
   FHandle.Size := FHandle.Size - Size;
   FHandle.Seek(Offset, soBeginning);
-  FHandle.CopyFrom(Buf, Buf.Size);
+
+  if Buf.Size > 0 then
+    FHandle.CopyFrom(Buf, Buf.Size);
 
   Result.offset := Offset;
   Result.size := Size;
@@ -405,6 +409,11 @@ var
   i, BufferCount, FlakedBuffer: Integer;
   {$EndIf}
 begin
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('InsertData::Data size is %s',[SizeToStr(Data.Size)]);
+  SendDebugFmt('InsertData::Offset is 0x%x',[Offset]);
+  {$EndIf}
+
   Buf := TMemoryStream.Create;
 
   FHandle.Seek(Offset, soBeginning);
@@ -412,10 +421,21 @@ begin
   // Put final data in Buf
   Buf.Size := FHandle.Size - FHandle.Position;
   Buf.Seek(0, soBeginning);
-  Buf.CopyFrom(FHandle, Buf.Size);
+
+  if Buf.Size > 0 then
+    Buf.CopyFrom(FHandle, Buf.Size);
+
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Final data buffer size is %s',[SizeToStr(Buf.Size)]);
+  SendDebugFmt('Cursor position is %d/%d',[FHandle.Position, FHandle.Size]);
+  {$EndIf}
 
   // Expand current archive
   FHandle.Size := FHandle.Size + Data.Size;
+
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Expand current archive size to %s',[SizeToStr(FHandle.Size)]);
+  {$EndIf}
 
   if Assigned(FOnProgress) then
     FOnProgress(Self, roBegin, Data.Size + Buf.Size);
@@ -429,7 +449,8 @@ begin
 
     for i := 1 to BufferCount do
     begin
-      FHandle.CopyFrom(Data, BUFFER_SIZE);
+      if BUFFER_SIZE > 0 then
+        FHandle.CopyFrom(Data, BUFFER_SIZE);
 
       if Assigned(FOnProgress) then
         FOnProgress(Self, roInsert, Data.Position);
@@ -437,7 +458,13 @@ begin
     if FlakedBuffer > 0 then
       FHandle.CopyFrom(Data, FlakedBuffer);
   {$Else}
-    FHandle.CopyFrom(Data, Data.Size);
+    if Data.Size > 0 then
+      FHandle.CopyFrom(Data, Data.Size);
+  {$EndIf}
+
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Current archive size (new data) is %s',[SizeToStr(FHandle.Size)]);
+  SendDebugFmt('Cursor position is %d/%d',[FHandle.Position, FHandle.Size]);
   {$EndIf}
 
   // Write back shifted data
@@ -448,7 +475,8 @@ begin
 
     for i := 1 to BufferCount do
     begin
-      FHandle.CopyFrom(Buf, BUFFER_SIZE);
+      if BUFFER_SIZE > 0 then
+        FHandle.CopyFrom(Buf, BUFFER_SIZE);
 
       if Assigned(FOnProgress) then
         FOnProgress(Self, roInsert, Data.Position + Buf.Position);
@@ -456,7 +484,12 @@ begin
     if FlakedBuffer > 0 then
       FHandle.CopyFrom(Buf, FlakedBuffer);
   {$Else}
-    FHandle.CopyFrom(Buf, Buf.Size);
+    if Buf.Size > 0 then
+      FHandle.CopyFrom(Buf, Buf.Size);
+  {$EndIf}
+
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Current archive size (shifted data) is %s',[SizeToStr(FHandle.Size)]);
   {$EndIf}
 
   if Assigned(FOnProgress) then
@@ -577,11 +610,17 @@ begin
   // Expand current archive
   FHandle.Size := FHandle.Size + SegmentHeader.Size + SegmentData.Size;
 
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Expand current archive size to %s',[SizeToStr(FHandle.Size)]);
+  {$EndIf}
+
   // Write the new data
   SegmentHeader.Seek(0, soBeginning);
   SegmentData.Seek(0, soBeginning);
   FHandle.Position := Offset;
-  FHandle.CopyFrom(SegmentHeader, SegmentHeader.Size);
+
+  if SegmentHeader.Size > 0 then
+    FHandle.CopyFrom(SegmentHeader, SegmentHeader.Size);
 
   if Assigned(FOnProgress) then
     FOnProgress(Self, roBegin, SegmentData.Size+Buf.Size);
@@ -592,7 +631,8 @@ begin
 
     for i := 1 to BufferCount do
     begin
-      FHandle.CopyFrom(SegmentData, BUFFER_SIZE);
+      if BUFFER_SIZE > 0 then
+        FHandle.CopyFrom(SegmentData, BUFFER_SIZE);
 
       if Assigned(FOnProgress) then
         FOnProgress(Self, roCompress, SegmentData.Position);
@@ -600,7 +640,8 @@ begin
     if FlakedBuffer > 0 then
       FHandle.CopyFrom(SegmentData, FlakedBuffer);
   {$Else}
-    FHandle.CopyFrom(SegmentData, SegmentData.Size);
+    if SegmentData.Size > 0 then
+      FHandle.CopyFrom(SegmentData, SegmentData.Size);
   {$EndIf}
 
   // Write back shifted data
@@ -611,7 +652,8 @@ begin
 
     for i := 1 to BufferCount do
     begin
-      FHandle.CopyFrom(Buf, BUFFER_SIZE);
+      if BUFFER_SIZE > 0 then
+        FHandle.CopyFrom(Buf, BUFFER_SIZE);
 
       if Assigned(FOnProgress) then
         FOnProgress(Self, roCompress, SegmentData.Position + Buf.Position);
@@ -619,10 +661,15 @@ begin
     if FlakedBuffer > 0 then
       FHandle.CopyFrom(Buf, FlakedBuffer);
   {$Else}
-    FHandle.CopyFrom(Buf, Buf.Size);
+    if Buf.Size > 0 then
+      FHandle.CopyFrom(Buf, Buf.Size);
   {$EndIf}
 
   Buf.Free;
+
+  {$IfDef DEBUG_RFA}
+  SendDebugFmt('Current archive size is %s',[SizeToStr(FHandle.Size)]);
+  {$EndIf}
 
   if Assigned(FOnProgress) then
     FOnProgress(Self, roEnd, 0);
@@ -762,12 +809,14 @@ begin
 
     for i := 1 to BufferCount do
     begin
-      Buffer.CopyFrom(FHandle, BUFFER_SIZE);
+      if BUFFER_SIZE > 0 then
+        Buffer.CopyFrom(FHandle, BUFFER_SIZE);
     end;
     if FlakedBuffer > 0 then
       Buffer.CopyFrom(FHandle, FlakedBuffer);
   {$Else}
-    Buffer.CopyFrom(FHandle, Size);
+    if Size > 0 then
+      Buffer.CopyFrom(FHandle, Size);
   {$EndIf}
 
   Buffer.Seek(0, soFromBeginning);
@@ -997,6 +1046,7 @@ begin
   FHandle.Seek(DataSize, soBeginning);  // Jump segment
   {$IfDef DEBUG_RFA}
   SendDebugFmt('Reading element quantity at 0x%x',[FHandle.Position]);
+  SendDebugFmt('Cursor position is %d/%d',[FHandle.Position, FHandle.Size]);
   {$EndIf}
   FHandle.Read(Result, DWORD_SIZE);           // Read element quantity (32bits)
   {$IfDef DEBUG_RFA}

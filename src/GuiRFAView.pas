@@ -170,6 +170,9 @@ type
     procedure RFAListKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
     procedure RFAListStateChange(Sender: TBaseVirtualTree; Enter,
       Leave: TVirtualTreeStates);
+    procedure RFAListDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas;
+      Node: PVirtualNode; Column: TColumnIndex; const Text: string;
+      const CellRect: TRect; var DefaultDraw: Boolean);
   private
     FApplicationTitle : string;
     FEditResult : TEditResult;
@@ -1326,6 +1329,7 @@ begin
 
 end;
 
+
 procedure TRFAViewForm.RFAListEdited(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex);
 begin
   if FEditResult = edInvalid then
@@ -1435,6 +1439,18 @@ begin
   end;
 end;
 
+procedure TRFAViewForm.RFAListDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string; const CellRect: TRect; var DefaultDraw: Boolean);
+var
+  Data : pFse;
+begin
+  Data := RFAList.GetNodeData(Node);
+
+  if (fsExternal in Data.Status)
+  or (fsNew in Data.Status)
+  or (fsConflict in Data.Status) then
+    TargetCanvas.Font.Color := clBlack;
+
+end;
 
 
 procedure TRFAViewForm.DropFileSourceDrop(Sender: TObject; DragType: TDragType; var ContinueDrop: Boolean);

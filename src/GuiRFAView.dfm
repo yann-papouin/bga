@@ -161,7 +161,6 @@ inherited RFAViewForm: TRFAViewForm
     Top = 508
     Width = 933
     Height = 25
-    ExplicitTop = 511
     object ArchiveSize: TSpTBXLabelItem
       Caption = 'ArchiveSize'
     end
@@ -178,7 +177,7 @@ inherited RFAViewForm: TRFAViewForm
     object SpTBXSeparatorItem10: TSpTBXSeparatorItem
     end
     object SelectionText: TSpTBXLabelItem
-      Caption = 'aze'
+      Caption = 'SelectionText'
     end
   end
   object ProgressPanel: TSpTBXPanel [3]
@@ -378,6 +377,7 @@ inherited RFAViewForm: TRFAViewForm
       Category = 'Custom'
       Caption = 'File system ...'
       ImageIndex = 522
+      Visible = False
       OnExecute = FilesystemExecute
     end
   end
