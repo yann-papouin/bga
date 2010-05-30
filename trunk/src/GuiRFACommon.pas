@@ -460,6 +460,8 @@ end;
 
 procedure TRFACommonForm.ExtendSelection(Node : PVirtualNode);
 begin
+  RFAList.BeginUpdate;
+
   if RFAList.IsVisible[Node] then
     RFAList.Selected[Node] := true;
 
@@ -469,6 +471,8 @@ begin
     ExtendSelection(Node);
     Node := RFAList.GetNextSibling(Node);
   end;
+
+  RFAList.EndUpdate;
 end;
 
 
