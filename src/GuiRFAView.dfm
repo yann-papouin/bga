@@ -377,6 +377,7 @@ inherited RFAViewForm: TRFAViewForm
       Category = 'Custom'
       Caption = 'New'
       ImageIndex = 7
+      ShortCut = 16462
       OnExecute = NewExecute
     end
     object NewVersionAvailable: TAction [18]
