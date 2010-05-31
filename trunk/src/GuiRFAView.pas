@@ -130,6 +130,7 @@ type
     SpTBXSeparatorItem9: TSpTBXSeparatorItem;
     SpTBXSeparatorItem10: TSpTBXSeparatorItem;
     SelectionText: TSpTBXLabelItem;
+    UseCompression: TSpTBXItem;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -722,7 +723,7 @@ begin
 
           ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
           Size := ExternalFile.Size;
-          InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, COMPRESSED_DATA);
+          InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, UseCompression.Checked);
           ShiftData(InsertResult, shRight, Node);
           ExternalFile.Free;
 
@@ -731,7 +732,7 @@ begin
           Exclude(Data.Status, fsExternal);
           Data.Size := Size;
           Data.Offset := InsertResult.offset;
-          Data.Compressed := COMPRESSED_DATA;
+          Data.Compressed := UseCompression.Checked;
           Data.CompSize := InsertResult.size;
           Data.ExternalMD5 := MD5FromFile(Data.ExternalFilePath);
           RFAList.InvalidateNode(Node);
@@ -755,7 +756,7 @@ begin
         begin
           ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
           Size := ExternalFile.Size;
-          InsertResult := FArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+          InsertResult := FArchive.InsertFile(ExternalFile, UseCompression.Checked);
           ShiftData(InsertResult, shRight, Node);
           ExternalFile.Free;
 
@@ -767,7 +768,7 @@ begin
           Exclude(Data.Status, fsEntry);
           Data.Size := Size;
           Data.Offset := InsertResult.offset;
-          Data.Compressed := COMPRESSED_DATA;
+          Data.Compressed := UseCompression.Checked;
           Data.CompSize := InsertResult.size;
           Data.ExternalFilePath := EmptyStr;
           Data.ExternalMD5 := EmptyStr;
@@ -886,7 +887,7 @@ begin
           begin
             ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
             Size := ExternalFile.Size;
-            InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+            InsertResult := TmpArchive.InsertFile(ExternalFile, UseCompression.Checked);
             ExternalFile.Free;
             TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
           end;
@@ -909,7 +910,7 @@ begin
           begin
             ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
             Size := ExternalFile.Size;
-            InsertResult := TmpArchive.InsertFile(ExternalFile, COMPRESSED_DATA);
+            InsertResult := TmpArchive.InsertFile(ExternalFile, UseCompression.Checked);
             ExternalFile.Free;
             TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
           end;

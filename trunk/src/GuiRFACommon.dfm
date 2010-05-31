@@ -79,7 +79,7 @@ object RFACommonForm: TRFACommonForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 326
+          Width = 330
           WideText = 'Offset'
         end>
     end

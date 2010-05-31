@@ -699,7 +699,7 @@ begin
         CellText := Format('%.2f%%',[FloatValue])
       end
         else
-          CellText := 'NONE';
+          CellText := '---';
 
       4: CellText := Format('0x%.8x',[Data.Offset]);
     end;
