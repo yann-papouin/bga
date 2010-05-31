@@ -22,7 +22,7 @@ unit RFALib;
 
 interface
 
-{$DEFINE DEBUG_RFA}
+{.$DEFINE DEBUG_RFA}
 {$DEFINE USE_BUFFER}
 
 uses
@@ -136,12 +136,33 @@ const
   VERSION_HEADER = 'Refractor2 FlatArchive 1.1  ';
   LZO1X_1_MEM_COMPRESS = 16384 * 4;
 
+  { Following is a magic checksum, apparently applied by winRFA, if someone
+  knowns how it works, please send me an explanation }
+
+  MAGIC_CHECKSUM: array[0..151] of Byte =
+  (
+    $01, $00, $00, $00, $63, $EC, $95, $BF, $FE, $7B, $09, $3C, $3A, $F0, $72,
+    $EE, $A4, $72, $E7, $D9, $3F, $CC, $99, $C0, $D3, $71, $C1, $46, $89, $BD,
+    $D7, $53, $B5, $7E, $05, $B9, $F3, $B3, $DB, $18, $75, $94, $44, $FF, $9B,
+    $D2, $B9, $53, $C4, $1F, $B4, $F5, $65, $F1, $68, $9F, $58, $83, $AF, $0F,
+    $76, $1D, $44, $68, $67, $96, $32, $D5, $B9, $17, $8C, $6F, $30, $21, $5F,
+    $61, $5D, $D2, $E5, $49, $72, $64, $FB, $E2, $55, $F6, $D5, $E1, $F3, $8F,
+    $F1, $1C, $D7, $60, $49, $F1, $FB, $49, $CD, $E6, $DE, $9F, $10, $8D, $D6,
+    $2D, $42, $AB, $A8, $78, $5E, $98, $56, $48, $A4, $E9, $38, $63, $4A, $4D,
+    $4E, $9C, $6F, $B5, $D5, $0C, $50, $B8, $18, $A0, $BE, $35, $89, $D4, $D0,
+    $3A, $10, $BD, $D5, $24, $A3, $4D, $8C, $08, $17, $D3, $98, $00, $4B, $D0,
+    $12, $48
+  );
+
+
 (*
 RFA File format description
 |==============================================
 |-RFA_Header (6 Words [Exists only in DEMO])
 |
 |-RFA_DataSize (2 Words)
+   |
+   |-RFA_Magic_Header (152 Words)
    |
    |-RFA_DATA  (each RFA_DATA has its own size)
    |-RFA_DATA
@@ -275,6 +296,8 @@ begin
   begin
     FHandle.Size := INIT_DATA_SIZE + DWORD_SIZE;
     DataSize := INIT_DATA_SIZE;
+    FHandle.Write(MAGIC_CHECKSUM, Length(MAGIC_CHECKSUM));
+
     ElementQuantity := 0;
 
     Result := 0;
