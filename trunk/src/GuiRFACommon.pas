@@ -25,7 +25,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, VirtualTrees, ActnList, JCLFileUtils, RFALib, Types, SpTBXControls,
-  StdCtrls, SpTBXEditors, SpTBXItem, ExtCtrls;
+  StdCtrls, SpTBXEditors, SpTBXItem, ExtCtrls, SyncObjs;
 
 type
   TFileType =
@@ -116,9 +116,11 @@ type
     procedure SearchChange(Sender: TObject);
     procedure RFAListHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     FSearchCount : integer;
     FSearchText: string;
+    FSearchSection : TCriticalSection;
     FSortBy : TSortBy;
     FSortDirection : TSortDirection;
     { Déclarations privées }
@@ -218,6 +220,12 @@ end;
 procedure TRFACommonForm.FormCreate(Sender: TObject);
 begin
   FSearchCount := 0;
+  FSearchSection := TCriticalSection.Create;
+end;
+
+procedure TRFACommonForm.FormDestroy(Sender: TObject);
+begin
+  FSearchSection.Free;
 end;
 
 procedure TRFACommonForm.MakePathVisible(Table : TBaseVirtualTree; Node: PVirtualNode);
@@ -844,6 +852,7 @@ var
   Node : pVirtualNode;
   Data : pFse;
   SearchList : TStringList;
+  LocalCount : integer;
 
   function LocalMatchesMask(AString : string) : boolean;
   var
@@ -864,7 +873,8 @@ var
 
 begin
   Inc(FSearchCount);
-  //SendInteger('FSearchCount',FSearchCount);
+  FSearchSection.Enter;
+  SendInteger('FSearchCount',FSearchCount);
 
   FSearchText := Value;
   SearchList := TStringList.Create;
@@ -898,6 +908,12 @@ begin
       SearchProgressBar.Position := SearchProgressBar.Position+1;
       Application.ProcessMessages;
 
+      if FSearchCount > 1 then
+      begin
+        SendInteger('Break',FSearchCount);
+        Break;
+      end;
+
       Data := RFAList.GetNodeData(Node);
 
       if LocalMatchesMask(Data.W32Name) then
@@ -905,17 +921,17 @@ begin
         MakePathVisible(RFAList, Node);
         RFAList.ScrollIntoView(Node,true);
       end;
-(*
-      if FSearchCount > 1 then
-        Break;
-*)
+
+
       Node := RFAList.GetNext(Node, true);
     end;
   end;
 
+  Dec(FSearchCount);
+
   RFAList.EndUpdate;
   SearchList.Free;
-  Dec(FSearchCount);
+  FSearchSection.Leave;
 end;
 
 procedure TRFACommonForm.Sort;

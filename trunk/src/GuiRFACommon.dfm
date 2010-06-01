@@ -12,6 +12,7 @@ object RFACommonForm: TRFACommonForm
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object Container: TSpTBXPanel
@@ -113,7 +114,6 @@ object RFACommonForm: TRFACommonForm
         TabOrder = 0
         Text = '*.*'
         OnChange = SearchChange
-        ExplicitWidth = 846
       end
       object SpTBXLabel1: TSpTBXLabel
         AlignWithMargins = True

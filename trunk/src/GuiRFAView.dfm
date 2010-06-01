@@ -2,7 +2,6 @@ inherited RFAViewForm: TRFAViewForm
   Caption = 'RFA View'
   OnActivate = FormActivate
   OnClose = FormClose
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
