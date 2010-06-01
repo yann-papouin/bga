@@ -16,6 +16,7 @@ inherited RFAViewForm: TRFAViewForm
     inherited RFAList: TVirtualStringTree
       Height = 416
       PopupMenu = ViewerPopup
+      TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme]
       OnBeforeCellPaint = RFAListBeforeCellPaint
       OnDblClick = RFAListDblClick
       OnDragOver = RFAListDragOver

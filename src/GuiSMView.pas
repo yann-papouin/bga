@@ -84,7 +84,7 @@ implementation
 {$R *.dfm}
 
 uses
-  SpTBXVirtualTreeview, GLFileSM, AppLib, Resources;
+  VirtualTreeviewTheme, GLFileSM, AppLib, Resources;
 
 type
   pData = ^rData;

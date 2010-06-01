@@ -104,6 +104,7 @@
 				<Form>FSSettingsForm</Form>
 			</DCCReference>
 			<DCCReference Include="FSLib.pas"/>
+			<DCCReference Include="Lib\VirtualTreeviewTheme.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
