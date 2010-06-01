@@ -29,7 +29,8 @@ uses
   GuiRFAView in 'GuiRFAView.pas' {RFAViewForm},
   GuiFSView in 'GuiFSView.pas' {FSViewForm},
   GuiFSSettings in 'GuiFSSettings.pas' {FSSettingsForm},
-  FSLib in 'FSLib.pas';
+  FSLib in 'FSLib.pas',
+  VirtualTreeviewTheme in 'Lib\VirtualTreeviewTheme.pas';
 
 {$R *.res}
 

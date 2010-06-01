@@ -217,7 +217,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, SpTBXVirtualTreeview,
+  DbugIntf, VirtualTreeviewTheme,
   GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
   Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
