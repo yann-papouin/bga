@@ -11,6 +11,7 @@ object RFACommonForm: TRFACommonForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Container: TSpTBXPanel
@@ -79,7 +80,7 @@ object RFACommonForm: TRFACommonForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 330
+          Width = 326
           WideText = 'Offset'
         end>
     end
@@ -106,12 +107,13 @@ object RFACommonForm: TRFACommonForm
       object Search: TSpTBXEdit
         Left = 80
         Top = 7
-        Width = 846
+        Width = 498
         Height = 21
         Align = alClient
         TabOrder = 0
         Text = '*.*'
         OnChange = SearchChange
+        ExplicitWidth = 846
       end
       object SpTBXLabel1: TSpTBXLabel
         AlignWithMargins = True
@@ -134,6 +136,28 @@ object RFACommonForm: TRFACommonForm
         Flat = True
         Images = ResourcesForm.Images16x16
         ImageIndex = 98
+      end
+      object SearchProgressBar: TSpTBXProgressBar
+        AlignWithMargins = True
+        Left = 584
+        Top = 9
+        Width = 334
+        Height = 17
+        Margins.Left = 6
+        Margins.Top = 2
+        Margins.Right = 8
+        Margins.Bottom = 2
+        Color = clBtnFace
+        Align = alRight
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        CaptionGlow = gldNone
+        CaptionType = pctNone
+        Smooth = True
       end
     end
   end

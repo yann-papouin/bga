@@ -98,6 +98,7 @@ type
     Search: TSpTBXEdit;
     SpTBXLabel1: TSpTBXLabel;
     SpTBXButton1: TSpTBXButton;
+    SearchProgressBar: TSpTBXProgressBar;
     procedure CollapseSelectedExecute(Sender: TObject);
     procedure ExpandSelectedExecute(Sender: TObject);
     procedure CollapseAllExecute(Sender: TObject);
@@ -114,7 +115,9 @@ type
     procedure SearchStopExecute(Sender: TObject);
     procedure SearchChange(Sender: TObject);
     procedure RFAListHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure FormCreate(Sender: TObject);
   private
+    FSearchCount : integer;
     FSearchText: string;
     FSortBy : TSortBy;
     FSortDirection : TSortDirection;
@@ -175,6 +178,7 @@ implementation
 {$R *.dfm}
 
 uses
+  DbugIntf,
   GuiSMView, GuiSkinDialog, Resources, Masks, Math, StringFunction, CommonLib, AppLib, MD5Api;
 
 
@@ -211,6 +215,10 @@ begin
   end;
 end;
 
+procedure TRFACommonForm.FormCreate(Sender: TObject);
+begin
+  FSearchCount := 0;
+end;
 
 procedure TRFACommonForm.MakePathVisible(Table : TBaseVirtualTree; Node: PVirtualNode);
 begin
@@ -835,7 +843,6 @@ procedure TRFACommonForm.SetSearchText(const Value: string);
 var
   Node : pVirtualNode;
   Data : pFse;
-  ShowAll : boolean;
   SearchList : TStringList;
 
   function LocalMatchesMask(AString : string) : boolean;
@@ -856,10 +863,16 @@ var
   end;
 
 begin
+  Inc(FSearchCount);
+  //SendInteger('FSearchCount',FSearchCount);
+
   FSearchText := Value;
   SearchList := TStringList.Create;
   SearchList.Delimiter := ';';
   SearchList.DelimitedText := FSearchText;
+
+  SearchProgressBar.Position := 0;
+  SearchProgressBar.Max := 0;
 
   RFAList.BeginUpdate;
 
@@ -876,11 +889,15 @@ begin
     Node := RFAList.GetNext(Node, true);
   end;
 
+  SearchProgressBar.Max := RFAList.TotalCount;
   if (FSearchText <> EmptyStr) then
   begin
     Node := RFAList.GetFirst(true);
     while Node <> nil do
     begin
+      SearchProgressBar.Position := SearchProgressBar.Position+1;
+      Application.ProcessMessages;
+
       Data := RFAList.GetNodeData(Node);
 
       if LocalMatchesMask(Data.W32Name) then
@@ -888,13 +905,17 @@ begin
         MakePathVisible(RFAList, Node);
         RFAList.ScrollIntoView(Node,true);
       end;
-
+(*
+      if FSearchCount > 1 then
+        Break;
+*)
       Node := RFAList.GetNext(Node, true);
     end;
   end;
 
   RFAList.EndUpdate;
   SearchList.Free;
+  Dec(FSearchCount);
 end;
 
 procedure TRFACommonForm.Sort;
