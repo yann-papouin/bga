@@ -23,6 +23,7 @@ unit FileSM;
 interface
 
 {$DEFINE DEBUG_SM}
+{$DEFINE DEBUG_SM_DETAILS}
 
 uses Classes, TypesSM, VectorTypes;
 
@@ -182,10 +183,6 @@ begin
 
         for j := 0 to FCollMeshes[i].VertexCount-1 do
         begin
-          {$IfDef DEBUG_SM_DETAILS}
-          SendDebugFmt('Current vertex is %d/%d',[j+1,FCollMeshes[i].VertexCount]);
-          {$EndIf}
-
           ptVertex := @(FCollMeshes[i].Vertex[j]);
 
           aStream.Read(ptVertex.Value[0] , FLOAT_SIZE);
@@ -199,7 +196,7 @@ begin
           aStream.Position := aStream.Position+(2); //Stuff of vert1 Repeated
 
           {$IfDef DEBUG_SM_DETAILS}
-          SendDebugFmt('Vertex %d :: X=%.3f, Y=%.3f, Z=%.3f',[j+1, ptVertex.Value[0], ptVertex.Value[1], ptVertex.Value[2]]);
+          SendDebugFmt('Current vertex is %d/%d (X=%.3f, Y=%.3f, Z=%.3f)',[j+1, FCollMeshes[i].VertexCount, ptVertex.Value[0], ptVertex.Value[1], ptVertex.Value[2]]);
           {$EndIf}
         end;
 
@@ -208,10 +205,6 @@ begin
 
         for j := 0 to FCollMeshes[i].FaceCount-1 do
         begin
-          {$IfDef DEBUG_SM_DETAILS}
-          SendDebugFmt('Current face is %d/%d',[j+1,FCollMeshes[i].FaceCount]);
-          {$EndIf}
-
           ptFace := @FCollMeshes[i].Faces[j];
 
           aStream.Read(ptFace.A , WORD_SIZE);
@@ -225,7 +218,7 @@ begin
             ptFace.MaterialID := 10000; // 10000 equals 0
 
           {$IfDef DEBUG_SM_DETAILS}
-          SendDebugFmt('Face %d is a set of(%d,%d,%d)',[j+1, ptFace.A, ptFace.B, ptFace.C]);
+          SendDebugFmt('Current face is %d/%d (%d,%d,%d) MatID=[%d]',[j+1, FCollMeshes[i].FaceCount, ptFace.A, ptFace.B, ptFace.C, ptFace.MaterialID]);
           {$EndIf}
         end;
 
@@ -325,10 +318,6 @@ begin
 
             for k := 0 to ptMeshdata.VertexCount - 1 do
             begin
-              {$IfDef DEBUG_SM_DETAILS}
-              SendDebugFmt('Current vertex is %d/%d',[k+1, ptMeshdata.VertexCount]);
-              {$EndIf}
-
               ptVertex := @(ptMeshdata.Vertex[k]);
 
               aStream.Read(ptVertex.Value[0] , FLOAT_SIZE);
@@ -338,6 +327,9 @@ begin
               aStream.Read(ptVertex.Value[2] , FLOAT_SIZE);
               ptVertex.Value[2] := ptVertex.Value[2] * DSM_SCALE;
 
+              {$IfDef DEBUG_SM_DETAILS}
+              SendDebugFmt('Current vertex is %d/%d (X=%.3f, Y=%.3f, Z=%.3f)',[k+1, ptMeshdata.VertexCount, ptVertex.Value[0], ptVertex.Value[1], ptVertex.Value[2]]);
+              {$EndIf}
 
               {$IfDef DEBUG_SM_DETAILS}
               SendDebugFmt('Current normale is %d/%d',[k+1, ptMeshdata.NormaleCount]);
@@ -366,14 +358,22 @@ begin
             SetLength(ptMeshdata.Faces, ptMeshdata.FaceCount);
             for k := 0 to ptMeshdata.FaceCount-1 do
             begin
-              {$IfDef DEBUG_SM_DETAILS}
-              SendDebugFmt('Current face is %d/%d',[k+1,ptMeshdata.FaceCount]);
-              {$EndIf}
               ptFace := @ptMeshdata.Faces[k];
 
               aStream.Read(ptFace.A , WORD_SIZE);
               aStream.Read(ptFace.B , WORD_SIZE);
               aStream.Read(ptFace.C , WORD_SIZE);
+(*
+              if ptFace.A > ptMeshdata.VertexCount then
+                ptFace.A := ptMeshdata.VertexCount-1;
+              if ptFace.B > ptMeshdata.VertexCount then
+                ptFace.B := ptMeshdata.VertexCount-1;
+              if ptFace.C > ptMeshdata.VertexCount then
+                ptFace.C := ptMeshdata.VertexCount-1;
+*)
+              {$IfDef DEBUG_SM_DETAILS}
+              SendDebugFmt('Current face is %d/%d (%d,%d,%d) at 0x%x on 0x%x',[k+1,ptMeshdata.FaceCount, ptFace.A, ptFace.B, ptFace.C, aStream.Position, aStream.Size]);
+              {$EndIf}
             end;
             //aStream.Position := aStream.Position + ptMaterial.VertNum * ptMaterial.VertStride div 4;
 
@@ -395,7 +395,22 @@ function TFileSM.MeshVertexFromMatFaceId(MeshID, LodID, FaceID: Longword): TMatr
 var
   Face : TSMFace;
 begin
+  Assert(MeshID<FMeshCount);
+  Assert(LodID<FMeshes[MeshID].MatMeshCount);
+  Assert(FaceID<FMeshes[MeshID].MatMeshes[LodID].MeshData.FaceCount);
+
   Face := FMeshes[MeshID].MatMeshes[LodID].MeshData.Faces[FaceID];
+
+  Assert(Face.A<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
+  Assert(Face.B<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
+  Assert(Face.C<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
+  (*
+  SendInteger('Face.A',Face.A);
+  SendInteger('Face.B',Face.B);
+  SendInteger('Face.C',Face.C);
+
+  SendInteger('FaceCount',FMeshes[MeshID].MatMeshes[LodID].MeshData.FaceCount);
+  *)
 
   Result[0] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.A].Value;
   Result[1] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.B].Value;
