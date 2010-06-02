@@ -52,7 +52,6 @@ object SMViewForm: TSMViewForm
     TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme]
     TreeOptions.SelectionOptions = [toMultiSelect, toRightClickSelect]
     OnChange = MeshListChange
-    OnFocusChanging = MeshListFocusChanging
     OnFreeNode = MeshListFreeNode
     OnGetText = MeshListGetText
     OnGetImageIndex = MeshListGetImageIndex
@@ -76,8 +75,11 @@ object SMViewForm: TSMViewForm
     Align = alBottom
     UseDockManager = True
     TabOrder = 3
+    Visible = False
     Borders = False
     TBXStyleBackground = True
+    ExplicitLeft = 120
+    ExplicitTop = 495
     object Label1: TSpTBXLabel
       Left = 8
       Top = 6
@@ -149,7 +151,7 @@ object SMViewForm: TSMViewForm
       DepthOfView = 10000.000000000000000000
       FocalLength = 90.000000000000000000
       TargetObject = CameraTarget
-      Position.Coordinates = {A620C842A620C842A620C8420000803F}
+      Position.Coordinates = {F9D61343F9D61343F9D613430000803F}
       object CamLight: TGLLightSource
         ConstAttenuation = 1.000000000000000000
         Diffuse.Color = {8D8C0C3F8D8C0C3F8D8C0C3F0000803F}
@@ -164,7 +166,7 @@ object SMViewForm: TSMViewForm
     end
     object Grid: TGLXYZGrid
       AntiAliased = True
-      LineColor.Color = {AFAE2E3FAFAE2E3FAFAE2E3F0000803F}
+      LineColor.Color = {FBFAFA3EFBFAFA3EFBFAFA3E0000803F}
       XSamplingScale.Min = -100.000000000000000000
       XSamplingScale.Max = 100.000000000000000000
       XSamplingScale.Step = 5.000000000000000000

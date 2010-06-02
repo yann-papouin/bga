@@ -131,6 +131,8 @@ var
   ptMaterial : PSMMaterial;
   ptMeshdata : PSMMeshData;
   Unknown1, Unknown2: Longword;
+  FaceValues : array of word;
+  tmpFace : TSMFace;
   i, j, k : integer;
 begin
   Assert(Assigned(aStream));
@@ -298,10 +300,11 @@ begin
             end;
 
             case ptMaterial.VertLength of
-              32 : SendDebug('Vertex length is 32bytes');
-              40 : SendDebug('Vertex length is 40bytes');
+              BS_32 : SendDebug('Vertex structure length is BS_32 bytes');
+              BS_40 : SendDebug('Vertex structure length is BS_40 bytes');
+              BS_64 : SendDebug('Vertex structure length is BS_64 bytes');
               else
-                SendDebugError(Format('Unknown Vertex length (%d)',[ptMaterial.VertLength]));
+                SendDebugError(Format('Unknown vertex structure length (%d)',[ptMaterial.VertLength]));
             end;
             {$EndIf}
 
@@ -313,7 +316,7 @@ begin
 
             case ptMaterial.RenderType of
               TRIANGLE_LIST  : ptMeshdata.FaceCount := ptMaterial.IndexNum div 3;
-              TRIANGLE_STRIP : ptMeshdata.FaceCount := ptMaterial.IndexNum - 1;
+              TRIANGLE_STRIP : ptMeshdata.FaceCount := ptMaterial.IndexNum - 2;
               else
               ptMeshdata.FaceCount := ptMaterial.IndexNum;
             end;
@@ -336,7 +339,6 @@ begin
 
             for k := 0 to ptMeshdata.VertexCount - 1 do
             begin
-              endOffset := aStream.Position + ptMaterial.VertLength;
               ptVertex := @(ptMeshdata.Vertex[k]);
 
               aStream.Read(ptVertex.Value[0] , FLOAT_SIZE);
@@ -363,29 +365,88 @@ begin
               aStream.Read(ptMaterial.TextureCoord[k].S, FLOAT_SIZE);
               aStream.Read(ptMaterial.TextureCoord[k].T, FLOAT_SIZE); //ty = (1.0 - (ReadFloat fp)) - 1.0
 
-              if ptMaterial.VertLength > 32 then
+              if ptMaterial.VertLength = BS_40 then
               begin
                 aStream.Read(ptMaterial.LightmapCoord[k].S, FLOAT_SIZE);
                 aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
               end;
 
-              aStream.Position := endOffset;
             end;
 
-            SetLength(ptMeshdata.Faces, ptMeshdata.FaceCount);
-            for k := 0 to ptMeshdata.FaceCount-1 do
+            if ptMaterial.VertLength = BS_64 then
             begin
-              ptFace := @ptMeshdata.Faces[k];
+              for k := 0 to ptMeshdata.VertexCount - 1 do
+              begin
+                aStream.Read(ptMaterial.LightmapCoord[k].S, FLOAT_SIZE);
+                aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
 
-              aStream.Read(ptFace.A, WORD_SIZE);
-              aStream.Read(ptFace.B, WORD_SIZE);
-              aStream.Read(ptFace.C, WORD_SIZE);
-
-              {$IfDef DEBUG_SM_DETAILS}
-              SendDebugFmt('Current face is %d/%d (%d,%d,%d) at 0x%x on 0x%x',[k+1,ptMeshdata.FaceCount, ptFace.A, ptFace.B, ptFace.C, aStream.Position, aStream.Size]);
-              {$EndIf}
+                // Unused data (24 bytes)
+                aStream.Position := aStream.Position + 24;
+              end;
             end;
-            //aStream.Position := aStream.Position + ptMaterial.VertNum * ptMaterial.VertStride div 4;
+
+            SetLength(FaceValues, ptMaterial.IndexNum);
+
+            for k := 0 to ptMaterial.IndexNum - 1 do
+            begin
+              aStream.Read(FaceValues[k], WORD_SIZE);
+            end;
+
+            if ptMaterial.RenderType = TRIANGLE_LIST then
+            begin
+              SetLength(ptMeshdata.Faces, ptMeshdata.FaceCount);
+
+              k := 0;
+              while k < ptMaterial.IndexNum do
+              begin
+                ptFace := @ptMeshdata.Faces[k div 3];
+
+                ptFace.A := FaceValues[k+0];
+                ptFace.B := FaceValues[k+1];
+                ptFace.C := FaceValues[k+2];
+
+                k := k+3;
+              end;
+            end
+              else
+            if ptMaterial.RenderType = TRIANGLE_STRIP then
+            begin
+              SetLength(ptMeshdata.Faces, ptMeshdata.FaceCount);
+
+              ptFace := @ptMeshdata.Faces[0];
+              ptFace.A := FaceValues[0];
+              ptFace.B := FaceValues[1];
+              ptFace.C := FaceValues[2];
+
+              k := 1;
+              while k < ptMeshdata.FaceCount do
+              begin
+                ptFace := @ptMeshdata.Faces[k];
+
+                ptFace.A := 1;
+                ptFace.B := 2;
+                ptFace.C := 3;
+
+                ptFace.A := ptMeshdata.Faces[k-1].B;
+                ptFace.B := ptMeshdata.Faces[k-1].C;
+                ptFace.C := FaceValues[k+2];
+
+                k := k+1;
+              end;
+
+              k := 0;
+              while k < ptMeshdata.FaceCount do
+              begin
+                ptFace := @ptMeshdata.Faces[k];
+                tmpFace := ptface^;
+
+                ptFace.A := tmpFace.C;
+                ptFace.B := tmpFace.B;
+                ptFace.C := tmpFace.A;
+
+                k := k+2;
+              end;
+            end
 
           end;
         end;
