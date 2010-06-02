@@ -174,11 +174,13 @@ type
     procedure RFAListDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas;
       Node: PVirtualNode; Column: TColumnIndex; const Text: string;
       const CellRect: TRect; var DefaultDraw: Boolean);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     FApplicationTitle : string;
     FEditResult : TEditResult;
     FSyncNode : PVirtualNode;
     FArchive : TRFAFile;
+    FResetMutex : boolean;
     function GetTitle: string;
     procedure SetTitle(const Value: string);
     procedure ReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
@@ -192,10 +194,10 @@ type
     function LastOne(Offset: Int64): boolean;
     function LoadMap(Path: string): boolean;
     function QuickOpen: boolean;
-    function QuickSave(Defrag: boolean): boolean;
+    function QuickSave(Defragmentation: boolean): boolean;
     procedure RebuildRecentList;
     procedure RemoveEmptyFolders;
-    procedure Reset;
+    function Reset(Ask : boolean = false) : TModalResult;
     function SaveMap(Path: string; Defrag: boolean = false): boolean;
     procedure ExtractTo(Directory: string; List: TStringList = nil);
     procedure ShiftData(ShiftData: TRFAResult; ShiftWay: TShiftWay; IgnoreNode: PVirtualNode = nil);
@@ -204,6 +206,9 @@ type
     procedure SyncStop;
     procedure UpdateInfobar;
     procedure UpdateReply(Sender: TObject; Result: TUpdateResult);
+  protected
+    procedure CancelChange;
+    procedure NotifyChange;
   public
     { Déclarations publiques }
     property Title : string read GetTitle write SetTitle;
@@ -224,6 +229,8 @@ uses
 var
   FLastNode : PVirtualNode;
 
+const
+  ASK_BEFORE_RESET = true;
 
 procedure TRFAViewForm.ReadEntry(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer);
 var
@@ -337,7 +344,10 @@ begin
           if (FileDateTime <> Data.ExternalAge) then
           begin
             if MD5FromFile(Data.ExternalFilePath) <> Data.ExternalMD5 then
-              Include(Data.Status, fsExternal)
+            begin
+              Include(Data.Status, fsExternal);
+              NotifyChange;
+            end
             else
               Exclude(Data.Status, fsExternal)
           end;
@@ -420,6 +430,7 @@ var
 
 begin
   Sender := RFAList;
+  NotifyChange;
 
   if Assigned(List) then
   begin
@@ -511,8 +522,28 @@ begin
 end;
 
 
-procedure TRFAViewForm.Reset;
+function TRFAViewForm.Reset(Ask : boolean = false) : TModalResult;
 begin
+  Result := mrNone;
+
+  if not FResetMutex and Ask and (Save.Enabled or (CountFilesByStatus(RFAList.RootNode, [fsNew], false) > 0)) then
+  begin
+    FResetMutex := true;
+    Result := ShowDialog('Confirmation', 'Save changes ?', mtInformation, mbYesNoCancel, mbCancel, 0);
+    case Result of
+      mrYes:
+      begin
+        SaveAs.Execute;
+        FResetMutex := false;
+      end;
+      mrCancel:
+      begin
+        FResetMutex := false;
+        Exit;
+      end;
+    end;
+  end;
+
   SyncStop;
   RFAList.Clear;
   Title := EmptyStr;
@@ -525,6 +556,8 @@ begin
   Defrag.Enabled := false;
   SaveDialog.FileName := EmptyStr;
   UpdateInfobar;
+
+  Result := mrOk;
 end;
 
 
@@ -537,7 +570,13 @@ begin
   FSyncNode := nil;
 
   RFAList.BeginUpdate;
-  Reset;
+
+  if Reset(ASK_BEFORE_RESET) = mrCancel then
+  begin
+    RFAList.EndUpdate;
+    SyncStart;
+    Exit;
+  end;
 
   if Assigned(FArchive) then
     FArchive.Free;
@@ -974,8 +1013,7 @@ begin
       RecentList.AddString(OpenDialog.FileName);
       RebuildRecentList;
       SaveDialog.FileName := OpenDialog.FileName;
-      Save.Enabled := true;
-      Defrag.Enabled := true;
+      CancelChange;
       Title := OpenDialog.FileName;
       Result := true;
     end;
@@ -986,14 +1024,15 @@ begin
   end;
 end;
 
-function TRFAViewForm.QuickSave(Defrag: boolean): boolean;
+function TRFAViewForm.QuickSave(Defragmentation: boolean): boolean;
 begin
   Result := false;
-  if SaveMap(SaveDialog.FileName) then
+  if SaveMap(SaveDialog.FileName, Defragmentation) then
   begin
     OpenDialog.FileName := SaveDialog.FileName;
     RecentList.AddString(SaveDialog.FileName);
     RebuildRecentList;
+    CancelChange;
     Result := true;
   end
     else
@@ -1121,7 +1160,6 @@ begin
   end;
 
   RFAList.EndUpdate;
-
 end;
 
 procedure TRFAViewForm.SyncAll;
@@ -1336,7 +1374,10 @@ begin
   if FEditResult = edInvalid then
 
   else if FEditResult = edOk then
+  begin
+    NotifyChange;
     Sort;
+  end;
 end;
 
 procedure TRFAViewForm.RFAListKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
@@ -1562,6 +1603,22 @@ begin
 end;
 
 
+procedure TRFAViewForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+var
+  Result : TModalResult;
+begin
+  inherited;
+
+  if Save.Enabled or (CountFilesByStatus(RFAList.RootNode, [fsNew], false) > 0) then
+  begin
+    Result := ShowDialog('Close', 'Save changes before exiting?', mtInformation, mbYesNoCancel, mbCancel, 0);
+    case Result of
+      mrYes : SaveAs.Execute;
+      mrCancel: CanClose := false;
+    end;
+  end;
+end;
+
 procedure TRFAViewForm.OpenRecentClick(Sender: TObject);
 begin
   if (Sender is TSpTBXItem) then
@@ -1586,6 +1643,21 @@ begin
   end;
 end;
 
+procedure TRFAViewForm.CancelChange;
+begin
+  Save.Enabled := false;
+  Defrag.Enabled := FArchive.Fragmentation > 0;
+end;
+
+procedure TRFAViewForm.NotifyChange;
+begin
+  if Assigned(FArchive) then
+  begin
+    Save.Enabled := true;
+    Defrag.Enabled := true;
+  end;
+end;
+
 procedure TRFAViewForm.SaveAsExecute(Sender: TObject);
 var
   UseDefrag : boolean;
@@ -1601,12 +1673,11 @@ begin
 
     if QuickSave(UseDefrag) then
     begin
-      Save.Enabled := true;
-      Defrag.Enabled := true;
+      //Save.Enabled := false;
+      //Defrag.Enabled := false;
     end;
   end;
 end;
-
 
 procedure TRFAViewForm.SaveExecute(Sender: TObject);
 begin
@@ -1618,24 +1689,20 @@ begin
   QuickSave(true);
 end;
 
-
-
 procedure TRFAViewForm.QuitExecute(Sender: TObject);
 begin
   Application.Terminate;
 end;
+
 
 procedure TRFAViewForm.CancelExecute(Sender: TObject);
 begin
   Cancel.Enabled := false;
 end;
 
-
-
 procedure TRFAViewForm.NewExecute(Sender: TObject);
 begin
   Reset;
-  //Save.Enabled := false;
 end;
 
 procedure TRFAViewForm.NewFolderExecute(Sender: TObject);
@@ -1686,8 +1753,13 @@ begin
   if (BrowsePackForm.ShowModal = mrOk) then
     if DirectoryExists(BrowsePackForm.Directory) then
     begin
+
+      if Reset(ASK_BEFORE_RESET) = mrCancel then
+      begin
+        Exit;
+      end;
+
       Node := RFAList.RootNode;
-      Reset;
 
       if BrowsePackForm.UseBasePath.Checked then
       begin
@@ -1740,6 +1812,8 @@ procedure TRFAViewForm.NewVersionAvailableExecute(Sender: TObject);
 begin
   UpdateManagerForm.ShowModal;
 end;
+
+
 
 function TRFAViewForm.GetTitle: string;
 begin
