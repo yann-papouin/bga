@@ -1,0 +1,9 @@
+(
+	local tmpMenu = menuMan.findMenu "Battlefield Tools";
+	if tmpMenu != undefined then 
+	(
+		menuMan.unRegisterMenu tmpMenu;
+		menuMan.updateMenuBar();
+	)
+
+)
