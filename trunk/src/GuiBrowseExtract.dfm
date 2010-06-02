@@ -6,9 +6,6 @@ inherited BrowseExtractForm: TBrowseExtractForm
   TextHeight = 13
   inherited Background: TSpTBXPanel
     Height = 389
-    ExplicitLeft = 0
-    ExplicitTop = 0
-    ExplicitWidth = 384
     ExplicitHeight = 389
     inherited Footer: TPanel
       Top = 346

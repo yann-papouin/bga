@@ -58,8 +58,11 @@ inherited FSViewForm: TFSViewForm
       ExplicitTop = 349
       ExplicitWidth = 622
       inherited Search: TSpTBXEdit
-        Width = 535
-        ExplicitWidth = 535
+        Width = 187
+        ExplicitWidth = 187
+      end
+      inherited SearchProgressBar: TSpTBXProgressBar
+        Left = 273
       end
     end
   end
@@ -91,6 +94,7 @@ inherited FSViewForm: TFSViewForm
       Width = 467
       Height = 21
       Anchors = [akLeft, akTop, akRight]
+      ItemHeight = 13
       TabOrder = 1
       OnChange = FilesystemChoiceChange
     end
