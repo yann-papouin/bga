@@ -24,6 +24,16 @@ interface
 
 uses Classes, VectorTypes, VectorGeometry;
 
+
+const
+  DSM_SCALE = 10;
+
+  TRIANGLE_LIST = 4;
+  TRIANGLE_STRIP = 5;
+
+  VERTEX_FORMAT_REGION = 1041;
+  VERTEX_FORMAT_LIGHTMAP = 9233;
+
 type
 
   PSMBBox = ^TSMBBox;
@@ -38,11 +48,17 @@ type
     MaterialID : Word;
   end;
 
+  PSMNormale = ^TSMNormale;
+  TSMNormale = record
+    Value : TVector3f;
+    MaterialID : Word;
+  end;
+
   PSMFace = ^TSMFace;
   TSMFace = record
-    A : Word;
-    B : Word;
-    C : Word;
+    A : LongWord;
+    B : LongWord;
+    C : LongWord;
     MaterialID : Word;
   end;
 
@@ -51,7 +67,7 @@ type
     Name : Ansistring;
     RenderType : Longword;
     VertFormat : Longword;  //vertexFormat
-    VertStride : Longword;  //VertByteSize
+    VertLength : Longword;  //VertByteSize
     TextureCoord : array of TTexPoint;
     TextureCoordCount : Longword;
     LightmapCoord : array of TTexPoint;
@@ -66,7 +82,7 @@ type
     FaceCount : Longword;
     Faces : array of TSMFace;
     NormaleCount : Longword;
-    Normales : array of TSMVertex;
+    Normales : array of TSMNormale;
   end;
 
   PSMMatMesh = ^TSMMatMesh;

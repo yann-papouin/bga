@@ -169,6 +169,7 @@ object RFACommonForm: TRFACommonForm
       Category = 'Common'
       Caption = 'Preview'
       ImageIndex = 65
+      ShortCut = 16464
       OnExecute = PreviewExecute
     end
     object ExpandAll: TAction
