@@ -34,6 +34,10 @@ const
   VERTEX_FORMAT_REGION = 1041;
   VERTEX_FORMAT_LIGHTMAP = 9233;
 
+  BS_32 = 32;
+  BS_40 = 40;
+  BS_64 = 64;
+
 type
 
   PSMBBox = ^TSMBBox;

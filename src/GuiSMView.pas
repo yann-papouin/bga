@@ -51,9 +51,6 @@ type
     procedure MeshListGetImageIndex(Sender: TBaseVirtualTree;
       Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
       var Ghosted: Boolean; var ImageIndex: Integer);
-    procedure MeshListFocusChanging(Sender: TBaseVirtualTree; OldNode,
-      NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex;
-      var Allowed: Boolean);
     procedure MeshListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure MeshListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private
@@ -84,7 +81,7 @@ implementation
 {$R *.dfm}
 
 uses
-  VirtualTreeviewTheme, GLFileSM, AppLib, Resources;
+  VirtualTreeviewTheme, GLFileSM, AppLib, Resources, Math;
 
 type
   pData = ^rData;
@@ -135,6 +132,7 @@ var
   Node, NodeID : PVirtualNode;
   Data : pData;
   i :integer;
+  CamDistance : single;
 begin
   MeshList.Clear;
 
@@ -202,26 +200,39 @@ begin
     end;
   end;
 
-  if ColCounter = 0 then
-    MeshList.DeleteNode(FColRootNode)
-  else
-  begin
-    MeshList.Expanded[FColRootNode] := true;
-    MeshList.FocusedNode := FColRootNode.LastChild;
-  end;
-
   if MeshCounter = 0 then
     MeshList.DeleteNode(FMeshRootNode)
   else
   begin
-    MeshList.Expanded[FMeshRootNode] := true;
+    MeshList.FullyVisible[FMeshRootNode.FirstChild] := true;
     MeshList.Selected[FMeshRootNode.FirstChild] := true;
+    MeshList.FocusedNode := FMeshRootNode.FirstChild;
   end;
 
-  Camera.Position.X := FreeMesh.BoundingSphereRadius;
-  Camera.Position.Y := FreeMesh.BoundingSphereRadius;
-  Camera.Position.Z := FreeMesh.BoundingSphereRadius;
+  if ColCounter = 0 then
+    MeshList.DeleteNode(FColRootNode)
+  else
+  begin
+    MeshList.FullyVisible[FColRootNode.LastChild] := true;
 
+    if MeshList.SelectedCount = 0 then
+    begin
+      MeshList.Selected[FColRootNode.LastChild] := true;
+      MeshList.FocusedNode := FColRootNode.LastChild;
+    end;
+  end;
+
+  CamDistance := 0;
+  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition[0]);
+  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition[1]);
+  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition[2]);
+  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition[3]);
+
+  CamDistance := Max(CamDistance*2, FreeMesh.BoundingSphereRadius);
+
+  Camera.Position.X := CamDistance;
+  Camera.Position.Y := CamDistance;
+  Camera.Position.Z := CamDistance;
 end;
 
 procedure TSMViewForm.LoadStandardMesh(Filename: string);
@@ -239,7 +250,7 @@ begin
   Result := false;
   repeat
     begin
-      if Sender.Selected[Node] then
+      if Sender.Selected[Node] or (Sender.FocusedNode = Node) then
       begin
         Result := true;
         Break;
@@ -266,41 +277,6 @@ begin
 
   FreeMesh.StructureChanged;
 end;
-
-procedure TSMViewForm.MeshListFocusChanging(Sender: TBaseVirtualTree; OldNode, NewNode: PVirtualNode; OldColumn, NewColumn: TColumnIndex; var Allowed: Boolean);
-var
-  OldData, NewData : pData;
-  FNeedRecalc : boolean;
-begin
-Exit;
-  FNeedRecalc := false;
-
-  if OldNode <> NewNode then
-  begin
-    OldData := Sender.GetNodeData(OldNode);
-    NewData := Sender.GetNodeData(NewNode);
-
-    if (NewData <> nil) and (NewData.Mesh <> nil) then
-    begin
-      if not NewData.Mesh.Visible then
-      begin
-        NewData.Mesh.Visible := true;
-        FNeedRecalc := true;
-      end;
-
-      if (OldData <> nil) and (OldData.Mesh <> nil) then
-        if OldData.Mesh.Visible then
-        begin
-          OldData.Mesh.Visible := false;
-          FNeedRecalc := true;
-        end;
-    end;
-  end;
-
-  if FNeedRecalc then
-    FreeMesh.StructureChanged;
-end;
-
 
 procedure TSMViewForm.MeshListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
 var
