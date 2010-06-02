@@ -2066,7 +2066,11 @@ object AboutForm: TAboutForm
         '- PngComponents for Delphi 2009/2010 (http://cc.embarcadero.com/' +
         'Item/26127)'
       '- AsyncCalls 2.92 (http://cc.embarcadero.com/Item/25420)'
-      '- GExperts (http://www.gexperts.org/)')
+      '- GExperts (http://www.gexperts.org/)'
+      ''
+      'Thanks to:'
+      '- Senshi (from bfmods.com) for his bugs reports'
+      '- Kuyong_Chuin (from bfmods.com) for his bugs reports')
     ParentFont = False
     ReadOnly = True
     ScrollBars = ssVertical
