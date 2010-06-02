@@ -28,10 +28,6 @@ object BrowseForm: TBrowseForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
-    ExplicitLeft = 142
-    ExplicitTop = 16
-    ExplicitWidth = 121
-    ExplicitHeight = 304
     DesignSize = (
       384
       372)
@@ -69,7 +65,6 @@ object BrowseForm: TBrowseForm
       Padding.Right = 5
       Padding.Bottom = 5
       TabOrder = 1
-      ExplicitTop = 323
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 142
