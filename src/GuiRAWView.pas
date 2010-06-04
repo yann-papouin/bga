@@ -23,13 +23,13 @@ unit GuiRAWView;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, GuiFormCommon,
   Dialogs, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses,
   GLWin32Viewer, GLObjects, GLColor, VectorGeometry, GLSimpleNavigation,
   JvExControls, JvInspector, SpTBXItem, TB2Item, GLVectorFileObjects, GLMesh;
 
 type
-  TRAWViewForm = class(TForm)
+  TRAWViewForm = class(TFormCommon)
     Viewer: TGLSceneViewer;
     Scene: TGLScene;
     Camera: TGLCamera;
@@ -52,7 +52,6 @@ type
       Y: Integer);
     procedure ViewerPostRender(Sender: TObject);
   private
-    FApplicationTitle : string;
     FInitLoad : boolean;
     FMouseMoveMutex : boolean;
     FBuffer : TMemoryStream;
@@ -67,8 +66,6 @@ type
     procedure SetMapSize(const Value: integer);
     procedure SetMapHeightScale(const Value: Single);
     procedure SetWorldSize(const Value: integer);
-    function GetTitle: string;
-    procedure SetTitle(const Value: string);
   public
     { Déclarations publiques }
     procedure LoadTerrain(Filename: string); overload;
@@ -78,9 +75,6 @@ type
     property MapSize : integer read FMapSize write SetMapSize;
     property MapHeightScale : Single read FMapHeightScale write SetMapHeightScale;
     property WorldSize : integer read FWorldSize write SetWorldSize;
-
-
-    property Title : string read GetTitle write SetTitle;
   end;
 
 var
@@ -101,8 +95,7 @@ uses
 
 procedure TRAWViewForm.FormCreate(Sender: TObject);
 begin
-  FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
-
+  inherited;
   FMapSize := -1;
   FBuffer := TMemoryStream.Create;
 
@@ -114,10 +107,6 @@ procedure TRAWViewForm.FormDestroy(Sender: TObject);
 begin
   FBuffer.Free;
 end;
-
-
-
-
 
 procedure TRAWViewForm.LoadTerrain(Filename: string);
 var
@@ -294,18 +283,5 @@ begin
   end;
 end;
 
-
-function TRAWViewForm.GetTitle: string;
-begin
- Result := Caption
-end;
-
-procedure TRAWViewForm.SetTitle(const Value: string);
-begin
-  if Value <> EmptyStr then
-    Caption := Format('%s - %s',[ExtractFilename(Value), FApplicationTitle])
-  else
-    Caption := FApplicationTitle;
-end;
 
 end.

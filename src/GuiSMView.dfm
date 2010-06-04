@@ -1,4 +1,4 @@
-object SMViewForm: TSMViewForm
+inherited SMViewForm: TSMViewForm
   Left = 0
   Top = 0
   Caption = 'SM View'
@@ -78,8 +78,6 @@ object SMViewForm: TSMViewForm
     Visible = False
     Borders = False
     TBXStyleBackground = True
-    ExplicitLeft = 120
-    ExplicitTop = 495
     object Label1: TSpTBXLabel
       Left = 8
       Top = 6

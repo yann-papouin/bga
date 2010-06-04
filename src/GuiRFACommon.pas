@@ -23,7 +23,7 @@ unit GuiRFACommon;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, GuiFormCommon,
   Dialogs, VirtualTrees, ActnList, JCLFileUtils, RFALib, Types, SpTBXControls,
   StdCtrls, SpTBXEditors, SpTBXItem, ExtCtrls, SyncObjs;
 
@@ -83,7 +83,7 @@ type
   TEntryStatus = set of TEntryModification;
 
 
-  TRFACommonForm = class(TForm)
+  TRFACommonForm = class(TFormCommon)
     Actions: TActionList;
     Preview: TAction;
     ExpandAll: TAction;
@@ -219,6 +219,7 @@ end;
 
 procedure TRFACommonForm.FormCreate(Sender: TObject);
 begin
+  inherited;
   FSearchCount := 0;
   FSearchSection := TCriticalSection.Create;
 end;

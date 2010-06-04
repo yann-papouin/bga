@@ -176,13 +176,10 @@ type
       const CellRect: TRect; var DefaultDraw: Boolean);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
-    FApplicationTitle : string;
     FEditResult : TEditResult;
     FSyncNode : PVirtualNode;
     FArchive : TRFAFile;
     FResetMutex : boolean;
-    function GetTitle: string;
-    procedure SetTitle(const Value: string);
     procedure ReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
     { Déclarations privées }
     procedure SubProgress(Sender : TRFAFile; Operation : TRFAOperation; Value : Integer = 0);
@@ -211,7 +208,6 @@ type
     procedure NotifyChange;
   public
     { Déclarations publiques }
-    property Title : string read GetTitle write SetTitle;
   end;
 
 var
@@ -1565,7 +1561,6 @@ end;
 procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
-  FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
   EnableSkinning(RFAList);
   Reset;
 end;
@@ -1812,22 +1807,6 @@ procedure TRFAViewForm.NewVersionAvailableExecute(Sender: TObject);
 begin
   UpdateManagerForm.ShowModal;
 end;
-
-
-
-function TRFAViewForm.GetTitle: string;
-begin
-  Result := Caption;
-end;
-
-procedure TRFAViewForm.SetTitle(const Value: string);
-begin
-  if Value <> EmptyStr then
-    Caption := Format('%s - %s',[ExtractFilename(Value), FApplicationTitle])
-  else
-    Caption := FApplicationTitle;
-end;
-
 
 
 

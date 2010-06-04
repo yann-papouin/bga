@@ -1,18 +1,8 @@
-object RAWViewForm: TRAWViewForm
-  Left = 0
-  Top = 0
+inherited RAWViewForm: TRAWViewForm
   ActiveControl = Viewer
   Caption = 'RAW View'
   ClientHeight = 572
   ClientWidth = 851
-  Color = clBtnFace
-  Font.Charset = DEFAULT_CHARSET
-  Font.Color = clWindowText
-  Font.Height = -11
-  Font.Name = 'Tahoma'
-  Font.Style = []
-  OldCreateOrder = False
-  OnCreate = FormCreate
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
@@ -44,7 +34,6 @@ object RAWViewForm: TRAWViewForm
     Top = 547
     Width = 851
     Height = 25
-    ExplicitTop = 549
     object XLabel: TSpTBXLabelItem
       Caption = 'X'
     end
