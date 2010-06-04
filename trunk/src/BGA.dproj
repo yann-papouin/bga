@@ -105,6 +105,9 @@
 			</DCCReference>
 			<DCCReference Include="FSLib.pas"/>
 			<DCCReference Include="Lib\VirtualTreeviewTheme.pas"/>
+			<DCCReference Include="GuiFormCommon.pas">
+				<Form>FormCommon</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

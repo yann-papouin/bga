@@ -24,11 +24,12 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses, GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels,
-  StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls;
+  Dialogs, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses,
+  GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels,
+  StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon;
 
 type
-  TSMViewForm = class(TForm)
+  TSMViewForm = class(TFormCommon)
     Navigation: TGLSimpleNavigation;
     Scene: TGLScene;
     DummyCube: TGLDummyCube;
@@ -58,10 +59,7 @@ type
     FWorldRootNode : PVirtualNode;
     FColRootNode : PVirtualNode;
     FMeshRootNode : PVirtualNode;
-    FApplicationTitle : string;
     FFilename : string;
-    function GetTitle: string;
-    procedure SetTitle(const Value: string);
     procedure LoadSMData;
   protected
     function FindNodeID(ID : integer) : PVirtualNode;
@@ -69,7 +67,6 @@ type
   public
     { Déclarations publiques }
     procedure LoadStandardMesh(Filename: string);
-    property Title : string read GetTitle write SetTitle;
   end;
 
 
@@ -97,11 +94,9 @@ type
 { TSMViewForm }
 
 
-
-
 procedure TSMViewForm.FormCreate(Sender: TObject);
 begin
-  FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
+  inherited;
   EnableSkinning(MeshList);
 end;
 
@@ -313,17 +308,5 @@ begin
 end;
 
 
-function TSMViewForm.GetTitle: string;
-begin
-  Result := Caption
-end;
-
-procedure TSMViewForm.SetTitle(const Value: string);
-begin
-  if Value <> EmptyStr then
-    Caption := Format('%s - %s',[ExtractFilename(Value), FApplicationTitle])
-  else
-    Caption := FApplicationTitle;
-end;
 
 end.
