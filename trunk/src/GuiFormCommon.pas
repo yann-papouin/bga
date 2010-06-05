@@ -14,10 +14,14 @@ type
     procedure SetTitle(const Value: string);
     { Déclarations privées }
   protected
+    FOperationCount : integer;
     FApplicationTitle : string;
   public
     { Déclarations publiques }
     property Title : string read GetTitle write SetTitle;
+    function OperationPending : boolean;
+    procedure BeginOperation;
+    procedure EndOperation;
   end;
 
 var
@@ -48,6 +52,23 @@ begin
     Caption := Format('%s - %s',[ExtractFilename(Value), FApplicationTitle])
   else
     Caption := FApplicationTitle;
+end;
+
+procedure TFormCommon.BeginOperation;
+begin
+  Inc(FOperationCount);
+end;
+
+procedure TFormCommon.EndOperation;
+begin
+  Dec(FOperationCount);
+  if FOperationCount < 0 then
+    FOperationCount := 0;
+end;
+
+function TFormCommon.OperationPending: boolean;
+begin
+  Result := FOperationCount > 0;
 end;
 
 end.

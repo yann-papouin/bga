@@ -31,7 +31,8 @@ uses
   GuiFSSettings in 'GuiFSSettings.pas' {FSSettingsForm},
   FSLib in 'FSLib.pas',
   VirtualTreeviewTheme in 'Lib\VirtualTreeviewTheme.pas',
-  GuiFormCommon in 'GuiFormCommon.pas' {FormCommon};
+  GuiFormCommon in 'GuiFormCommon.pas' {FormCommon},
+  GuiDDSView in 'GuiDDSView.pas' {DDSViewForm};
 
 {$R *.res}
 
@@ -56,5 +57,6 @@ begin
   Application.CreateForm(TFSViewForm, FSViewForm);
   Application.CreateForm(TFSSettingsForm, FSSettingsForm);
   Application.CreateForm(TFormCommon, FormCommon);
+  Application.CreateForm(TDDSViewForm, DDSViewForm);
   Application.Run;
 end.

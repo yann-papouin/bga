@@ -180,7 +180,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf,
+  DbugIntf, GuiDDSView,
   GuiSMView, GuiSkinDialog, Resources, Masks, Math, StringFunction, CommonLib, AppLib, MD5Api;
 
 
@@ -444,8 +444,8 @@ begin
   if (Node = nil) or (Node = RFAList.RootNode) then
     Exit;
 
+  BeginOperation;
   Data := RFAList.GetNodeData(Node);
-
   if IsFile(Data.FileType) then
   begin
     if Data.ExternalFilePath = EmptyStr then
@@ -473,6 +473,7 @@ begin
 
     Result := Data.ExternalFilePath;
   end;
+  EndOperation;
 end;
 
 procedure TRFACommonForm.ExtendSelection(Node : PVirtualNode);
@@ -602,6 +603,11 @@ begin
     begin
       SMViewForm.LoadStandardMesh(ExtractTemporary(Node));
       SMViewForm.Show;
+    end;
+    ftFileDDS:
+    begin
+      DDSViewForm.LoadTexture(ExtractTemporary(Node));
+      DDSViewForm.Show;
     end;
     ftFileCON, ftFileINC:
     begin

@@ -491,6 +491,7 @@ end;
 procedure TRFAViewForm.ApplicationRunExecute(Sender: TObject);
 begin
   inherited;
+  Exit;
   ApplicationRun.Enabled := false;
   FormStorage.RestoreFormPlacement;
 
@@ -1185,6 +1186,9 @@ procedure TRFAViewForm.SyncTimer(Sender: TObject);
 var
   i, Count : integer;
 begin
+  if OperationPending then
+    Exit;
+
   Sync.Enabled := false;
 
   if Assigned(FArchive) then
@@ -1770,7 +1774,6 @@ begin
           ShowMessage('Base path error', Format('Base file path (%s) is invalid',[BasePath]));
           Exit;
         end;
-
 
         Node := BuildTreeFromFullPath(BasePath);
       end;
