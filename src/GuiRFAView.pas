@@ -349,7 +349,12 @@ begin
           end;
         end
           else
-            Exclude(Data.Status, fsExternal)
+        begin
+          Exclude(Data.Status, fsExternal);
+          // Maybe the file has been deleted manually
+          if not FileExists(Data.ExternalFilePath) then
+            Data.ExternalFilePath := EmptyStr;
+        end;
       end;
 
       if (fsEntry in Data.Status) and (Node.Parent <> nil) then
@@ -389,21 +394,47 @@ var
   Data : pFse;
   Sender: TBaseVirtualTree;
 
+  function FindNode(Node: PVirtualNode; Filename : string) : PVirtualNode;
+  var
+    Data : pFse;
+  begin
+    Result := nil;
+    Node := Node.FirstChild;
+    while Node <> nil do
+    begin
+      Data := Sender.GetNodeData(Node);
+      if Data.W32Name = Filename then
+      begin
+        Result := Node;
+        Break;
+      end;
+      Node := Node.NextSibling;
+    end;
+  end;
+
   procedure AddFolder(Filename : string);
   var
     SubList: TStringList;
   begin
     if IsDirectory(Filename) then
     begin
-      Node := Sender.AddChild(MainNode);
-      Data := Sender.GetNodeData(Node);
-      Data.W32Path := Filename;
-      Data.W32Name := ExtractFileName(Filename);
-      Data.FileType := ftFolder;
+      Node := FindNode(MainNode, ExtractFileName(Filename));
+      if Node = nil then
+      begin
+        Node := Sender.AddChild(MainNode);
+        Data := Sender.GetNodeData(Node);
+        Data.W32Path := Filename;
+        Data.W32Name := ExtractFileName(Filename);
+        Data.FileType := ftFolder;
+      end
+        else
+      begin
+        Data := Sender.GetNodeData(Node);
+      end;
 
       SubList := TStringList.Create;
-      BuildFileList(IncludeTrailingPathDelimiter(Data.W32Path)+'*', faAnyFile - faHidden, SubList);
-      Add(Node, SubList, Data.W32Path);
+      BuildFileList(IncludeTrailingPathDelimiter(Filename)+'*', faAnyFile - faHidden, SubList);
+      Add(Node, SubList, Filename);
       SubList.Free;
     end;
   end;
@@ -412,21 +443,34 @@ var
   begin
     if not IsDirectory(Filename) then
     begin
-      Node := Sender.AddChild(MainNode);
-      Data := Sender.GetNodeData(Node);
-      Data.W32Path := Filename;
-      Data.W32Name := ExtractFileName(Filename);
-      Data.ExternalFilePath := Data.W32Path;
-      Data.Size := FileGetSize(Data.W32Path);
-      Data.FileType := ftFile;
-      Include(Data.Status, fsNew);
-      Include(Data.Status, fsEntry);
+      Node := FindNode(MainNode, ExtractFileName(Filename));
+      if Node = nil then
+      begin
+        Node := Sender.AddChild(MainNode);
+        Data := Sender.GetNodeData(Node);
+        Data.W32Path := Filename;
+        Data.W32Name := ExtractFileName(Filename);
+        Data.ExternalFilePath := Data.W32Path;
+        Data.Size := FileGetSize(Data.W32Path);
+        Data.FileType := ftFile;
+        Include(Data.Status, fsNew);
+        Include(Data.Status, fsEntry);
+      end
+        else
+      begin
+        Data := Sender.GetNodeData(Node);
+        Data.ExternalFilePath := Filename;
+      end;
     end;
   end;
 
 begin
+  BeginOperation;
   Sender := RFAList;
   NotifyChange;
+
+  if MainNode = nil then
+    MainNode := Sender.RootNode;
 
   if Assigned(List) then
   begin
@@ -446,6 +490,7 @@ begin
     AddFolder(Path);
     AddFile(Path);
   end;
+  EndOperation;
 end;
 
 
@@ -967,6 +1012,7 @@ begin
         end;
 
         OpenDialog.FileName := Path;
+        CancelChange;
         QuickOpen;
       end;
     end;
