@@ -24,10 +24,6 @@ inherited PICViewForm: TPICViewForm
     OnMouseMove = ViewerMouseMove
     OnMouseUp = ViewerMouseUp
     TabOrder = 0
-    ExplicitLeft = 72
-    ExplicitTop = 40
-    ExplicitWidth = 251
-    ExplicitHeight = 258
   end
   object GLScene: TGLScene
     Left = 8

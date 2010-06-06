@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GuiFormCommon, GLScene, GLObjects, GLCoordinates, GLWin32Viewer,
   GLCrossPlatform, BaseClasses, DDS, GLSimpleNavigation, GLBitmapFont,
-  GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, GLBlur;
+  GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage;
 
 type
   TSinglePoint = record
