@@ -417,6 +417,12 @@ inherited RFAViewForm: TRFAViewForm
       Visible = False
       OnExecute = FilesystemExecute
     end
+    object Revert: TAction
+      Category = 'Common'
+      Caption = 'Revert changes'
+      ImageIndex = 69
+      OnExecute = RevertExecute
+    end
   end
   object DropFileSource: TDropFileSource
     DragTypes = [dtMove]
@@ -467,6 +473,9 @@ inherited RFAViewForm: TRFAViewForm
       Caption = 'Edit with ...'
       Enabled = False
       ImageIndex = 791
+    end
+    object SpTBXItem24: TSpTBXItem
+      Action = Revert
     end
     object SpTBXSeparatorItem5: TSpTBXSeparatorItem
     end
