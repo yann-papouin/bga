@@ -619,7 +619,7 @@ begin
     ftFileDDS, ftFileTGA, ftFileBMP, ftFileJPG, ftFilePNG:
     begin
       PICViewForm.LoadTexture(ExtractTemporary(Node));
-      PICViewForm.Show;
+      PICViewForm.Preview;
     end;
     ftFileCON, ftFileINC:
     begin

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GuiFormCommon, GLScene, GLObjects, GLCoordinates, GLWin32Viewer,
   GLCrossPlatform, BaseClasses, DDS, GLSimpleNavigation, GLBitmapFont,
-  GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage;
+  GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage, GraphicEx;
 
 type
   TSinglePoint = record
@@ -29,7 +29,6 @@ type
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure CadencerProgress(Sender: TObject; const deltaTime,
       newTime: Double);
-    procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X,
@@ -53,6 +52,7 @@ type
   public
     { Déclarations publiques }
     procedure LoadTexture(Filename: string);
+    procedure Preview;
     procedure Reset;
   end;
 
@@ -73,12 +73,13 @@ const
 
 { TDDSViewForm }
 
-procedure TPICViewForm.FormShow(Sender: TObject);
+procedure TPICViewForm.Preview;
 begin
-  inherited;
   Reset;
+  Show;
   Cadencer.Enabled := true;
 end;
+
 
 procedure TPICViewForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -96,6 +97,8 @@ end;
 
 procedure TPICViewForm.LoadTexture(Filename: string);
 begin
+  Cadencer.Enabled := false;
+
   FCamOffset.X := 0;
   FCamOffset.Y := 0;
 
@@ -113,7 +116,6 @@ begin
   GLFilename.Text := ExtractFileName(Filename);
   GLResolution.Text := Format('%dx%d',[FTxWidth, FTxHeight]);
 end;
-
 
 procedure TPICViewForm.CadencerProgress(Sender: TObject; const deltaTime, newTime: Double);
 begin
