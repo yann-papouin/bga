@@ -15,7 +15,7 @@ inherited RAWViewForm: TRAWViewForm
     PostRender = ViewerPostRender
     Buffer.BackgroundColor = clSkyBlue
     Buffer.FaceCulling = False
-    FieldOfView = 159.279708862304700000
+    FieldOfView = 143.570602416992200000
     Align = alClient
     TabOrder = 0
   end
@@ -53,7 +53,7 @@ inherited RAWViewForm: TRAWViewForm
     Top = 8
     object Camera: TGLCamera
       DepthOfView = 10000.000000000000000000
-      FocalLength = 50.000000000000000000
+      FocalLength = 90.000000000000000000
       TargetObject = CameraTarget
       Position.Coordinates = {7EBAEE40C3686440C36864400000803F}
       object CamLight: TGLLightSource
