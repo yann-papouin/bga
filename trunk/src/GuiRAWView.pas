@@ -146,6 +146,7 @@ begin
   MapHeightScale        := flyScale;
   WorldSize             := Round(flworldSize);
   WaterPlane.Position.Z := flwaterLevel;
+  FRawStep              := FWorldSize div MapSize;
 
   TxtData.Free;
 end;
@@ -171,7 +172,6 @@ begin
   Data.Position := 0;
   FBuffer.LoadFromStream(Data);
 
-  FRawStep := FWorldSize*1024 div Data.Size;
 
   with HeightField do
   begin
