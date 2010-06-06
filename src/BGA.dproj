@@ -108,8 +108,8 @@
 			<DCCReference Include="GuiFormCommon.pas">
 				<Form>FormCommon</Form>
 			</DCCReference>
-			<DCCReference Include="GuiDDSView.pas">
-				<Form>DDSViewForm</Form>
+			<DCCReference Include="GuiPicView.pas">
+				<Form>PICViewForm</Form>
 			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
