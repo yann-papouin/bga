@@ -41,6 +41,9 @@ type
     ftFileWAV,
     ftFileDDS,
     ftFileTGA,
+    ftFileBMP,
+    ftFileJPG,
+    ftFilePNG,
     ftFileRAW,
     ftFileDAT,
     ftFileRS,
@@ -180,7 +183,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, GuiDDSView,
+  DbugIntf, GuiPicView,
   GuiSMView, GuiSkinDialog, Resources, Masks, Math, StringFunction, CommonLib, AppLib, MD5Api;
 
 
@@ -359,6 +362,15 @@ begin
   else
   if Ext = '.tga' then
     Result := ftFileTGA
+  else
+  if Ext = '.bmp' then
+    Result := ftFileBMP
+  else
+  if Ext = '.jpg' then
+    Result := ftFileJPG
+  else
+  if Ext = '.png' then
+    Result := ftFilePNG
   else
   if Ext = '.raw' then
     Result := ftFileRAW
@@ -604,10 +616,10 @@ begin
       SMViewForm.LoadStandardMesh(ExtractTemporary(Node));
       SMViewForm.Show;
     end;
-    ftFileDDS:
+    ftFileDDS, ftFileTGA, ftFileBMP, ftFileJPG, ftFilePNG:
     begin
-      DDSViewForm.LoadTexture(ExtractTemporary(Node));
-      DDSViewForm.Show;
+      PICViewForm.LoadTexture(ExtractTemporary(Node));
+      PICViewForm.Show;
     end;
     ftFileCON, ftFileINC:
     begin
@@ -819,7 +831,7 @@ begin
         ftFileVSO  : ImageIndex := 118;
         ftFileCON, ftFileINC: ImageIndex := 114;
         ftFileSSC : ImageIndex := 136;
-        ftFileDDS, ftFileTGA : ImageIndex := 108;
+        ftFileDDS, ftFileTGA, ftFileBMP, ftFilePNG, ftFileJPG : ImageIndex := 108;
         ftFileZIP, ftFileRAR, ftFileGZ, ftFileBZ2, ftFile7Z : ImageIndex := 109;
         ftFileSM : ImageIndex := 174;
         ftFileTM : ImageIndex := 175;

@@ -491,7 +491,6 @@ end;
 procedure TRFAViewForm.ApplicationRunExecute(Sender: TObject);
 begin
   inherited;
-  Exit;
   ApplicationRun.Enabled := false;
   FormStorage.RestoreFormPlacement;
 
