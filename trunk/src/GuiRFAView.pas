@@ -1849,6 +1849,7 @@ begin
   if Operation = roBegin then
   begin
     ProgressPanel.Show;
+    tbMenuBar.Enabled := false;
     TotalProgressBar.Position := 0;
     TotalProgressBar.Max := Max;
     //SubProgressBar.Position := 0;
@@ -1857,6 +1858,7 @@ begin
   if Operation = roEnd then
   begin
     ProgressPanel.Hide;
+    tbMenuBar.Enabled := true;
   end
     else
   begin
