@@ -131,6 +131,8 @@ type
     SpTBXSeparatorItem10: TSpTBXSeparatorItem;
     SelectionText: TSpTBXLabelItem;
     UseCompression: TSpTBXItem;
+    Revert: TAction;
+    SpTBXItem24: TSpTBXItem;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -175,6 +177,7 @@ type
       Node: PVirtualNode; Column: TColumnIndex; const Text: string;
       const CellRect: TRect; var DefaultDraw: Boolean);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure RevertExecute(Sender: TObject);
   private
     FEditResult : TEditResult;
     FSyncNode : PVirtualNode;
@@ -332,7 +335,7 @@ begin
     PreviousStatus := Data.Status;
     if IsFile(Data.FileType) then
     begin
-      if (Data.ExternalFilePath <> EmptyStr) and not (fsNew in Data.Status) then
+      if (Data.ExternalFilePath <> EmptyStr) and not (fsNew in Data.Status) or (fsExternal in Data.Status) then
       begin
         // Note : file age can change without data change
         if FileAge(Data.ExternalFilePath, FileDateTime) then
@@ -600,6 +603,7 @@ begin
 
   Result := mrOk;
 end;
+
 
 
 function TRFAViewForm.LoadMap(Path : string) :boolean;
@@ -1080,6 +1084,22 @@ begin
     else
   begin
     SaveDialog.FileName := OpenDialog.FileName;
+  end;
+end;
+
+
+procedure TRFAViewForm.RevertExecute(Sender: TObject);
+var
+  Node: PVirtualNode;
+  Data: pFse;
+begin
+  Node := RFAList.GetFirstSelected;
+
+  while Node <> nil do
+  begin
+    Data := RFAList.GetNodeData(Node);
+    Data.ExternalFilePath := EmptyStr;
+    Node := RFAList.GetNextSelected(Node, true);
   end;
 end;
 
