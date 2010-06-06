@@ -406,7 +406,7 @@ var
     while Node <> nil do
     begin
       Data := Sender.GetNodeData(Node);
-      if Data.W32Name = Filename then
+      if UpperCase(Data.W32Name) = UpperCase(Filename) then
       begin
         Result := Node;
         Break;
