@@ -26,7 +26,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, GuiFormCommon,
   Dialogs, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses,
   GLWin32Viewer, GLObjects, GLColor, VectorGeometry, GLSimpleNavigation,
-  JvExControls, JvInspector, SpTBXItem, TB2Item, GLVectorFileObjects, GLMesh;
+  JvExControls, JvInspector, SpTBXItem, TB2Item, GLVectorFileObjects, GLMesh,
+  SpTBXControls;
 
 type
   TRAWViewForm = class(TFormCommon)
@@ -57,6 +58,7 @@ type
     FBuffer : TMemoryStream;
     FMapSize: integer;
     FWorldSize: integer;
+    FRawStep: integer;
     FMapHeightScale: Single;
 
     FMinZ : single;
@@ -89,6 +91,7 @@ implementation
 
 uses
   Math, VectorTypes, DbugIntf, StringFunction, AppLib, CONLib;
+
 
 { TRAWViewForm }
 
@@ -133,17 +136,15 @@ begin
   TxtData := TStringList.Create;
   TxtData.LoadFromStream(Data);
 
-  //Showmessage(Data.Text);
-
-  flmaterialSize := GetFloatFromProperty(TxtData, 'GeometryTemplate.materialSize');
-  flworldSize := GetFloatFromProperty(TxtData, 'GeometryTemplate.worldSize');
-  flyScale := GetFloatFromProperty(TxtData, 'GeometryTemplate.yScale');
-  flwaterLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.waterLevel');
+  flmaterialSize  := GetFloatFromProperty(TxtData, 'GeometryTemplate.materialSize');
+  flworldSize     := GetFloatFromProperty(TxtData, 'GeometryTemplate.worldSize');
+  flyScale        := GetFloatFromProperty(TxtData, 'GeometryTemplate.yScale');
+  flwaterLevel    := GetFloatFromProperty(TxtData, 'GeometryTemplate.waterLevel');
   flseaFloorLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.seaFloorLevel');
 
-  MapSize := Round(flmaterialSize);
-  MapHeightScale := flyScale;
-  WorldSize := Round(flworldSize);
+  MapSize               := Round(flmaterialSize);
+  MapHeightScale        := flyScale;
+  WorldSize             := Round(flworldSize);
   WaterPlane.Position.Z := flwaterLevel;
 
   TxtData.Free;
@@ -170,19 +171,21 @@ begin
   Data.Position := 0;
   FBuffer.LoadFromStream(Data);
 
+  FRawStep := FWorldSize*1024 div Data.Size;
+
   with HeightField do
   begin
     with XSamplingScale do
     begin
       Min := 0;
       Max := FWorldSize-1;
-      Step := 4;
+      Step := FRawStep;
     end;
     with YSamplingScale do
     begin
       Min := 0;
       Max := FWorldSize-1;
-      Step := 4;
+      Step := FRawStep;
     end;
     OnGetHeight:=BattlefieldFormula;
   end;
@@ -205,10 +208,11 @@ begin
 
   // We need a step of 2 due to WORD length
   XPos := Round(x/HeightField.XSamplingScale.Step) * 2;
-  YPos := Round(y/HeightField.YSamplingScale.Step) * 2 * (FWorldSize div 4);
+  YPos := Round(y/HeightField.YSamplingScale.Step) * 2 * (FWorldSize div FRawStep);
 
   FBuffer.Seek(XPos+YPos, soFromBeginning);
   FBuffer.Read(ZValue, 2);
+
 
   z := ZValue/(256/FMapHeightScale);
 
