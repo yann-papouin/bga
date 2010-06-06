@@ -4,7 +4,6 @@ inherited PICViewForm: TPICViewForm
   ClientWidth = 522
   OnClose = FormClose
   OnMouseWheel = FormMouseWheel
-  OnShow = FormShow
   ExplicitWidth = 538
   ExplicitHeight = 534
   PixelsPerInch = 96
