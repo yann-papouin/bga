@@ -69,8 +69,7 @@ uses
 
 const
   MIN_SCENE_SCALE = 0.01;
-  ZOOM_SPEED = 5;
-  PAN_SPEED = 5;
+  CAM_SPEED = 1/6;
 
 { TDDSViewForm }
 
@@ -117,60 +116,23 @@ begin
   GLResolution.Text := Format('%dx%d',[FTxWidth, FTxHeight]);
 end;
 
-const
-  TEST = 10;
-  MAX_AUTOZOOM = 1.0;
 
 procedure TPICViewForm.CadencerProgress(Sender: TObject; const deltaTime, newTime: Double);
-//var
-  //mx, my:single;
-  //PixelPosition: TSinglePoint;
 begin
   inherited;
-(*
-  PixelPosition := GetPixelPositionFromPosition(FAutoZoomInfo.MousePosition);
-  GLResolution.Text := Format('%.3f, %.3f',[PixelPosition.X,PixelPosition.Y]);
-  GLResolution.Text :=  GLResolution.Text + Format('   %.3f, %.3f',[FAutoZoomInfo.PixelPosition.X,FAutoZoomInfo.PixelPosition.Y]);
-
-  if (FAutoZoomInfo.MousePosition.X <> 0) or (FAutoZoomInfo.MousePosition.Y <> 0)  then
-  begin
-
-    case CompareValue(PixelPosition.X, FAutoZoomInfo.PixelPosition.X, 0.1) of
-    LessThanValue   : FAutoPanOffset.X := FAutoPanOffset.X + abs(PixelPosition.X - FAutoZoomInfo.PixelPosition.X)*FIntScale;
-    GreaterThanValue: FAutoPanOffset.X := FAutoPanOffset.X - abs(PixelPosition.X - FAutoZoomInfo.PixelPosition.X)*FIntScale;
-    end;
-
-    case CompareValue(PixelPosition.Y, FAutoZoomInfo.PixelPosition.Y, 0.1) of
-    LessThanValue   : FAutoPanOffset.Y := FAutoPanOffset.Y + abs(PixelPosition.Y - FAutoZoomInfo.PixelPosition.Y)*FIntScale;
-    GreaterThanValue: FAutoPanOffset.Y := FAutoPanOffset.Y - abs(PixelPosition.Y - FAutoZoomInfo.PixelPosition.Y)*FIntScale;
-    end;
-    ResetAutoZoom;
-  end;
-*)
-  //GLResolution.Text := Format('DIFF: = %.3f, %.3f',[abs(PixelPosition.X - FAutoZoomInfo.PixelPosition.X), abs(PixelPosition.Y - FAutoZoomInfo.PixelPosition.Y)]);
 
   case CompareValue(FCamOffset.X, FAutoPanOffset.X, 0.1) of
-  LessThanValue   : FCamOffset.X := FCamOffset.X + abs(FCamOffset.X - FAutoPanOffset.X)/ PAN_SPEED;
-  GreaterThanValue: FCamOffset.X := FCamOffset.X - abs(FCamOffset.X - FAutoPanOffset.X)/ PAN_SPEED;
+  LessThanValue   : FCamOffset.X := FCamOffset.X + abs(FCamOffset.X - FAutoPanOffset.X)* CAM_SPEED;
+  GreaterThanValue: FCamOffset.X := FCamOffset.X - abs(FCamOffset.X - FAutoPanOffset.X)* CAM_SPEED;
   end;
 
   case CompareValue(FCamOffset.Y, FAutoPanOffset.Y, 0.1) of
-  LessThanValue   : FCamOffset.Y := FCamOffset.Y + abs(FCamOffset.Y - FAutoPanOffset.Y)/ PAN_SPEED;
-  GreaterThanValue: FCamOffset.Y := FCamOffset.Y - abs(FCamOffset.Y - FAutoPanOffset.Y)/ PAN_SPEED;
+  LessThanValue   : FCamOffset.Y := FCamOffset.Y + abs(FCamOffset.Y - FAutoPanOffset.Y)* CAM_SPEED;
+  GreaterThanValue: FCamOffset.Y := FCamOffset.Y - abs(FCamOffset.Y - FAutoPanOffset.Y)* CAM_SPEED;
   end;
 
   GLCamera.Position.X := -FTxWidth/2 + (FTxWidth - Viewer.Width)/2 + FCamOffset.X;
   GLCamera.Position.Y := -FTxHeight/2 + (FTxHeight - Viewer.Height)/2 + FCamOffset.Y;
-
-(*
-  mx :=  FMousePos.X + GLCamera.Position.X;
-  my := -FMousePos.Y + GLCamera.Position.Y + Viewer.Height;
-  GLResolution.Text := GLResolution.Text + #10#13 + Format('%.3f, %.3f',[mx,my]);
-
-  mx := mx / FScale;
-  my := my / FScale;
-  GLResolution.Text := GLResolution.Text + Format('    %.3f, %.3f',[mx,my]);
-*)
 
   case CompareValue(FScale, FIntScale, 0.001) of
   EqualsValue     :
@@ -178,8 +140,8 @@ begin
     GLZoomPlane.Visible := false;
     Exit;
   end;
-  LessThanValue   : FScale := FScale + abs(FScale - FIntScale)/ ZOOM_SPEED;
-  GreaterThanValue: FScale := FScale - abs(FScale - FIntScale)/ ZOOM_SPEED;
+  LessThanValue   : FScale := FScale + abs(FScale - FIntScale)* CAM_SPEED;
+  GreaterThanValue: FScale := FScale - abs(FScale - FIntScale)* CAM_SPEED;
   end;
 
   if FScale < MIN_SCENE_SCALE then
@@ -273,7 +235,6 @@ end;
 procedure TPICViewForm.ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   inherited;
-
   FInitPos.X := X + FCamOffset.X;
   FInitPos.Y := Y - FCamOffset.Y;
 
