@@ -14,6 +14,12 @@ type
     Y : single;
   end;
 
+
+  TAutoZoomInfo = record
+    MousePosition : TSinglePoint;
+    PixelPosition : TSinglePoint;
+  end;
+
   TPICViewForm = class(TFormCommon)
     GLScene: TGLScene;
     Viewer: TGLSceneViewer;
@@ -40,6 +46,7 @@ type
       Shift: TShiftState; X, Y: Integer);
   private
     { Déclarations privées }
+    FAutoZoomInfo : TAutoZoomInfo;
     FInitPos : TSinglePoint;
     FMousePos : TSinglePoint;
     FCamOffset : TSinglePoint;
@@ -49,11 +56,13 @@ type
     FScale : single;
     FTxHeight : integer;
     FTxWidth : integer;
+    function GetPixelPositionFromPosition(MousePosition : TSinglePoint): TSinglePoint;
   public
     { Déclarations publiques }
     procedure LoadTexture(Filename: string);
     procedure Preview;
     procedure Reset;
+    procedure ResetAutoZoom;
   end;
 
 var
@@ -68,7 +77,7 @@ uses
 
 const
   MIN_SCENE_SCALE = 0.01;
-  ZOOM_SPEED = 20;
+  ZOOM_SPEED = 25;
   PAN_SPEED = 5;
 
 { TDDSViewForm }
@@ -91,8 +100,7 @@ procedure TPICViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
   FScale := GLCamera.SceneScale;
-  //LoadTexture('C:\Users\Yann\Pictures\n1215558181_57804_1999.jpg');
-  //Show;
+
 end;
 
 procedure TPICViewForm.LoadTexture(Filename: string);
@@ -117,9 +125,40 @@ begin
   GLResolution.Text := Format('%dx%d',[FTxWidth, FTxHeight]);
 end;
 
+const
+  TEST = 10;
+  MAX_AUTOZOOM = 1.0;
+
 procedure TPICViewForm.CadencerProgress(Sender: TObject; const deltaTime, newTime: Double);
+var
+  mx, my:single;
+  PixelPosition: TSinglePoint;
+  Diff : single;
 begin
   inherited;
+
+  PixelPosition := GetPixelPositionFromPosition(FAutoZoomInfo.MousePosition);
+  GLResolution.Text := Format('%.3f, %.3f',[PixelPosition.X,PixelPosition.Y]);
+  GLResolution.Text :=  GLResolution.Text + Format('   %.3f, %.3f',[FAutoZoomInfo.PixelPosition.X,FAutoZoomInfo.PixelPosition.Y]);
+
+  if (FAutoZoomInfo.MousePosition.X <> 0) or (FAutoZoomInfo.MousePosition.Y <> 0)  then
+  begin
+    Diff := abs(PixelPosition.X - FAutoZoomInfo.PixelPosition.X);
+    Diff := Min(Diff, abs(PixelPosition.Y - FAutoZoomInfo.PixelPosition.Y));
+
+    case CompareValue(PixelPosition.X, FAutoZoomInfo.PixelPosition.X, 0) of
+    LessThanValue   : FAutoPanOffset.X := FAutoPanOffset.X + Diff;
+    GreaterThanValue: FAutoPanOffset.X := FAutoPanOffset.X - Diff;
+    end;
+
+    case CompareValue(PixelPosition.Y, FAutoZoomInfo.PixelPosition.Y, 0) of
+    LessThanValue   : FAutoPanOffset.Y := FAutoPanOffset.Y + Diff;
+    GreaterThanValue: FAutoPanOffset.Y := FAutoPanOffset.Y - Diff;
+    end;
+  end;
+
+
+  GLResolution.Text := Format('DIFF_X = %.3f',[abs(PixelPosition.X - FAutoZoomInfo.PixelPosition.X)]);
 
   case CompareValue(FCamOffset.X, FAutoPanOffset.X, 0) of
   LessThanValue   : FCamOffset.X := FCamOffset.X + abs(FCamOffset.X - FAutoPanOffset.X)/ PAN_SPEED;
@@ -137,8 +176,13 @@ begin
 (*
   mx :=  FMousePos.X + GLCamera.Position.X;
   my := -FMousePos.Y + GLCamera.Position.Y + Viewer.Height;
-  GLCameraPosition.Text := Format('%.3f, %.3f',[mx,my]);
+  GLResolution.Text := GLResolution.Text + #10#13 + Format('%.3f, %.3f',[mx,my]);
+
+  mx := mx / FScale;
+  my := my / FScale;
+  GLResolution.Text := GLResolution.Text + Format('    %.3f, %.3f',[mx,my]);
 *)
+
   case CompareValue(FScale, FIntScale, 0.001) of
   EqualsValue     :
   begin
@@ -164,31 +208,41 @@ begin
   Plane.Height := FTxHeight * FScale;
 end;
 
+function TPICViewForm.GetPixelPositionFromPosition(MousePosition : TSinglePoint) : TSinglePoint;
+begin
+  Result.X := ( MousePosition.X + GLCamera.Position.X)/FIntScale;
+  Result.Y := (-MousePosition.Y + GLCamera.Position.Y + Viewer.Height)/FIntScale;
+end;
+
 procedure TPICViewForm.FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
   inherited;
   Handled := True;
-  FIntScale := FIntScale + WheelDelta / (1000/FIntScale);
 
-  if WheelDelta > 0 then
+  if (FAutoZoomInfo.MousePosition.X <> FMousePos.X)
+  or (FAutoZoomInfo.MousePosition.Y <> FMousePos.Y) then
   begin
-    //FAutopanOffset.X :=  FMousePos.X + GLCamera.Position.X ;
-    //FAutopanOffset.Y := -FMousePos.Y + GLCamera.Position.Y + Viewer.Height;
-  end
-    else
-  begin
-    //FAutopanOffset.X :=  0 ;
-    //FAutopanOffset.Y :=  0;
+    FAutoZoomInfo.MousePosition.X := FMousePos.X;
+    FAutoZoomInfo.MousePosition.Y := FMousePos.Y;
+    FAutoZoomInfo.PixelPosition := GetPixelPositionFromPosition(FAutoZoomInfo.MousePosition);
   end;
+  FIntScale := FIntScale + WheelDelta / (1000/FIntScale);
 end;
 
 procedure TPICViewForm.Reset;
 begin
+  ResetAutoZoom;
   FAutoPanOffset.X := 0;
   FAutoPanOffset.Y := 0;
   FIntScale := 1;
 end;
 
+
+procedure TPICViewForm.ResetAutoZoom;
+begin
+  FAutoZoomInfo.MousePosition.X := 0;
+  FAutoZoomInfo.MousePosition.Y := 0;
+end;
 
 procedure TPICViewForm.ViewerDblClick(Sender: TObject);
 begin
@@ -226,6 +280,8 @@ end;
 procedure TPICViewForm.ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   inherited;
+  ResetAutoZoom;
+
   FInitPos.X := X + FCamOffset.X;
   FInitPos.Y := Y - FCamOffset.Y;
 

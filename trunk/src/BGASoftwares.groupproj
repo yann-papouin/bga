@@ -1,0 +1,48 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{6BDB2F6D-6DCC-471A-8FAC-1AA115702F66}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="BGA.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="ExPictureViewer.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="BGA">
+			<MSBuild Projects="BGA.dproj"/>
+		</Target>
+		<Target Name="BGA:Clean">
+			<MSBuild Targets="Clean" Projects="BGA.dproj"/>
+		</Target>
+		<Target Name="BGA:Make">
+			<MSBuild Targets="Make" Projects="BGA.dproj"/>
+		</Target>
+		<Target Name="ExPictureViewer">
+			<MSBuild Projects="ExPictureViewer.dproj"/>
+		</Target>
+		<Target Name="ExPictureViewer:Clean">
+			<MSBuild Targets="Clean" Projects="ExPictureViewer.dproj"/>
+		</Target>
+		<Target Name="ExPictureViewer:Make">
+			<MSBuild Targets="Make" Projects="ExPictureViewer.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="BGA;ExPictureViewer"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="BGA:Clean;ExPictureViewer:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="BGA:Make;ExPictureViewer:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>
