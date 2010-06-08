@@ -1710,7 +1710,10 @@ end;
 procedure TRFAViewForm.CancelChange;
 begin
   Save.Enabled := false;
-  Defrag.Enabled := FArchive.Fragmentation > 0;
+  if Assigned(FArchive) then
+    Defrag.Enabled := FArchive.Fragmentation > 0
+  else
+    Defrag.Enabled := false;
 end;
 
 procedure TRFAViewForm.NotifyChange;
