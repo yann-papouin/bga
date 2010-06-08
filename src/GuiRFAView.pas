@@ -1207,14 +1207,16 @@ begin
 
     if IsFile(Data.FileType) and (Data.Size > 0) then
     begin
-      if (Data.Status = []) then
-      begin
-        Include(Data.Status, fsDelete);
-        RFAList.FullyVisible[Node] := false;
-      end
-      else if (fsNew in Data.Status) then
+      if (fsNew in Data.Status) then
       begin
         RFAList.DeleteNode(Node);
+      end
+        else
+      if (Data.Status = []) or (fsEntry in Data.Status) then
+      begin
+        Exclude(Data.Status, fsEntry);
+        Include(Data.Status, fsDelete);
+        RFAList.FullyVisible[Node] := false;
       end
     end;
 
