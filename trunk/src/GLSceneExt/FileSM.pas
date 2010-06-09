@@ -337,117 +337,122 @@ begin
             SetLength(ptMaterial.TextureCoord, ptMaterial.TextureCoordCount);
             SetLength(ptMaterial.LightmapCoord, ptMaterial.LightmapCoordCount);
 
-            for k := 0 to ptMeshdata.VertexCount - 1 do
-            begin
-              ptVertex := @(ptMeshdata.Vertex[k]);
-
-              aStream.Read(ptVertex.Value[0] , FLOAT_SIZE);
-              ptVertex.Value[0] := ptVertex.Value[0] * DSM_SCALE;
-              aStream.Read(ptVertex.Value[1] , FLOAT_SIZE);
-              ptVertex.Value[1] := ptVertex.Value[1] * DSM_SCALE;
-              aStream.Read(ptVertex.Value[2] , FLOAT_SIZE);
-              ptVertex.Value[2] := ptVertex.Value[2] * DSM_SCALE;
-
-              {$IfDef DEBUG_SM_DETAILS}
-              SendDebugFmt('Current vertex is %d/%d (X=%.3f, Y=%.3f, Z=%.3f)',[k+1, ptMeshdata.VertexCount, ptVertex.Value[0], ptVertex.Value[1], ptVertex.Value[2]]);
-              {$EndIf}
-
-              {$IfDef DEBUG_SM_DETAILS}
-              SendDebugFmt('Current normale is %d/%d',[k+1, ptMeshdata.NormaleCount]);
-              {$EndIf}
-
-              ptNormale := @(ptMeshdata.Normales[k]);
-
-              aStream.Read(ptNormale.Value[0], FLOAT_SIZE);
-              aStream.Read(ptNormale.Value[1], FLOAT_SIZE);
-              aStream.Read(ptNormale.Value[2], FLOAT_SIZE);
-
-              aStream.Read(ptMaterial.TextureCoord[k].S, FLOAT_SIZE);
-              aStream.Read(ptMaterial.TextureCoord[k].T, FLOAT_SIZE); //ty = (1.0 - (ReadFloat fp)) - 1.0
-
-              if ptMaterial.VertLength = BS_40 then
-              begin
-                aStream.Read(ptMaterial.LightmapCoord[k].S, FLOAT_SIZE);
-                aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
-              end;
-
-            end;
-
-            if ptMaterial.VertLength = BS_64 then
+            if ptMeshdata.VertexCount > 0 then
             begin
               for k := 0 to ptMeshdata.VertexCount - 1 do
               begin
-                aStream.Read(ptMaterial.LightmapCoord[k].S, FLOAT_SIZE);
-                aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
+                ptVertex := @(ptMeshdata.Vertex[k]);
 
-                // Unused data (24 bytes)
-                aStream.Position := aStream.Position + 24;
+                aStream.Read(ptVertex.Value[0] , FLOAT_SIZE);
+                ptVertex.Value[0] := ptVertex.Value[0] * DSM_SCALE;
+                aStream.Read(ptVertex.Value[1] , FLOAT_SIZE);
+                ptVertex.Value[1] := ptVertex.Value[1] * DSM_SCALE;
+                aStream.Read(ptVertex.Value[2] , FLOAT_SIZE);
+                ptVertex.Value[2] := ptVertex.Value[2] * DSM_SCALE;
+
+                {$IfDef DEBUG_SM_DETAILS}
+                SendDebugFmt('Current vertex is %d/%d (X=%.3f, Y=%.3f, Z=%.3f)',[k+1, ptMeshdata.VertexCount, ptVertex.Value[0], ptVertex.Value[1], ptVertex.Value[2]]);
+                {$EndIf}
+
+                {$IfDef DEBUG_SM_DETAILS}
+                SendDebugFmt('Current normale is %d/%d',[k+1, ptMeshdata.NormaleCount]);
+                {$EndIf}
+
+                ptNormale := @(ptMeshdata.Normales[k]);
+
+                aStream.Read(ptNormale.Value[0], FLOAT_SIZE);
+                aStream.Read(ptNormale.Value[1], FLOAT_SIZE);
+                aStream.Read(ptNormale.Value[2], FLOAT_SIZE);
+
+                aStream.Read(ptMaterial.TextureCoord[k].S, FLOAT_SIZE);
+                aStream.Read(ptMaterial.TextureCoord[k].T, FLOAT_SIZE); //ty = (1.0 - (ReadFloat fp)) - 1.0
+
+                if ptMaterial.VertLength = BS_40 then
+                begin
+                  aStream.Read(ptMaterial.LightmapCoord[k].S, FLOAT_SIZE);
+                  aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
+                end;
+
+              end;
+
+              if ptMaterial.VertLength = BS_64 then
+              begin
+                for k := 0 to ptMeshdata.VertexCount - 1 do
+                begin
+                  aStream.Read(ptMaterial.LightmapCoord[k].S, FLOAT_SIZE);
+                  aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
+
+                  // Unused data (24 bytes)
+                  aStream.Position := aStream.Position + 24;
+                end;
               end;
             end;
 
-            SetLength(FaceValues, ptMaterial.IndexNum);
-
-            for k := 0 to ptMaterial.IndexNum - 1 do
+            if ptMaterial.IndexNum > 0 then
             begin
-              aStream.Read(FaceValues[k], WORD_SIZE);
+              SetLength(FaceValues, ptMaterial.IndexNum);
+
+              for k := 0 to ptMaterial.IndexNum - 1 do
+              begin
+                aStream.Read(FaceValues[k], WORD_SIZE);
+              end;
+
+              if ptMaterial.RenderType = TRIANGLE_LIST then
+              begin
+                SetLength(ptMeshdata.Faces, ptMeshdata.FaceCount);
+
+                k := 0;
+                while k < ptMaterial.IndexNum do
+                begin
+                  ptFace := @ptMeshdata.Faces[k div 3];
+
+                  ptFace.A := FaceValues[k+0];
+                  ptFace.B := FaceValues[k+1];
+                  ptFace.C := FaceValues[k+2];
+
+                  k := k+3;
+                end;
+              end
+                else
+              if ptMaterial.RenderType = TRIANGLE_STRIP then
+              begin
+                SetLength(ptMeshdata.Faces, ptMeshdata.FaceCount);
+
+                ptFace := @ptMeshdata.Faces[0];
+                ptFace.A := FaceValues[0];
+                ptFace.B := FaceValues[1];
+                ptFace.C := FaceValues[2];
+
+                k := 1;
+                while k < ptMeshdata.FaceCount do
+                begin
+                  ptFace := @ptMeshdata.Faces[k];
+
+                  ptFace.A := 1;
+                  ptFace.B := 2;
+                  ptFace.C := 3;
+
+                  ptFace.A := ptMeshdata.Faces[k-1].B;
+                  ptFace.B := ptMeshdata.Faces[k-1].C;
+                  ptFace.C := FaceValues[k+2];
+
+                  k := k+1;
+                end;
+
+                k := 0;
+                while k < ptMeshdata.FaceCount do
+                begin
+                  ptFace := @ptMeshdata.Faces[k];
+                  tmpFace := ptface^;
+
+                  ptFace.A := tmpFace.C;
+                  ptFace.B := tmpFace.B;
+                  ptFace.C := tmpFace.A;
+
+                  k := k+2;
+                end;
+              end
             end;
-
-            if ptMaterial.RenderType = TRIANGLE_LIST then
-            begin
-              SetLength(ptMeshdata.Faces, ptMeshdata.FaceCount);
-
-              k := 0;
-              while k < ptMaterial.IndexNum do
-              begin
-                ptFace := @ptMeshdata.Faces[k div 3];
-
-                ptFace.A := FaceValues[k+0];
-                ptFace.B := FaceValues[k+1];
-                ptFace.C := FaceValues[k+2];
-
-                k := k+3;
-              end;
-            end
-              else
-            if ptMaterial.RenderType = TRIANGLE_STRIP then
-            begin
-              SetLength(ptMeshdata.Faces, ptMeshdata.FaceCount);
-
-              ptFace := @ptMeshdata.Faces[0];
-              ptFace.A := FaceValues[0];
-              ptFace.B := FaceValues[1];
-              ptFace.C := FaceValues[2];
-
-              k := 1;
-              while k < ptMeshdata.FaceCount do
-              begin
-                ptFace := @ptMeshdata.Faces[k];
-
-                ptFace.A := 1;
-                ptFace.B := 2;
-                ptFace.C := 3;
-
-                ptFace.A := ptMeshdata.Faces[k-1].B;
-                ptFace.B := ptMeshdata.Faces[k-1].C;
-                ptFace.C := FaceValues[k+2];
-
-                k := k+1;
-              end;
-
-              k := 0;
-              while k < ptMeshdata.FaceCount do
-              begin
-                ptFace := @ptMeshdata.Faces[k];
-                tmpFace := ptface^;
-
-                ptFace.A := tmpFace.C;
-                ptFace.B := tmpFace.B;
-                ptFace.C := tmpFace.A;
-
-                k := k+2;
-              end;
-            end
-
           end;
         end;
       end;

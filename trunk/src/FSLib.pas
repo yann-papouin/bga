@@ -124,7 +124,9 @@ begin
 
     for i := 0 to ModPath.Count - 1 do
     begin
-      PathList.Add(ModPath[i]);
+      //PathList.Add(ModPath[i]);
+      /// Insert in a revert order
+      PathList.Insert(0, ModPath[i]);
     end;
 
   finally

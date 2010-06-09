@@ -1632,6 +1632,7 @@ end;
 procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
+  Filesystem.Visible := DebugHook <> 0;
   EnableSkinning(RFAList);
   Reset;
 end;
