@@ -106,8 +106,8 @@ begin
   //Change color if directory valid
   if DirectoryExists(Folder.Text) then
   begin
-    Folder.Font.Color := clBlack;
-    ParentFont := true;
+    //Folder.Font.Color := clBlack;
+    Folder.ParentFont := true;
   end
   else
     Folder.Font.Color := clRed;

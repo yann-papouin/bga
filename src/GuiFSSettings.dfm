@@ -99,7 +99,6 @@ object FSSettingsForm: TFSSettingsForm
     Width = 417
     Height = 158
     Anchors = [akLeft, akTop, akRight, akBottom]
-    Enabled = False
     ItemHeight = 20
     TabOrder = 7
   end

@@ -127,6 +127,7 @@ begin
   ModDir := IncludeTrailingBackslash(BattlefieldDir.Text) +'Mods';
   if DirectoryExists(ModDir) then
   begin
+    BattlefieldDir.ParentFont := true;
     Dirs := TDirectory.GetDirectories(IncludeTrailingBackslash(ModDir));
 
     for i := 0 to Length(Dirs) - 1 do
@@ -140,8 +141,11 @@ begin
         ModEntries.Add(ModEntry);
       end;
     end;
-  end;
+  end
+    else
+  BattlefieldDir.Font.Color := clRed;
 end;
+
 
 procedure TFSSettingsForm.ModsClick(Sender: TObject);
 var

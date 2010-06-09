@@ -150,6 +150,7 @@ begin
             MatMesh.FTexturePath := SMFile.Meshes[i].MatMeshes[j].Material.Name;
             MatMesh.FParentMeshID := i;
 
+            if SMFile.Meshes[i].MatMeshes[j].MeshData.FaceCount > 0 then
             for k:=0 to SMFile.Meshes[i].MatMeshes[j].MeshData.FaceCount-1 do
             begin
               MatVert := SMFile.MeshVertexFromMatFaceId(i, j, k);

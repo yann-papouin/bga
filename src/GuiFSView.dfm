@@ -63,6 +63,7 @@ inherited FSViewForm: TFSViewForm
       end
       inherited SearchProgressBar: TSpTBXProgressBar
         Left = 273
+        ExplicitLeft = 273
       end
     end
   end
