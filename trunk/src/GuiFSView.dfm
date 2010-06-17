@@ -95,7 +95,6 @@ inherited FSViewForm: TFSViewForm
       Width = 467
       Height = 21
       Anchors = [akLeft, akTop, akRight]
-      ItemHeight = 13
       TabOrder = 1
       OnChange = FilesystemChoiceChange
     end
