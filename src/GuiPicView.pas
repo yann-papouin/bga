@@ -20,12 +20,13 @@ type
     Viewer: TGLSceneViewer;
     GLCamera: TGLCamera;
     WindowsBitmapFont: TGLWindowsBitmapFont;
-    GLFilename: TGLHUDText;
-    GLResolution: TGLHUDText;
     Cadencer: TGLCadencer;
     Plane: TGLPlane;
     GLZoom: TGLAbsoluteHUDText;
     GLZoomPlane: TGLPlane;
+    Background: TGLPlane;
+    GLFileInfo: TGLHUDText;
+    WindowsBitmapFontBold: TGLWindowsBitmapFont;
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure CadencerProgress(Sender: TObject; const deltaTime,
@@ -112,8 +113,7 @@ begin
   Plane.Width := FTxWidth;
   Plane.Height := FTxHeight;
 
-  GLFilename.Text := ExtractFileName(Filename);
-  GLResolution.Text := Format('%dx%d',[FTxWidth, FTxHeight]);
+  GLFileInfo.Text := Format('%s (%dx%d)',[ExtractFileName(Filename), FTxWidth, FTxHeight]);
 end;
 
 
@@ -133,6 +133,12 @@ begin
 
   GLCamera.Position.X := -FTxWidth/2 + (FTxWidth - Viewer.Width)/2 + FCamOffset.X;
   GLCamera.Position.Y := -FTxHeight/2 + (FTxHeight - Viewer.Height)/2 + FCamOffset.Y;
+
+  Background.Position.X := FCamOffset.X;
+  Background.Position.Y := FCamOffset.Y;
+
+  GLFileInfo.Position.X := Viewer.Width/2;
+  GLFileInfo.Position.Y := Viewer.Height - 20;
 
   case CompareValue(FScale, FIntScale, 0.001) of
   EqualsValue     :

@@ -66,8 +66,6 @@ inherited RAWViewForm: TRAWViewForm
       EdgeColor.Color = {029F1F3FBEBEBE3E999F1F3F0000803F}
     end
     object HeightField: TGLHeightField
-      Material.Texture.MappingTCoordinates.Coordinates = {000000000000803F0000000000000000}
-      Material.Texture.Border = 0
       Direction.Coordinates = {000000000000803F0000000000000000}
       Up.Coordinates = {0000000000000000000080BF00000000}
       XSamplingScale.Max = 16.000000000000000000
@@ -79,11 +77,9 @@ inherited RAWViewForm: TRAWViewForm
         Material.FrontProperties.Diffuse.Color = {00000000FDFC7C3ECDCC4C3F4A0C023E}
         Material.FrontProperties.Emission.Color = {EBEAEA3ED7D6D63EDFDEDE3E0000803F}
         Material.BlendingMode = bmModulate
-        Material.Texture.Border = 0
         Up.Coordinates = {000000000000803F0000008000000000}
         Height = 16.000000000000000000
         Width = 16.000000000000000000
-        NoZWrite = False
       end
       object CameraTarget: TGLDummyCube
         CubeSize = 1.000000000000000000
