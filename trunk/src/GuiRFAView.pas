@@ -570,7 +570,7 @@ function TRFAViewForm.Reset(Ask : boolean = false) : TModalResult;
 begin
   Result := mrNone;
 
-  if not FResetMutex and Ask and (Save.Enabled or (CountFilesByStatus(RFAList.RootNode, [fsNew], false) > 0)) then
+  if not FResetMutex and Ask and (Save.Enabled or (Assigned(FArchive) and (CountFilesByStatus(RFAList.RootNode, [fsNew], false) > 0) )) then
   begin
     FResetMutex := true;
     Result := ShowDialog('Confirmation', 'Save changes ?', mtInformation, mbYesNoCancel, mbCancel, 0);

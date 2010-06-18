@@ -739,72 +739,80 @@ begin
   // A compressed file is made of multi-segment
 
   // Reading quantity of segment for this file
-  FHandle.Seek(offset,0);
-  FHandle.Read(segments,DWORD_SIZE);
+  FHandle.Seek(Offset,0);
+  FHandle.Read(Segments,DWORD_SIZE);
 
-  if segments > MAX_SEGMENT_COUNT then
+  if Segments > MAX_SEGMENT_COUNT then
     raise Exception.Create('Segment Count seems too high');
 
-  // Creating as much as Data header than segments
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('Setting DataH length to %d', [Segments]);
-  {$EndIf}
-  SetLength(DataH,Segments);
-
-  if Assigned(FOnProgress) then
-    FOnProgress(Self, roBegin, (Segments-1)*2);
-
-  // Filling each header with usable values
-  for i := 0 to Segments-1 do
+  if Segments > 0 then
   begin
-    FHandle.Read(DataH[i].csize,DWORD_SIZE);
-    FHandle.Read(DataH[i].ucsize,DWORD_SIZE);
-    FHandle.Read(DataH[i].doffset,DWORD_SIZE);
-
+    // Creating as much as Data header than segments
     {$IfDef DEBUG_RFA}
-    SendDebugFmt('DecompressRFAToStream::FHandle.Position = %d', [FHandle.Position]);
-    SendDebugFmt('DecompressRFAToStream::Segment No_%d (%d)(%d)(%d)', [i, DataH[i].csize, DataH[i].ucsize, DataH[i].doffset]);
+    SendDebugFmt('Setting DataH length to %d', [Segments]);
     {$EndIf}
+    SetLength(DataH,Segments);
 
     if Assigned(FOnProgress) then
-      FOnProgress(Self, roDecompress, PG_AUTO);
-  end;
+      FOnProgress(Self, roBegin, (Segments-1)*2);
 
-  {$IfDef DEBUG_RFA}
-  SendDebugFmt('DecompressRFAToStream::Start', []);
-  {$EndIf}
-
-
-  for i := 0 to Segments-1 do
-  begin
-
-    GetMem(SBuff, DataH[i].csize);
-    GetMem(OBuff, DataH[i].ucsize);
-
-    FHandle.Seek(Offset+(segments*SEGMENT_HEADER_SIZE)+DataH[i].doffset+DWORD_SIZE,0);
-
-    {$IfDef DEBUG_RFA}
-    SendDebugFmt('DecompressRFAToStream::FHandle.Position = %d', [FHandle.Position]);
-    {$EndIf}
-		FHandle.Read(SBuff^,DataH[i].csize);
-
-    Result := _lzo1x_decompress_safe(SBuff, DataH[i].csize, OBuff, DataH[i].ucsize, nil);
-
-    if Result <> LZO_E_OK then
+    // Filling each header with usable values
+    for i := 0 to Segments-1 do
     begin
-      raise Exception.Create('not LZO_E_OK');
+      FHandle.Read(DataH[i].csize,DWORD_SIZE);
+      FHandle.Read(DataH[i].ucsize,DWORD_SIZE);
+      FHandle.Read(DataH[i].doffset,DWORD_SIZE);
 
-      FreeMem(SBuff);
-      FreeMem(OBuff);
-      Break;
+      {$IfDef DEBUG_RFA}
+      SendDebugFmt('DecompressRFAToStream::FHandle.Position = %d', [FHandle.Position]);
+      SendDebugFmt('DecompressRFAToStream::Segment No_%d (%d)(%d)(%d)', [i, DataH[i].csize, DataH[i].ucsize, DataH[i].doffset]);
+      {$EndIf}
+
+      if Assigned(FOnProgress) then
+        FOnProgress(Self, roDecompress, PG_AUTO);
     end;
 
-    outputstream.WriteBuffer(OBuff^, DataH[i].ucsize);
-    FreeMem(SBuff);
-    FreeMem(OBuff);
+    {$IfDef DEBUG_RFA}
+    SendDebugFmt('DecompressRFAToStream::Start', []);
+    {$EndIf}
 
-    if Assigned(FOnProgress) then
-      FOnProgress(Self, roDecompress, PG_AUTO);
+    for i := 0 to Segments-1 do
+    begin
+
+      GetMem(SBuff, DataH[i].csize);
+      GetMem(OBuff, DataH[i].ucsize);
+
+      FHandle.Seek(Offset+(segments*SEGMENT_HEADER_SIZE)+DataH[i].doffset+DWORD_SIZE,0);
+
+      {$IfDef DEBUG_RFA}
+      SendDebugFmt('DecompressRFAToStream::FHandle.Position = %d', [FHandle.Position]);
+      {$EndIf}
+      FHandle.Read(SBuff^,DataH[i].csize);
+
+      Result := _lzo1x_decompress_safe(SBuff, DataH[i].csize, OBuff, DataH[i].ucsize, nil);
+
+      if Result <> LZO_E_OK then
+      begin
+        raise Exception.Create('not LZO_E_OK');
+
+        FreeMem(SBuff);
+        FreeMem(OBuff);
+        Break;
+      end;
+
+      outputstream.WriteBuffer(OBuff^, DataH[i].ucsize);
+      FreeMem(SBuff);
+      FreeMem(OBuff);
+
+      if Assigned(FOnProgress) then
+        FOnProgress(Self, roDecompress, PG_AUTO);
+    end;
+  end
+    else
+  begin
+    {$IfDef DEBUG_RFA}
+    SendDebugWarning(Format('File at 0x%x is empty, no data to uncompressed', [Offset]));
+    {$EndIf}
   end;
 
   if Assigned(FOnProgress) then
@@ -823,7 +831,6 @@ begin
   Buffer := TMemoryStream.Create;
   Buffer.Size := Size;
   Buffer.Seek(0, soFromBeginning);
-  //Data.Seek(0, soFromBeginning);
   FHandle.Seek(Offset, soFromBeginning);
 
   {$IfDef USE_BUFFER}
