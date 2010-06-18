@@ -730,8 +730,15 @@ begin
       3:
       if Data.Compressed then
       begin
-        FloatValue := Data.CompSize / Data.Size  * 100;
-        CellText := Format('%.2f%%',[FloatValue])
+        if Data.Size > 0 then
+        begin
+          FloatValue := Data.CompSize / Data.Size  * 100;
+          CellText := Format('%.2f%%',[FloatValue]);
+        end
+          else
+        begin
+          CellText := '---'
+        end;
       end
         else
           CellText := '---';
