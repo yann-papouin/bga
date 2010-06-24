@@ -183,6 +183,9 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure RevertExecute(Sender: TObject);
     procedure FileAssociationExecute(Sender: TObject);
+    procedure SettingsExecute(Sender: TObject);
+    procedure SearchStartExecute(Sender: TObject);
+    procedure PreviewExecute(Sender: TObject);
   private
     FEditResult : TEditResult;
     FSyncNode : PVirtualNode;
@@ -1030,6 +1033,20 @@ begin
   SyncStart;
 end;
 
+procedure TRFAViewForm.SearchStartExecute(Sender: TObject);
+begin
+  if not tbMenuBar.Enabled then
+    Exit;
+
+  inherited;
+end;
+
+procedure TRFAViewForm.SettingsExecute(Sender: TObject);
+begin
+  if not tbMenuBar.Enabled then
+    Exit;
+end;
+
 procedure TRFAViewForm.UpdateInfobar;
 begin
   if Assigned(FArchive) then
@@ -1710,6 +1727,9 @@ end;
 
 procedure TRFAViewForm.OpenExecute(Sender: TObject);
 begin
+  if not tbMenuBar.Enabled then
+    Exit;
+
   if OpenDialog.FileName = EmptyStr then
     OpenDialog.FileName := ExtractFilePath(Application.ExeName);
 
@@ -1762,16 +1782,25 @@ end;
 
 procedure TRFAViewForm.SaveExecute(Sender: TObject);
 begin
+  if not tbMenuBar.Enabled then
+    Exit;
+
   QuickSave(false);
 end;
 
 procedure TRFAViewForm.DefragExecute(Sender: TObject);
 begin
+  if not tbMenuBar.Enabled then
+    Exit;
+
   QuickSave(true);
 end;
 
 procedure TRFAViewForm.QuitExecute(Sender: TObject);
 begin
+  if not tbMenuBar.Enabled then
+    Exit;
+
   Application.Terminate;
 end;
 
@@ -1783,6 +1812,9 @@ end;
 
 procedure TRFAViewForm.NewExecute(Sender: TObject);
 begin
+  if not tbMenuBar.Enabled then
+    Exit;
+
   Reset;
 end;
 
@@ -1864,11 +1896,21 @@ begin
     end;
 end;
 
+procedure TRFAViewForm.PreviewExecute(Sender: TObject);
+begin
+  if not tbMenuBar.Enabled then
+    Exit;
+
+  inherited;
+end;
+
 procedure TRFAViewForm.PreviewRAWExecute(Sender: TObject);
 var
   TerrainNode, HeightmapNode : PVirtualNode;
   TerrainFile, HeightmapFile : string;
 begin
+  if not tbMenuBar.Enabled then
+    Exit;
 
   TerrainNode := FindFileByName('Terrain.con');
   HeightmapNode := FindFileByName('Heightmap.raw');
