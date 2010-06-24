@@ -111,6 +111,7 @@
 			<DCCReference Include="GuiPicView.pas">
 				<Form>PICViewForm</Form>
 			</DCCReference>
+			<DCCReference Include="UAC.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

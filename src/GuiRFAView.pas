@@ -133,6 +133,10 @@ type
     UseCompression: TSpTBXItem;
     Revert: TAction;
     SpTBXItem24: TSpTBXItem;
+    FileAssociation: TAction;
+    SpTBXItem25: TSpTBXItem;
+    SpTBXSeparatorItem11: TSpTBXSeparatorItem;
+    SpTBXSubmenuItem6: TSpTBXSubmenuItem;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -178,6 +182,7 @@ type
       const CellRect: TRect; var DefaultDraw: Boolean);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure RevertExecute(Sender: TObject);
+    procedure FileAssociationExecute(Sender: TObject);
   private
     FEditResult : TEditResult;
     FSyncNode : PVirtualNode;
@@ -221,7 +226,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, VirtualTreeviewTheme,
+  DbugIntf, VirtualTreeviewTheme, UAC,
   GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
   Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
@@ -1637,6 +1642,12 @@ begin
   Reset;
 end;
 
+
+procedure TRFAViewForm.FileAssociationExecute(Sender: TObject);
+begin
+  inherited;
+  RunAsAdmin(Self.Handle, Application.ExeName, BGA_FILE_ASSOCIATION_REQUEST);
+end;
 
 procedure TRFAViewForm.FilesystemExecute(Sender: TObject);
 begin

@@ -23,7 +23,7 @@ unit CommonLib;
 interface
 
 uses
-  JvGnuGetText, shlobj,  TypInfo,
+  JvGnuGetText, shlobj,  TypInfo, ShellAPI,
   SysUtils, StrUtils, Windows, Messages, Classes, Controls, ExtCtrls, Dialogs,  Graphics,
   Forms, Math, Variants, Varutils;
 
@@ -937,6 +937,8 @@ begin
  // Dll wieder freigeben.
  FreeLibrary(hInstDll);
 end;
+
+
 
 
 procedure EnableDecimalSeparatorCompatibility;

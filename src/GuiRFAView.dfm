@@ -183,6 +183,15 @@ inherited RFAViewForm: TRFAViewForm
       end
       object mHelp: TSpTBXSubmenuItem
         Caption = 'Help'
+        object SpTBXSubmenuItem6: TSpTBXSubmenuItem
+          Caption = 'Tools'
+          ImageIndex = 238
+          object SpTBXItem25: TSpTBXItem
+            Action = FileAssociation
+          end
+        end
+        object SpTBXSeparatorItem11: TSpTBXSeparatorItem
+        end
         object SpTBXItem3: TSpTBXItem
           Action = About
         end
@@ -422,6 +431,11 @@ inherited RFAViewForm: TRFAViewForm
       Caption = 'Revert changes'
       ImageIndex = 69
       OnExecute = RevertExecute
+    end
+    object FileAssociation: TAction
+      Caption = 'Associate RFA files with BGA'
+      ImageIndex = 997
+      OnExecute = FileAssociationExecute
     end
   end
   object DropFileSource: TDropFileSource
