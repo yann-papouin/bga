@@ -24,12 +24,15 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, Grids, ValEdit, SpTBXItem, SpTBXControls;
+  Dialogs, Grids, ValEdit, SpTBXItem, SpTBXControls, JvComponentBase,
+  JvFormPlacement;
 
 type
   TRFASettingsForm = class(TForm)
     SpTBXGroupBox1: TSpTBXGroupBox;
     ValueListEditor1: TValueListEditor;
+    SpTBXGroupBox2: TSpTBXRadioGroup;
+    FormStorage: TJvFormStorage;
   private
     { Déclarations privées }
   public
@@ -43,6 +46,9 @@ var
 implementation
 
 {$R *.dfm}
+
+uses
+  GuiRFAView;
 
 { TRFASettingsForm }
 
