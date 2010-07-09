@@ -230,6 +230,7 @@ implementation
 
 uses
   DbugIntf, VirtualTreeviewTheme, UAC,
+  GuiRFASettings,
   GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
   Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
@@ -1045,6 +1046,8 @@ procedure TRFAViewForm.SettingsExecute(Sender: TObject);
 begin
   if not tbMenuBar.Enabled then
     Exit;
+
+  RFASettingsForm.Showmodal;
 end;
 
 procedure TRFAViewForm.UpdateInfobar;
@@ -1129,7 +1132,32 @@ end;
 procedure TRFAViewForm.EditSelection;
 var
   Node: PVirtualNode;
-  Filepath : string;
+  Filepath, ExternalApp, Extension : string;
+
+  function EditInternal : boolean;
+  begin
+    Result := false;
+    Extension := ExtractFileExt(Filepath);
+    ExternalApp := RFASettingsForm.GetProgramByExt(Extension);
+    if FileExists(ExternalApp) then
+    begin
+      Result := true;
+      if FileExists(Filepath) then
+        ShellExecute(Handle,'open',PChar(ExternalApp), PChar(Filepath),nil,SW_SHOW);
+    end;
+
+  end;
+
+  function EditExternal : boolean;
+  begin
+    Result := false;
+    if FileExists(Filepath) then
+    begin
+      ShellExecute(Handle,'open',PChar(Filepath),nil,nil,SW_SHOW);
+      Result := true;
+    end;
+  end;
+
 begin
   Node := RFAList.GetFirstSelected;
 
@@ -1137,8 +1165,17 @@ begin
   begin
     Filepath := ExtractTemporary(Node);
 
-    if FileExists(Filepath) then
-      ShellExecute(Handle,'open',PChar(Filepath),nil,nil,SW_SHOW);
+    case RFASettingsForm.DoubleClickOption.ItemIndex of
+      1:
+      begin
+        EditExternal;
+      end;
+      2:
+      begin
+        if not EditInternal then
+          EditExternal;
+      end;
+    end;
 
     Node := RFAList.GetNextSelected(Node, true);
   end;
@@ -1539,7 +1576,10 @@ end;
 
 procedure TRFAViewForm.RFAListDblClick(Sender: TObject);
 begin
-  EditSelection;
+  if RFASettingsForm.DoubleClickOption.ItemIndex = 0 then
+    Preview.Execute
+  else
+    EditSelection;
 end;
 
 

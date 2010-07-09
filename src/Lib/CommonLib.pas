@@ -30,7 +30,6 @@ uses
 
 type
 
-
   TSinglePoint = record
     X : single;
     Y : single;
@@ -118,14 +117,15 @@ type
   function GetMyDocuments: string;
   function GetTempDirectory: String;
   function GetApplicationData: string;
-
   function GetSystemDir: string;
+  function GetProgramFiles: string;
 
   function RemoveAcute(const S: string): string;
   function Mince(PathToMince :String; InSpace :Integer): String;
 
   function ValidFilename(Filename: String; islong: Boolean = true) : Boolean;
   function ValidDirectoryname(Filename: String; islong: Boolean = true) : Boolean;
+  function StripNonConforming(const S: string; const ValidChars: TSysCharSet): string;
 
   function GetNetUser : Ansistring;
 
@@ -212,6 +212,22 @@ begin
     for I := 1 to Length(Filename) do
       Result := Result and not (Filename[I] in ShortDirForbiddenChars);
   end;
+end;
+
+function StripNonConforming(const S: string; const ValidChars: TSysCharSet): string;
+var
+  DestI: Integer;
+  SourceI: Integer;
+begin
+  SetLength(Result, Length(S));
+  DestI := 0;
+  for SourceI := 1 to Length(S) do
+    if S[SourceI] in ValidChars then
+    begin
+      Inc(DestI);
+      Result[DestI] := S[SourceI]
+    end;
+  SetLength(Result, DestI)
 end;
 
 function RandomString(expr: string): string;
@@ -506,6 +522,19 @@ begin
    if not r then raise Exception.Create('Could not find System folder location.') ;
    Result := Path;
 end;
+
+function GetProgramFiles: string;
+var
+   r: Bool;
+   path: array[0..Max_Path] of Char;
+begin
+   r := ShGetSpecialFolderPath(0, path, CSIDL_PROGRAM_FILES, False) ;
+   if not r then raise Exception.Create('Could not find Program files folder location.') ;
+   Result := Path;
+end;
+
+
+
 
 
 
