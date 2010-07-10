@@ -498,8 +498,8 @@ inherited RFAViewForm: TRFAViewForm
         OnClick = EditByExtensionClick
       end
     end
-    object SpTBXItem24: TSpTBXItem
-      Action = Revert
+    object SpTBXItem19: TSpTBXItem
+      Action = Preview
     end
     object SpTBXSeparatorItem5: TSpTBXSeparatorItem
     end
@@ -511,8 +511,8 @@ inherited RFAViewForm: TRFAViewForm
     end
     object SpTBXSeparatorItem6: TSpTBXSeparatorItem
     end
-    object SpTBXItem19: TSpTBXItem
-      Action = Preview
+    object SpTBXItem24: TSpTBXItem
+      Action = Revert
     end
   end
   object AppStorage: TJvAppRegistryStorage
