@@ -73,7 +73,7 @@ inherited RFACommonForm: TRFACommonForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 330
+          Width = 326
           WideText = 'Offset'
         end>
     end
@@ -97,7 +97,7 @@ inherited RFACommonForm: TRFACommonForm
       Visible = False
       Borders = False
       TBXStyleBackground = True
-      object Search: TSpTBXEdit
+      object SearchEdit: TSpTBXEdit
         Left = 80
         Top = 7
         Width = 498
@@ -105,7 +105,7 @@ inherited RFACommonForm: TRFACommonForm
         Align = alClient
         TabOrder = 0
         Text = '*.*'
-        OnChange = SearchChange
+        OnChange = SearchEditChange
       end
       object SpTBXLabel1: TSpTBXLabel
         AlignWithMargins = True
@@ -200,5 +200,12 @@ inherited RFACommonForm: TRFACommonForm
       ImageIndex = 98
       OnExecute = SearchStopExecute
     end
+  end
+  object Search: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = SearchTimer
+    Left = 8
+    Top = 64
   end
 end

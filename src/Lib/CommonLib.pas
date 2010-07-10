@@ -114,6 +114,8 @@ type
 
   function FileLastModified(const TheFile: string): TDateTime;
 
+  function GetGenericFileType(Extension: string ): string;
+
   function GetMyDocuments: string;
   function GetTempDirectory: String;
   function GetApplicationData: string;
@@ -480,7 +482,15 @@ begin
 end;
 
 
-
+function GetGenericFileType(Extension: string ): string;
+{ Get file type for an extension }
+var
+  AInfo: TSHFileInfo;
+begin
+  SHGetFileInfo( PChar(Extension), FILE_ATTRIBUTE_NORMAL, AInfo, SizeOf( AInfo ),
+    SHGFI_TYPENAME or SHGFI_USEFILEATTRIBUTES );
+  Result := AInfo.szTypeName;
+end;
 
 
 function GetTempDirectory: String;
