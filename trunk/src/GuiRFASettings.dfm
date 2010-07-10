@@ -3,7 +3,7 @@ object RFASettingsForm: TRFASettingsForm
   Left = 0
   Top = 0
   Caption = 'Settings'
-  ClientHeight = 410
+  ClientHeight = 370
   ClientWidth = 421
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object RFASettingsForm: TRFASettingsForm
     Left = 0
     Top = 0
     Width = 421
-    Height = 410
+    Height = 370
     Caption = 'Background'
     Align = alClient
     Padding.Left = 5
@@ -30,10 +30,11 @@ object RFASettingsForm: TRFASettingsForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
+    ExplicitHeight = 410
     object Footer: TPanel
       AlignWithMargins = True
       Left = 5
-      Top = 372
+      Top = 332
       Width = 411
       Height = 33
       Margins.Left = 0
@@ -43,6 +44,7 @@ object RFASettingsForm: TRFASettingsForm
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 0
+      ExplicitTop = 372
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 174
@@ -71,7 +73,7 @@ object RFASettingsForm: TRFASettingsForm
     object DoubleClickOption: TSpTBXRadioGroup
       AlignWithMargins = True
       Left = 5
-      Top = 230
+      Top = 5
       Width = 411
       Height = 94
       Margins.Left = 0
@@ -85,12 +87,13 @@ object RFASettingsForm: TRFASettingsForm
       Items.Strings = (
         'Preview the file with the internal viewer'
         'Open (Edit) the file with OS associated extension'
-        'Open (Edit) the file with BGA associated extension')
+        'Open (Edit) the file with BGA associated extension (see below)')
+      ExplicitTop = -26
     end
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
       Left = 5
-      Top = 5
+      Top = 109
       Width = 411
       Height = 215
       Margins.Left = 0
@@ -104,6 +107,7 @@ object RFASettingsForm: TRFASettingsForm
       Padding.Right = 10
       Padding.Bottom = 10
       TabOrder = 2
+      ExplicitTop = 5
       object ExtList: TVirtualStringTree
         Left = 12
         Top = 25
@@ -160,8 +164,7 @@ object RFASettingsForm: TRFASettingsForm
           Left = 0
           Top = 0
           Align = alBottom
-          DockPos = -72
-          DockRow = 1
+          DockPos = 40
           FullSize = True
           Images = ResourcesForm.Images16x16
           Resizable = False
