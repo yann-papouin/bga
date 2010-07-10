@@ -83,7 +83,7 @@ object RFASettingsForm: TRFASettingsForm
       Caption = 'On double click'
       Align = alTop
       TabOrder = 1
-      ItemIndex = 0
+      ItemIndex = 1
       Items.Strings = (
         'Preview the file with the internal viewer'
         'Open (Edit) the file with OS associated extension'
