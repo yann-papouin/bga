@@ -541,4 +541,9 @@ inherited RFAViewForm: TRFAViewForm
     Left = 8
     Top = 160
   end
+  object ExtensionImageList: TPngImageList
+    PngImages = <>
+    Left = 40
+    Top = 256
+  end
 end

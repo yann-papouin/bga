@@ -28,7 +28,7 @@ uses
   Dialogs, GuiRFACommon, ActnList, VirtualTrees, TB2Item, SpTBXItem, TB2Dock,
   TB2Toolbar, ExtCtrls, JvFormPlacement, JvAppStorage, JvAppRegistryStorage, Menus,
   JvComponentBase, JvMRUList, JvAppInst, DragDrop, DropSource, DragDropFile, StdCtrls,
-  SpTBXEditors, SpTBXControls, GuiUpdateManager, ActiveX, RFALib, JclFileUtils;
+  SpTBXEditors, SpTBXControls, GuiUpdateManager, ActiveX, RFALib, JclFileUtils, ImgList, PngImageList;
 
 type
 
@@ -139,6 +139,7 @@ type
     SpTBXSubmenuItem6: TSpTBXSubmenuItem;
     EditWithOS: TAction;
     EditByExtension: TSpTBXItem;
+    ExtensionImageList: TPngImageList;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -1363,8 +1364,12 @@ var
   Separator : TSpTBXSeparatorItem;
   Node : PVirtualNode;
   Data : pExtData;
+
+  Icon: TIcon;
+  FileInfo: SHFILEINFO;
 begin
   EditWithMenuItem.Clear;
+  ExtensionImageList.Clear;
 
   Node := RFASettingsForm.ExtList.GetFirst;
   while Node <> nil do
@@ -1378,6 +1383,14 @@ begin
       MenuItem.Caption := ExtractFileName(Data.Path);
       MenuItem.OnClick := EditByExtensionClick;
       EditWithMenuItem.Add(MenuItem);
+
+      Icon := TIcon.Create;
+      SHGetFileInfo(PChar(Data.Path), 0, FileInfo, SizeOf(FileInfo), SHGFI_ICON or SHGFI_SMALLICON or SHGFI_SYSICONINDEX);
+      Icon.Handle := FileInfo.hIcon;
+
+      MenuItem.Images := ExtensionImageList;
+      MenuItem.ImageIndex := ExtensionImageList.AddIcon(Icon);
+      Icon.Free;
     end;
 
     Node := Node.NextSibling;
