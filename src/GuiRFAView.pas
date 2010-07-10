@@ -100,7 +100,7 @@ type
     RecentList: TJvMruList;
     ViewerPopup: TSpTBXPopupMenu;
     SpTBXItem22: TSpTBXItem;
-    SpTBXSubmenuItem4: TSpTBXSubmenuItem;
+    EditWithMenuItem: TSpTBXSubmenuItem;
     SpTBXSeparatorItem5: TSpTBXSeparatorItem;
     SpTBXItem21: TSpTBXItem;
     SpTBXItem20: TSpTBXItem;
@@ -137,6 +137,8 @@ type
     SpTBXItem25: TSpTBXItem;
     SpTBXSeparatorItem11: TSpTBXSeparatorItem;
     SpTBXSubmenuItem6: TSpTBXSubmenuItem;
+    EditWithOS: TAction;
+    EditByExtension: TSpTBXItem;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -186,6 +188,8 @@ type
     procedure SettingsExecute(Sender: TObject);
     procedure SearchStartExecute(Sender: TObject);
     procedure PreviewExecute(Sender: TObject);
+    procedure EditWithOSExecute(Sender: TObject);
+    procedure EditByExtensionClick(Sender: TObject);
   private
     FEditResult : TEditResult;
     FSyncNode : PVirtualNode;
@@ -199,6 +203,7 @@ type
     procedure CheckStatus(Node: PVirtualNode);
     procedure DeleteSelection;
     procedure EditSelection;
+    function EditInternal(ApplicationPath : string = '') : boolean;
     function LastOne(Offset: Int64): boolean;
     function LoadMap(Path: string): boolean;
     function QuickOpen: boolean;
@@ -214,6 +219,7 @@ type
     procedure SyncStop;
     procedure UpdateInfobar;
     procedure UpdateReply(Sender: TObject; Result: TUpdateResult);
+    procedure RebuildEditWithMenu;
   protected
     procedure CancelChange;
     procedure NotifyChange;
@@ -559,6 +565,7 @@ begin
 
   RecentList.Open;
   RebuildRecentList;
+  RebuildEditWithMenu;
   Application.ProcessMessages;
 
   if ParamCount > 0 then
@@ -1047,7 +1054,8 @@ begin
   if not tbMenuBar.Enabled then
     Exit;
 
-  RFASettingsForm.Showmodal;
+  if RFASettingsForm.Showmodal = mrOk then
+    RebuildEditWithMenu;
 end;
 
 procedure TRFAViewForm.UpdateInfobar;
@@ -1129,55 +1137,67 @@ begin
 end;
 
 
-procedure TRFAViewForm.EditSelection;
+
+function TRFAViewForm.EditInternal(ApplicationPath: string = ''): boolean;
 var
   Node: PVirtualNode;
-  Filepath, ExternalApp, Extension : string;
-
-  function EditInternal : boolean;
-  begin
-    Result := false;
-    Extension := ExtractFileExt(Filepath);
-    ExternalApp := RFASettingsForm.GetProgramByExt(Extension);
-    if FileExists(ExternalApp) then
-    begin
-      Result := true;
-      if FileExists(Filepath) then
-        ShellExecute(Handle,'open',PChar(ExternalApp), PChar(Filepath),nil,SW_SHOW);
-    end;
-
-  end;
-
-  function EditExternal : boolean;
-  begin
-    Result := false;
-    if FileExists(Filepath) then
-    begin
-      ShellExecute(Handle,'open',PChar(Filepath),nil,nil,SW_SHOW);
-      Result := true;
-    end;
-  end;
-
+  Filepath : string;
 begin
+  Result := false;
   Node := RFAList.GetFirstSelected;
-
-  while Node <> nil do
+  if Node <> nil then
   begin
     Filepath := ExtractTemporary(Node);
 
-    case RFASettingsForm.DoubleClickOption.ItemIndex of
-      1:
-      begin
-        EditExternal;
-      end;
-      2:
-      begin
-        if not EditInternal then
-          EditExternal;
-      end;
-    end;
+    if not FileExists(ApplicationPath) then
+      ApplicationPath := RFASettingsForm.GetProgramByExt(ExtractFileExt(Filepath));
 
-    Node := RFAList.GetNextSelected(Node, true);
+    if FileExists(ApplicationPath) then
+    begin
+      Result := true;
+      if FileExists(Filepath) then
+        ShellExecute(Handle,'open',PChar(ApplicationPath), PChar(Filepath),nil,SW_SHOW);
+    end;
+  end;
+end;
+
+procedure TRFAViewForm.EditSelection;
+begin
+  case RFASettingsForm.DoubleClickOption.ItemIndex of
+    1:
+    begin
+      EditWithOS.Execute;
+    end;
+    2:
+    begin
+      if not EditInternal then
+        EditWithOS.Execute;
+    end;
+  end;
+end;
+
+procedure TRFAViewForm.EditByExtensionClick(Sender: TObject);
+var
+  Path : string;
+begin
+  if (Sender is TSpTBXItem) then
+  begin
+    Path := (Sender as TSpTBXItem).Hint;
+    EditInternal(Path);
+  end;
+end;
+
+
+procedure TRFAViewForm.EditWithOSExecute(Sender: TObject);
+var
+  Node: PVirtualNode;
+  Filepath, ExternalApp, Extension : string;
+begin
+  Node := RFAList.GetFirstSelected;
+  if Node <> nil then
+  begin
+    Filepath := ExtractTemporary(Node);
+    ShellExecute(Handle,'open',PChar(Filepath),nil,nil,SW_SHOW);
   end;
 end;
 
@@ -1333,6 +1353,42 @@ begin
 
     Sync.Enabled := true;
   end;
+end;
+
+
+
+procedure TRFAViewForm.RebuildEditWithMenu;
+var
+  MenuItem : TSpTBXItem;
+  Separator : TSpTBXSeparatorItem;
+  Node : PVirtualNode;
+  Data : pExtData;
+begin
+  EditWithMenuItem.Clear;
+
+  Node := RFASettingsForm.ExtList.GetFirst;
+  while Node <> nil do
+  begin
+    Data := RFASettingsForm.ExtList.GetNodeData(Node);
+
+    if FileExists(Data.Path) then
+    begin
+      MenuItem := TSpTBXItem.Create(EditWithMenuItem);
+      MenuItem.Hint := Data.Path;
+      MenuItem.Caption := ExtractFileName(Data.Path);
+      MenuItem.OnClick := EditByExtensionClick;
+      EditWithMenuItem.Add(MenuItem);
+    end;
+
+    Node := Node.NextSibling;
+  end;
+
+  Separator := TSpTBXSeparatorItem.Create(EditWithMenuItem);
+  EditWithMenuItem.Add(Separator);
+
+  MenuItem := TSpTBXItem.Create(EditWithMenuItem);
+  MenuItem.Action := EditWithOS;
+  EditWithMenuItem.Add(MenuItem);
 end;
 
 procedure TRFAViewForm.RebuildRecentList;

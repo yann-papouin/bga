@@ -2,25 +2,28 @@ inherited SMViewForm: TSMViewForm
   Caption = 'SM View'
   ClientHeight = 513
   ClientWidth = 784
+  ExplicitWidth = 800
+  ExplicitHeight = 551
   PixelsPerInch = 96
   TextHeight = 13
   object Viewer: TGLSceneViewer
     Left = 222
     Top = 0
     Width = 562
-    Height = 479
+    Height = 513
     Camera = Camera
     Buffer.BackgroundColor = 4737096
     Buffer.FaceCulling = False
-    FieldOfView = 138.809280395507800000
+    FieldOfView = 141.330383300781300000
     Align = alClient
     TabOrder = 0
+    ExplicitHeight = 479
   end
   object MeshList: TVirtualStringTree
     Left = 0
     Top = 0
     Width = 217
-    Height = 479
+    Height = 513
     Align = alLeft
     Ctl3D = True
     DragMode = dmAutomatic
@@ -46,66 +49,23 @@ inherited SMViewForm: TSMViewForm
     OnGetText = MeshListGetText
     OnGetImageIndex = MeshListGetImageIndex
     OnGetNodeDataSize = MeshListGetNodeDataSize
+    ExplicitHeight = 479
     Columns = <>
   end
   object Splitter: TSpTBXSplitter
     Left = 217
     Top = 0
-    Height = 479
+    Height = 513
     Cursor = crSizeWE
     MinSize = 200
-  end
-  object Panel1: TSpTBXPanel
-    Left = 0
-    Top = 479
-    Width = 784
-    Height = 34
-    Caption = ' '
-    Color = clBtnFace
-    Align = alBottom
-    UseDockManager = True
-    TabOrder = 3
-    Visible = False
-    Borders = False
-    TBXStyleBackground = True
-    object Label1: TSpTBXLabel
-      Left = 8
-      Top = 6
-      Width = 214
-      Height = 19
-      Caption = 'Need a real battlefield mesh viewer ?'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = [fsBold]
-      ParentColor = True
-      ParentFont = False
-    end
-    object Label2: TSpTBXLabel
-      Left = 228
-      Top = 6
-      Width = 397
-      Height = 19
-      Caption = 
-        'Download Remdul'#39's BfMeshView on http://www.buijs-leur.nl/bfstuff' +
-        '/bfmeshview/ '
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clBlue
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = [fsUnderline]
-      ParentColor = True
-      ParentFont = False
-      LinkText = 'http://www.buijs-leur.nl/bfstuff/bfmeshview/'
-    end
+    ExplicitHeight = 479
   end
   object Navigation: TGLSimpleNavigation
     Form = Owner
     GLSceneViewer = Viewer
     ZoomSpeed = 1.049999952316284000
     FormCaption = 'SM View - %FPS'
-    Options = [snoInvertMouseWheel, snoMouseWheelHandled]
+    Options = [snoMouseWheelHandled]
     KeyCombinations = <
       item
         ShiftState = [ssLeft, ssRight]

@@ -4,6 +4,8 @@ inherited RAWViewForm: TRAWViewForm
   ClientHeight = 572
   ClientWidth = 851
   OnDestroy = FormDestroy
+  ExplicitWidth = 867
+  ExplicitHeight = 610
   PixelsPerInch = 96
   TextHeight = 13
   object Viewer: TGLSceneViewer
@@ -91,7 +93,7 @@ inherited RAWViewForm: TRAWViewForm
     GLSceneViewer = Viewer
     ZoomSpeed = 1.049999952316284000
     FormCaption = 'RAW View - %FPS'
-    Options = [snoInvertMouseWheel, snoMouseWheelHandled]
+    Options = [snoMouseWheelHandled]
     KeyCombinations = <
       item
         ShiftState = [ssLeft, ssRight]

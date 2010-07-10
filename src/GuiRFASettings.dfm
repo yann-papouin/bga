@@ -30,10 +30,6 @@ object RFASettingsForm: TRFASettingsForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
-    ExplicitLeft = 8
-    ExplicitTop = 8
-    ExplicitWidth = 384
-    ExplicitHeight = 372
     object Footer: TPanel
       AlignWithMargins = True
       Left = 5
@@ -58,8 +54,6 @@ object RFASettingsForm: TRFASettingsForm
         TabOrder = 0
         Images = ResourcesForm.Images16x16
         ImageIndex = 1118
-        ExplicitLeft = 179
-        ExplicitTop = 8
       end
       object ButtonCancel: TSpTBXButton
         AlignWithMargins = True
@@ -72,8 +66,6 @@ object RFASettingsForm: TRFASettingsForm
         TabOrder = 1
         Images = ResourcesForm.Images16x16
         ImageIndex = 143
-        ExplicitLeft = 299
-        ExplicitTop = 8
       end
     end
     object DoubleClickOption: TSpTBXRadioGroup
@@ -94,9 +86,6 @@ object RFASettingsForm: TRFASettingsForm
         'Preview the file with the internal viewer'
         'Open (Edit) the file with OS associated extension'
         'Open (Edit) the file with BGA associated extension')
-      ExplicitLeft = 10
-      ExplicitTop = 235
-      ExplicitWidth = 401
     end
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
@@ -115,9 +104,6 @@ object RFASettingsForm: TRFASettingsForm
       Padding.Right = 10
       Padding.Bottom = 10
       TabOrder = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 421
       object ExtList: TVirtualStringTree
         Left = 12
         Top = 25
@@ -150,7 +136,6 @@ object RFASettingsForm: TRFASettingsForm
         OnGetText = ExtListGetText
         OnGetNodeDataSize = ExtListGetNodeDataSize
         OnNewText = ExtListNewText
-        ExplicitWidth = 397
         Columns = <
           item
             MinWidth = 80
@@ -171,7 +156,6 @@ object RFASettingsForm: TRFASettingsForm
         Height = 26
         AllowDrag = False
         Position = dpBottom
-        ExplicitWidth = 397
         object SpTBXToolbar1: TSpTBXToolbar
           Left = 0
           Top = 0
@@ -186,7 +170,7 @@ object RFASettingsForm: TRFASettingsForm
           TabOrder = 0
           Caption = 'SpTBXToolbar1'
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 264
+            CustomWidth = 146
           end
           object SpTBXItem1: TSpTBXItem
             Action = Add
@@ -194,6 +178,16 @@ object RFASettingsForm: TRFASettingsForm
           end
           object SpTBXItem2: TSpTBXItem
             Action = Remove
+            DisplayMode = nbdmImageAndText
+          end
+          object SpTBXSeparatorItem1: TSpTBXSeparatorItem
+          end
+          object SpTBXItem4: TSpTBXItem
+            Action = Edit
+            DisplayMode = nbdmImageAndText
+          end
+          object SpTBXItem3: TSpTBXItem
+            Action = Browse
             DisplayMode = nbdmImageAndText
           end
         end
@@ -238,6 +232,16 @@ object RFASettingsForm: TRFASettingsForm
       Caption = 'Cancel'
       ImageIndex = 143
       OnExecute = CancelExecute
+    end
+    object Browse: TAction
+      Caption = 'Browse'
+      ImageIndex = 124
+      OnExecute = BrowseExecute
+    end
+    object Edit: TAction
+      Caption = 'Edit'
+      ImageIndex = 51
+      OnExecute = EditExecute
     end
   end
   object OpenDialog: TOpenDialog
