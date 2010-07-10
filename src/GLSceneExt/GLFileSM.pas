@@ -98,7 +98,7 @@ var
    FaceGroup : TFGIndexTexCoordList;
    Color : TGLColor;
 begin
-  inherited;
+
   SMFile:=TFileSM.Create;
   SMFile.LoadFromStream(aStream);
 
