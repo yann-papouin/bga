@@ -434,9 +434,16 @@ inherited RFAViewForm: TRFAViewForm
       OnExecute = RevertExecute
     end
     object FileAssociation: TAction
+      Category = 'Custom'
       Caption = 'Associate RFA files with BGA'
-      ImageIndex = 997
+      ImageIndex = 1182
       OnExecute = FileAssociationExecute
+    end
+    object EditWithOS: TAction
+      Category = 'Custom'
+      Caption = 'Operating system associated application'
+      ImageIndex = 1185
+      OnExecute = EditWithOSExecute
     end
   end
   object DropFileSource: TDropFileSource
@@ -484,10 +491,12 @@ inherited RFAViewForm: TRFAViewForm
     object SpTBXItem22: TSpTBXItem
       Action = NewFolder
     end
-    object SpTBXSubmenuItem4: TSpTBXSubmenuItem
+    object EditWithMenuItem: TSpTBXSubmenuItem
       Caption = 'Edit with ...'
-      Enabled = False
       ImageIndex = 791
+      object EditByExtension: TSpTBXItem
+        OnClick = EditByExtensionClick
+      end
     end
     object SpTBXItem24: TSpTBXItem
       Action = Revert

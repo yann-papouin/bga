@@ -67,6 +67,11 @@ type
     DoubleClickOption: TSpTBXRadioGroup;
     Ok: TAction;
     Cancel: TAction;
+    Browse: TAction;
+    Edit: TAction;
+    SpTBXItem3: TSpTBXItem;
+    SpTBXItem4: TSpTBXItem;
+    SpTBXSeparatorItem1: TSpTBXSeparatorItem;
     procedure ExtListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
     procedure ExtListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure ExtListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -82,6 +87,8 @@ type
     procedure ExtListDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string; const CellRect: TRect; var DefaultDraw: Boolean);
     procedure ExtListDblClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure EditExecute(Sender: TObject);
+    procedure BrowseExecute(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -127,6 +134,36 @@ procedure TRFASettingsForm.OkExecute(Sender: TObject);
 begin
   FormStorage.SaveFormPlacement;
   ModalResult := mrOk;
+end;
+
+procedure TRFASettingsForm.BrowseExecute(Sender: TObject);
+var
+  Node: PVirtualNode;
+  Data: pExtData;
+begin
+  Node := ExtList.GetFirstSelected;
+  if Node <> nil then
+  begin
+    Data := ExtList.GetNodeData(Node);
+    OpenDialog.InitialDir := ExtractFilePath(Data.Path);
+    OpenDialog.FileName := ExtractFileName(Data.Path);
+
+    if OpenDialog.Execute then
+    begin
+      Data.Path := OpenDialog.FileName;
+    end;
+  end;
+end;
+
+procedure TRFASettingsForm.EditExecute(Sender: TObject);
+var
+  Node: PVirtualNode;
+begin
+  Node := ExtList.GetFirstSelected;
+  if Node <> nil then
+  begin
+    ExtList.EditNode(Node,0);
+  end;
 end;
 
 procedure TRFASettingsForm.CancelExecute(Sender: TObject);
@@ -241,23 +278,8 @@ end;
 
 
 procedure TRFASettingsForm.ExtListDblClick(Sender: TObject);
-var
-  Node: PVirtualNode;
-  Data: pExtData;
 begin
-  Node := ExtList.GetFirstSelected;
-  if Node <> nil then
-  begin
-    Data := ExtList.GetNodeData(Node);
-    OpenDialog.InitialDir := ExtractFilePath(Data.Path);
-    OpenDialog.FileName := ExtractFileName(Data.Path);
-
-    if OpenDialog.Execute then
-    begin
-      Data.Path := OpenDialog.FileName;
-    end;
-  end;
-
+  Browse.Execute;
 end;
 
 procedure TRFASettingsForm.ExtListDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string; const CellRect: TRect; var DefaultDraw: Boolean);

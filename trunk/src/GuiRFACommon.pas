@@ -621,11 +621,16 @@ begin
       PICViewForm.LoadTexture(ExtractTemporary(Node));
       PICViewForm.Preview;
     end;
+    (*
     ftFileCON, ftFileINC:
     begin
 
+    end;
+    *)
+    ftFolder:
+    begin
+      // Just ignore it
     end
-
     else
       begin
         ShowMessage('No preview', 'There is not built-in preview for the selected file');

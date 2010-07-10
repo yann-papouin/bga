@@ -41,9 +41,6 @@ type
     Grid: TGLXYZGrid;
     MeshList: TVirtualStringTree;
     Splitter: TSpTBXSplitter;
-    Panel1: TSpTBXPanel;
-    Label1: TSpTBXLabel;
-    Label2: TSpTBXLabel;
     procedure FormCreate(Sender: TObject);
     procedure MeshListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
