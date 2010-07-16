@@ -146,6 +146,7 @@ type
     function ExtractTemporary(Node: PVirtualNode): string;
     function CountFilesByStatus(Node: PVirtualNode; Status: TEntryStatus; IncludeWithoutStatus: boolean = false): cardinal;
     function ExtensionToType(Ext : string): TFileType;
+    function PreviewSelection : boolean;
   public
     { Déclarations publiques }
 
@@ -205,7 +206,7 @@ var
   Data : pFse;
 begin
   Result := nil;
-  Node := RFAList.GetFirst;
+  Node := RFAList.GetFirst; // Maybe we could use GetFirstLevel to be faster
   Path := ExcludeTrailingPathDelimiter(ExtractFilePath(Path));
 
   while Node <> nil do
@@ -596,12 +597,12 @@ end;
 
 
 
-
-procedure TRFACommonForm.PreviewExecute(Sender: TObject);
+function TRFACommonForm.PreviewSelection: boolean;
 var
   Node: PVirtualNode;
   Data : pFse;
 begin
+  Result := false;
   Node := RFAList.GetFirstSelected;
 
   if (Node = nil) or (Node = RFAList.RootNode) then
@@ -612,30 +613,31 @@ begin
   case Data.FileType of
     ftFileSM:
     begin
+      Result := true;
       SMViewForm.LoadStandardMesh(ExtractTemporary(Node));
-      SMViewForm.Show;
+      SMViewForm.Preview;
     end;
     ftFileDDS, ftFileTGA, ftFileBMP, ftFileJPG, ftFilePNG:
     begin
+      Result := true;
       PICViewForm.LoadTexture(ExtractTemporary(Node));
       PICViewForm.Preview;
     end;
-    (*
-    ftFileCON, ftFileINC:
-    begin
-
-    end;
-    *)
-    ftFolder:
-    begin
-      // Just ignore it
-    end
     else
       begin
-        ShowMessage('No preview', 'There is not built-in preview for the selected file');
+        Result := false;
       end;
   end;
 
+end;
+
+procedure TRFACommonForm.PreviewExecute(Sender: TObject);
+begin
+  if PreviewSelection then
+  else
+    begin
+      ShowMessage('No preview', 'There is not built-in preview for the selected file');
+    end;
 end;
 
 
