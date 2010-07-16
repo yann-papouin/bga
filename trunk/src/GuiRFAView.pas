@@ -1165,7 +1165,7 @@ end;
 procedure TRFAViewForm.EditSelection;
 begin
   case RFASettingsForm.DoubleClickOption.ItemIndex of
-    1:
+    0,1:
     begin
       EditWithOS.Execute;
     end;
@@ -1192,13 +1192,18 @@ end;
 procedure TRFAViewForm.EditWithOSExecute(Sender: TObject);
 var
   Node: PVirtualNode;
+  Data : pFse;
   Filepath, ExternalApp, Extension : string;
 begin
   Node := RFAList.GetFirstSelected;
   if Node <> nil then
   begin
-    Filepath := ExtractTemporary(Node);
-    ShellExecute(Handle,'open',PChar(Filepath),nil,nil,SW_SHOW);
+    Data := RFAList.GetNodeData(Node);
+    if IsFile(Data.FileType) then
+    begin
+      Filepath := ExtractTemporary(Node);
+      ShellExecute(Handle,'open',PChar(Filepath),nil,nil,SW_SHOW);
+    end;
   end;
 end;
 
@@ -1644,10 +1649,14 @@ begin
 end;
 
 procedure TRFAViewForm.RFAListDblClick(Sender: TObject);
+var
+  PreviewResult : boolean;
 begin
+  PreviewResult := false;
   if RFASettingsForm.DoubleClickOption.ItemIndex = 0 then
-    Preview.Execute
-  else
+    PreviewResult := PreviewSelection;
+
+  if not PreviewResult then
     EditSelection;
 end;
 

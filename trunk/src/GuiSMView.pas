@@ -64,6 +64,7 @@ type
   public
     { Déclarations publiques }
     procedure LoadStandardMesh(Filename: string);
+    procedure Preview;
   end;
 
 
@@ -305,5 +306,10 @@ begin
 end;
 
 
+
+procedure TSMViewForm.Preview;
+begin
+  Show;
+end;
 
 end.

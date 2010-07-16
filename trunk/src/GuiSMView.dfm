@@ -17,7 +17,6 @@ inherited SMViewForm: TSMViewForm
     FieldOfView = 141.330383300781300000
     Align = alClient
     TabOrder = 0
-    ExplicitHeight = 479
   end
   object MeshList: TVirtualStringTree
     Left = 0
@@ -49,7 +48,6 @@ inherited SMViewForm: TSMViewForm
     OnGetText = MeshListGetText
     OnGetImageIndex = MeshListGetImageIndex
     OnGetNodeDataSize = MeshListGetNodeDataSize
-    ExplicitHeight = 479
     Columns = <>
   end
   object Splitter: TSpTBXSplitter
@@ -58,7 +56,6 @@ inherited SMViewForm: TSMViewForm
     Height = 513
     Cursor = crSizeWE
     MinSize = 200
-    ExplicitHeight = 479
   end
   object Navigation: TGLSimpleNavigation
     Form = Owner
