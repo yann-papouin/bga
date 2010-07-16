@@ -134,9 +134,9 @@ type
   protected
     procedure MakePathVisible(Table: TBaseVirtualTree; Node: PVirtualNode);
     function FindFileByName(Filename: string): PVirtualNode;
+    function FindPath(Path: String) : PVirtualNode;
     procedure PropagateStatus(Node: PVirtualNode; Status: TEntryModification);
     procedure ExportFile(Node: PVirtualNode; OutputStream: TStream);
-    function FindPath(Path: String) : PVirtualNode;
     function BuildEntryNameFromTree(Node : PVirtualNode; SelectionOnly : boolean = false) : string;
     function BuildTreeFromFullPath(Path: AnsiString) : PVirtualNode;
     procedure Sort;
@@ -147,9 +147,9 @@ type
     function CountFilesByStatus(Node: PVirtualNode; Status: TEntryStatus; IncludeWithoutStatus: boolean = false): cardinal;
     function ExtensionToType(Ext : string): TFileType;
     function PreviewSelection : boolean;
+    function GetFileByPath(Sender: TObject; const VirtualPath : string) : string;
   public
     { Déclarations publiques }
-
     property SearchText : string read FSearchText write SetSearchText;
   end;
 
@@ -200,6 +200,18 @@ begin
   Result := not (FileType = ftFolder);
 end;
 
+function TRFACommonForm.GetFileByPath(Sender: TObject; const VirtualPath: string): string;
+var
+  Node: PVirtualNode;
+  Data : pFse;
+begin
+  Node := FindPath(VirtualPath);
+  if Node <> nil then
+    Result := ExtractTemporary(Node)
+  else
+    Result := EmptyStr;
+end;
+
 function TRFACommonForm.FindPath(Path: String) : PVirtualNode;
 var
   Node: PVirtualNode;
@@ -233,6 +245,7 @@ begin
   inherited;
   FSearchList.Free;
 end;
+
 
 procedure TRFACommonForm.MakePathVisible(Table : TBaseVirtualTree; Node: PVirtualNode);
 begin
@@ -595,12 +608,29 @@ begin
   end;
 end;
 
-
-
 function TRFACommonForm.PreviewSelection: boolean;
 var
   Node: PVirtualNode;
   Data : pFse;
+
+  function FindRs : PVirtualNode;
+  var
+    rsData : pFse;
+  begin
+    Result := Node.Parent.FirstChild; // Should be ok, works fine even if the parent is RootNode
+    while Result <> nil do
+    begin
+      rsData := RFAList.GetNodeData(Result);
+
+      // just compare files in the same folder without their extension
+      if rsData.FileType = ftFileRS then
+        if SFLeftFromLast('.', rsData.W32Name) = SFLeftFromLast('.', Data.W32Name) then
+          Break;
+
+      Result := Result.NextSibling;
+    end;
+  end;
+
 begin
   Result := false;
   Node := RFAList.GetFirstSelected;
@@ -614,6 +644,8 @@ begin
     ftFileSM:
     begin
       Result := true;
+      SMViewForm.GetFileByPath := GetFileByPath;
+      SMViewForm.LoadMaterials(ExtractTemporary(FindRs));
       SMViewForm.LoadStandardMesh(ExtractTemporary(Node));
       SMViewForm.Preview;
     end;

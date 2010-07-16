@@ -33,7 +33,8 @@ uses
   VirtualTreeviewTheme in 'Lib\VirtualTreeviewTheme.pas',
   GuiFormCommon in 'GuiFormCommon.pas' {FormCommon},
   GuiPicView in 'GuiPicView.pas' {PICViewForm},
-  UAC in 'UAC.pas';
+  UAC in 'UAC.pas',
+  BGALib in 'BGALib.pas';
 
 {$R *.res}
 
@@ -50,21 +51,21 @@ begin
     Application.MainFormOnTaskbar := True;
     Application.Title := 'BGA : Battlefield 1942 Game Archive Tool';
     Application.CreateForm(TRFAViewForm, RFAViewForm);
-    Application.CreateForm(TRFASettingsForm, RFASettingsForm);
-    Application.CreateForm(TRAWViewForm, RAWViewForm);
-    Application.CreateForm(TAboutForm, AboutForm);
-    Application.CreateForm(TSMViewForm, SMViewForm);
-    Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
-    Application.CreateForm(TBrowseForm, BrowseForm);
-    Application.CreateForm(TSkinDialogForm, SkinDialogForm);
-    Application.CreateForm(TBrowsePackForm, BrowsePackForm);
-    Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
-    Application.CreateForm(TRFACommonForm, RFACommonForm);
-    Application.CreateForm(TResourcesForm, ResourcesForm);
-    Application.CreateForm(TFSViewForm, FSViewForm);
-    Application.CreateForm(TFSSettingsForm, FSSettingsForm);
-    Application.CreateForm(TFormCommon, FormCommon);
-    Application.CreateForm(TPICViewForm, PICViewForm);
-    Application.Run;
+  Application.CreateForm(TRFASettingsForm, RFASettingsForm);
+  Application.CreateForm(TRAWViewForm, RAWViewForm);
+  Application.CreateForm(TAboutForm, AboutForm);
+  Application.CreateForm(TSMViewForm, SMViewForm);
+  Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
+  Application.CreateForm(TBrowseForm, BrowseForm);
+  Application.CreateForm(TSkinDialogForm, SkinDialogForm);
+  Application.CreateForm(TBrowsePackForm, BrowsePackForm);
+  Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
+  Application.CreateForm(TRFACommonForm, RFACommonForm);
+  Application.CreateForm(TResourcesForm, ResourcesForm);
+  Application.CreateForm(TFSViewForm, FSViewForm);
+  Application.CreateForm(TFSSettingsForm, FSSettingsForm);
+  Application.CreateForm(TFormCommon, FormCommon);
+  Application.CreateForm(TPICViewForm, PICViewForm);
+  Application.Run;
   end;
 end.

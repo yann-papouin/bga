@@ -112,6 +112,7 @@
 				<Form>PICViewForm</Form>
 			</DCCReference>
 			<DCCReference Include="UAC.pas"/>
+			<DCCReference Include="BGALib.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
