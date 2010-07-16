@@ -30,7 +30,6 @@ object RFASettingsForm: TRFASettingsForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
-    ExplicitHeight = 410
     object Footer: TPanel
       AlignWithMargins = True
       Left = 5
@@ -44,7 +43,6 @@ object RFASettingsForm: TRFASettingsForm
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitTop = 372
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 174
@@ -83,12 +81,11 @@ object RFASettingsForm: TRFASettingsForm
       Caption = 'On double click'
       Align = alTop
       TabOrder = 1
-      ItemIndex = 1
+      ItemIndex = 0
       Items.Strings = (
         'Preview the file with the internal viewer'
         'Open (Edit) the file with OS associated extension'
         'Open (Edit) the file with BGA associated extension (see below)')
-      ExplicitTop = -26
     end
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
@@ -107,7 +104,6 @@ object RFASettingsForm: TRFASettingsForm
       Padding.Right = 10
       Padding.Bottom = 10
       TabOrder = 2
-      ExplicitTop = 5
       object ExtList: TVirtualStringTree
         Left = 12
         Top = 25

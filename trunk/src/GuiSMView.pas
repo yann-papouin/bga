@@ -26,9 +26,10 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses,
   GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels,
-  StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon;
+  StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon, BGALib;
 
 type
+
   TSMViewForm = class(TFormCommon)
     Navigation: TGLSimpleNavigation;
     Scene: TGLScene;
@@ -63,7 +64,9 @@ type
     function BranchSelected(Sender: TBaseVirtualTree; Node : PVirtualNode) : boolean;
   public
     { Déclarations publiques }
-    procedure LoadStandardMesh(Filename: string);
+    GetFileByPath: TBgaGetFileByPath;
+    procedure LoadMaterials(Filename: string);    // Load textures from .RS file
+    procedure LoadStandardMesh(Filename: string); // Load mesh from .SM file
     procedure Preview;
   end;
 
@@ -76,7 +79,7 @@ implementation
 {$R *.dfm}
 
 uses
-  VirtualTreeviewTheme, GLFileSM, AppLib, Resources, Math;
+  DbugIntf, VirtualTreeviewTheme, GLFileSM, AppLib, Resources, Math;
 
 type
   pData = ^rData;
@@ -118,6 +121,9 @@ begin
     Node := MeshList.GetNext(Node);
   end;
 end;
+
+
+
 
 procedure TSMViewForm.LoadSMData;
 var
@@ -236,6 +242,12 @@ begin
 
   LoadSMData;
 end;
+
+procedure TSMViewForm.LoadMaterials(Filename: string);
+begin
+  SendDebug(Filename);
+end;
+
 
 
 function TSMViewForm.BranchSelected(Sender: TBaseVirtualTree; Node: PVirtualNode): boolean;
