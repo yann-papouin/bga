@@ -26,7 +26,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DDS, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses,
   GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels,
-  StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon, BGALib, Generics.Collections;
+  StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon, BGALib, Generics.Collections, GLMaterial;
 
 type
 
@@ -36,8 +36,10 @@ type
   public
     Name : string;
     SubType : string;
-    Lighting : boolean;
     MaterialDiffuse : Array[1..3] of single;
+    MaterialSpecular : Array[1..3] of single;
+    MaterialSpecularPower : single;
+    Lighting : boolean;
     LightingSpecular : boolean;
     TwoSided : boolean;
     Transparent : boolean;
@@ -74,6 +76,7 @@ subshader "plantsgroup1-large_Material0" "StandardMesh/Default"
     Grid: TGLXYZGrid;
     MeshList: TVirtualStringTree;
     Splitter: TSpTBXSplitter;
+    GLMaterialLibrary: TGLMaterialLibrary;
     procedure FormCreate(Sender: TObject);
     procedure MeshListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
@@ -289,8 +292,12 @@ procedure TSMViewForm.LoadMaterials(Filename: string);
 var
   Data : TStringList;
   Line, Pos : Integer;
-  Texture, Path: string;
+  Path: string;
   Resource : TSMResource;
+  LibMaterial : TGLLibMaterial;
+
+  SectionSubShader : boolean;
+  TitleSubShader : boolean;
 begin
   FResourceList.Clear;
   SendDebug(Filename);
@@ -301,20 +308,104 @@ begin
 
     for Line := 0 to Data.Count - 1 do
     begin
-      Pos := AnsiPos('texture', Data[Line]);
-      if Pos > 0 then
-      begin
-        Texture := SFBetween('"', Data[Line]);
-        Texture := Texture +'.dds';
-        Path := GetFileByPath(Self, Texture);
-        SendDebug(Path);
-        if FileExists(Path) then
-        begin
-          FreeMesh.Material.Texture.Enabled := true;
-          FreeMesh.Material.Texture.Image.LoadFromFile(Path);
 
+      if not TitleSubShader then
+      begin
+        Pos := AnsiPos('subshader', Data[Line]);
+        if Pos > 0 then
+        begin
+          TitleSubShader := true;
+
+          Resource := TSMResource.Create;
+          FResourceList.Add(Resource);
         end;
       end;
+
+      if TitleSubShader then
+      begin
+        Pos := AnsiPos('{', Data[Line]);
+        if Pos > 0 then
+        begin
+          TitleSubShader := false;
+          SectionSubShader := true;
+        end;
+      end;
+
+      if TitleSubShader then
+      begin
+        Resource.Name := SFBetween('"', Data[Line]);
+      end;
+
+      if SectionSubShader then
+      begin
+        Pos := AnsiPos('}', Data[Line]);
+        if Pos > 0 then
+        begin
+          SectionSubShader := false;
+
+          Path := GetFileByPath(Self, Resource.Texture);
+          if FileExists(Path) then
+          begin
+            LibMaterial := FreeMesh.MaterialLibrary.AddTextureMaterial(Resource.Name, Path);
+            //FreeMesh.Material.Texture.Enabled := true;
+            //FreeMesh.Material.Texture.Image.LoadFromFile(Path);
+          end;
+        end;
+      end;
+
+      if SectionSubShader then
+      begin
+
+        Pos := AnsiPos('MaterialSpecularPower ', Data[Line]);
+        if Pos > 0 then
+        begin
+          Resource.MaterialSpecularPower := StrToFloatDef(SFBetweenTwo(' ', ';', Data[Line]), 1.0);
+        end;
+
+        Pos := AnsiPos('lighting ', Data[Line]);
+        if Pos > 0 then
+        begin
+          Resource.Lighting := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
+        end;
+
+        Pos := AnsiPos('lightingSpecular ', Data[Line]);
+        if Pos > 0 then
+        begin
+          Resource.LightingSpecular := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
+        end;
+
+        Pos := AnsiPos('TwoSided ', Data[Line]);
+        if Pos > 0 then
+        begin
+          Resource.TwoSided := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
+        end;
+
+        Pos := AnsiPos('Transparent ', Data[Line]);
+        if Pos > 0 then
+        begin
+          Resource.Transparent := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
+        end;
+
+        Pos := AnsiPos('DepthWrite ', Data[Line]);
+        if Pos > 0 then
+        begin
+          Resource.DepthWrite := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
+        end;
+
+        Pos := AnsiPos('AlphaTestRef ', Data[Line]);
+        if Pos > 0 then
+        begin
+          Resource.AlphaTestRef := StrToFloatDef(SFBetweenTwo(' ', ';', Data[Line]), 1.0);
+        end;
+
+        Pos := AnsiPos('texture ', Data[Line]);
+        if Pos > 0 then
+        begin
+          Resource.Texture := SFBetween('"', Data[Line]) +'.dds';
+        end;
+
+      end;
+
     end;
 
   finally

@@ -108,6 +108,7 @@ inherited SMViewForm: TSMViewForm
       CubeSize = 1.000000000000000000
     end
     object FreeMesh: TGLFreeForm
+      MaterialLibrary = GLMaterialLibrary
     end
     object Grid: TGLXYZGrid
       AntiAliased = True
@@ -121,5 +122,9 @@ inherited SMViewForm: TSMViewForm
       ZSamplingScale.Step = 5.000000000000000000
       Parts = [gpX, gpZ]
     end
+  end
+  object GLMaterialLibrary: TGLMaterialLibrary
+    Left = 8
+    Top = 72
   end
 end

@@ -43,6 +43,7 @@ uses
   function SFNLeft(substr: string; s: string;n:integer): string;
   function SFLeftNRight(substr: string; s: string;n:integer): string;
   function SFBetween(substr: string; s: string): string;
+  function SFBetweenTwo(substrLeft: string; substrRight: string; s: string): string;
 
   function VariantToString(AVar: OleVariant): string;
 
@@ -258,6 +259,13 @@ end;
 function SFBetween(substr: string; s: string): string;
 begin
   result := SFLeftNRight(substr, s, 1);
+end;
+
+
+function SFBetweenTwo(substrLeft: string; substrRight: string; s: string): string;
+begin
+  Result := SFRight(substrLeft, s);
+  Result := SFLeftFromLast(substrRight, Result);
 end;
 
 
