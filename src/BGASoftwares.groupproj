@@ -9,6 +9,9 @@
 			<Projects Include="ExPictureViewer.dproj">
 				<Dependencies/>
 			</Projects>
+			<Projects Include="ExMeshViewer.dproj">
+				<Dependencies/>
+			</Projects>
 		</ItemGroup>
 		<ProjectExtensions>
 			<Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -35,14 +38,23 @@
 		<Target Name="ExPictureViewer:Make">
 			<MSBuild Targets="Make" Projects="ExPictureViewer.dproj"/>
 		</Target>
+		<Target Name="ExMeshViewer">
+			<MSBuild Projects="ExMeshViewer.dproj"/>
+		</Target>
+		<Target Name="ExMeshViewer:Clean">
+			<MSBuild Targets="Clean" Projects="ExMeshViewer.dproj"/>
+		</Target>
+		<Target Name="ExMeshViewer:Make">
+			<MSBuild Targets="Make" Projects="ExMeshViewer.dproj"/>
+		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="BGA;ExPictureViewer"/>
+			<CallTarget Targets="BGA;ExPictureViewer;ExMeshViewer"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="BGA:Clean;ExPictureViewer:Clean"/>
+			<CallTarget Targets="BGA:Clean;ExPictureViewer:Clean;ExMeshViewer:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="BGA:Make;ExPictureViewer:Make"/>
+			<CallTarget Targets="BGA:Make;ExPictureViewer:Make;ExMeshViewer:Make"/>
 		</Target>
 		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 	</Project>

@@ -134,6 +134,7 @@ type
   protected
     procedure MakePathVisible(Table: TBaseVirtualTree; Node: PVirtualNode);
     function FindFileByName(Filename: string): PVirtualNode;
+    function FindFile(Path: String): PVirtualNode;
     function FindPath(Path: String) : PVirtualNode;
     procedure PropagateStatus(Node: PVirtualNode; Status: TEntryModification);
     procedure ExportFile(Node: PVirtualNode; OutputStream: TStream);
@@ -205,7 +206,7 @@ var
   Node: PVirtualNode;
   Data : pFse;
 begin
-  Node := FindPath(VirtualPath);
+  Node := FindFile(VirtualPath);
   if Node <> nil then
     Result := ExtractTemporary(Node)
   else
@@ -228,6 +229,36 @@ begin
     begin
       Result := Node;
       Break;
+    end;
+    Node := RFAList.GetNext(Node);
+  end;
+end;
+
+function TRFACommonForm.FindFile(Path: String) : PVirtualNode;
+var
+  Node: PVirtualNode;
+  Data : pFse;
+  Pos : Integer;
+  NewDiff, PreviousDiff : integer;
+begin
+  Result := nil;
+  PreviousDiff := -1;
+  Node := RFAList.GetFirst;
+
+  while Node <> nil do
+  begin
+    Data := RFAList.GetNodeData(Node);
+    Pos := AnsiPos(UpperCase(Path), UpperCase(Data.EntryName));
+    if Pos > 0 then
+    begin
+      SendDebugFmt('%s = %s',[Data.EntryName, Path]);
+      NewDiff := Length(Data.EntryName) - Length(Path);
+
+      if (NewDiff < PreviousDiff) or (PreviousDiff < 0) then
+      begin
+        PreviousDiff := NewDiff;
+        Result := Node;
+      end;
     end;
     Node := RFAList.GetNext(Node);
   end;

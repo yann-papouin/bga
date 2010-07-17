@@ -252,27 +252,6 @@ var
   Node: PVirtualNode;
   Data : pFse;
   W32Path : AnsiString;
-  //Updating : boolean;
-
-  (*
-  function FindFile(BF42FullName : AnsiString) : PVirtualNode;
-  var
-    Data : pFse;
-  begin
-    Result := RFAViewForm.RFAList.GetFirst;
-
-    while Result <> nil do
-    begin
-      Data := RFAViewForm.RFAList.GetNodeData(Result);
-
-      if AnsiCompareText(Data.BF42FullName, BF42FullName) = 0 then
-        Exit
-      else
-        Result := RFAViewForm.RFAList.GetNext(Result, true);
-    end;
-
-  end;
-  *)
 
 begin
   TotalProgress(roLoad, PG_AUTO, Sender.Count);
@@ -286,38 +265,9 @@ begin
 
   Node := RFAList.AddChild(Node);
 
-(*
-  Node := FindFile(Name);
-
-  if Node = nil then
-  begin
-    Updating := false;
-    Node := FindPath(W32Path);
-
-    if Node = nil then
-      Node := RFAList.RootNode;
-
-    Node := RFAList.AddChild(Node);
-  end
-    else
-      Updating := true;
-*)
   Data := RFAList.GetNodeData(Node);
   Data.RFAFileHandle := Sender;
   Data.RFAFileName := Data.RFAFileHandle.Filepath;
-(*
-  if Updating then
-  begin
-    if  Data.Size <> ucSize then
-      ShowMessageFmt('???ucSize (%d, %d)',[Data.Size, ucSize]);
-    if  Data.Compressed <> Compressed then
-      Showmessage('???Compressed');
-    if  Data.CompSize <> cSize then
-      Showmessage('???cSize');
-    if  Data.W32Path <> W32Path then
-      Showmessage(Data.W32Path + #10+#13 + W32Path);
-  end;
-*)
 
   Data.EntryName := Name;
   Data.Offset := Offset;

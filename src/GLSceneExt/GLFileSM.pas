@@ -22,6 +22,7 @@ unit GLFileSM;
 
 interface
 
+{$DEFINE DEBUG_GLSM}
 
 uses
   Classes, SysUtils, GLVectorFileObjects, ApplicationFileIO, FileSM, TypesSM;
@@ -63,17 +64,20 @@ type
 
   TGLSMMatMeshObject = class(TGLSMMeshObject)
   private
-    FTexturePath: string;
     FParentMeshID: integer;
   public
-    property TexturePath : string read FTexturePath;
     property ParentMeshID : integer read FParentMeshID;
   end;
 
 implementation
 
 uses
-  Dbugintf, VectorTypes, GLColor;
+  {$IfDef DEBUG_GLSM}
+  Dbugintf,
+  {$EndIf}
+  VectorTypes,
+  VectorGeometry,
+  GLColor;
 
 
 // ------------------------------------------------------------------
@@ -89,13 +93,17 @@ end;
 procedure TGLSMVectorFile.LoadFromStream(aStream: TStream);
 var
    i, j, k : Integer;
+   id : array[0..2] of Integer;
+   idc : Integer;
    SMFile : TFileSM;
    ColMesh : TGLSMColMeshObject;
    MatMesh : TGLSMMatMeshObject;
+   TexPoint : TTexPoint;
+   TexPoint3 : TTexPoint3;
    MatVert : TMatrix3f;
    ColNorm : TVector3f;
    MatNorm : TMatrix3f;
-   FaceGroup : TFGIndexTexCoordList;
+   FaceGroup : TFGVertexNormalTexIndexList;
    Color : TGLColor;
 begin
 
@@ -110,27 +118,29 @@ begin
       for i := 0 to SMFile.CollMeshCount - 1 do
       begin
         ColMesh := TGLSMColMeshObject.CreateOwned(Owner.MeshObjects);
+        ColMesh.UseVBO := false;
+        ColMesh.Mode := momFaceGroups;
+        //ColMesh.Mode := momTriangles;
+
+        FaceGroup:=TFGVertexNormalTexIndexList.CreateOwned(ColMesh.FaceGroups);
+        FaceGroup.Mode:=fgmmTriangles;
 
         if SMFile.CollMeshes[i].FaceCount > 0 then
           for j:=0 to SMFile.CollMeshes[i].FaceCount-1 do
           begin
             MatVert := SMFile.CollVertexFromFaceId(i, j);
-            ColMesh.Vertices.Add(MatVert[0]);
-            ColMesh.Vertices.Add(MatVert[1]);
-            ColMesh.Vertices.Add(MatVert[2]);
+            id[0] := ColMesh.Vertices.Add(MatVert[0]);
+            id[1] := ColMesh.Vertices.Add(MatVert[1]);
+            id[2] := ColMesh.Vertices.Add(MatVert[2]);
+            FaceGroup.VertexIndices.Add(id[0], id[1], id[2]);
           end;
-(*
-        if SMFile.CollMeshes[i].NormaleCount > 0 then
-          for j:=0 to SMFile.CollMeshes[i].NormaleCount-1 do
-          begin
-            MatNorm := SMFile.CollNormaleFromFaceId(i, j);
-            ColMesh.Normals.Add(MatNorm[0]);
-            ColMesh.Normals.Add(MatNorm[1]);
-            ColMesh.Normals.Add(MatNorm[2]);
-          end;
-*)
-        //SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[ColMesh.Vertices.Capacity]);
-        //SendDebugFmt('Current Mesh.TriangleCount is %d',[ColMesh.TriangleCount]);
+
+        ColMesh.BuildNormals(FaceGroup.VertexIndices, momTriangles);
+
+        {$IfDef DEBUG_GLSM}
+          SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[ColMesh.Vertices.Capacity]);
+          SendDebugFmt('Current Mesh.TriangleCount is %d',[ColMesh.TriangleCount]);
+        {$EndIf}
       end;
     end;
 
@@ -139,33 +149,55 @@ begin
       // retrieve LodMesh data
       for i := 0 to SMFile.MeshCount - 1 do
       begin
+        {$IfDef DEBUG_GLSM}
         SendInteger('MatMeshCount', SMFile.Meshes[i].MatMeshCount);
+        {$EndIf}
 
         if SMFile.Meshes[i].MatMeshCount > 0 then
         for j:=0 to SMFile.Meshes[i].MatMeshCount-1 do
           begin
             MatMesh := TGLSMMatMeshObject.CreateOwned(Owner.MeshObjects);
-            MatMesh.Mode := momTriangles;
-
-            MatMesh.FTexturePath := SMFile.Meshes[i].MatMeshes[j].Material.Name;
+            MatMesh.UseVBO := false;
+            MatMesh.Mode := momFaceGroups;
             MatMesh.FParentMeshID := i;
+
+            FaceGroup:=TFGVertexNormalTexIndexList.CreateOwned(MatMesh.FaceGroups);
+            FaceGroup.MaterialName := SMFile.Meshes[i].MatMeshes[j].Material.Name;
+            FaceGroup.Mode:=fgmmTriangles;
 
             if SMFile.Meshes[i].MatMeshes[j].MeshData.FaceCount > 0 then
             for k:=0 to SMFile.Meshes[i].MatMeshes[j].MeshData.FaceCount-1 do
             begin
               MatVert := SMFile.MeshVertexFromMatFaceId(i, j, k);
-              MatMesh.Vertices.Add(MatVert[0]);
-              MatMesh.Vertices.Add(MatVert[1]);
-              MatMesh.Vertices.Add(MatVert[2]);
+              id[0] := MatMesh.Vertices.Add(MatVert[0]);
+              id[1] := MatMesh.Vertices.Add(MatVert[1]);
+              id[2] := MatMesh.Vertices.Add(MatVert[2]);
+              FaceGroup.VertexIndices.Add(id[0], id[1], id[2]);
 
               MatNorm := SMFile.MeshNormaleFromMatFaceId(i, j, k);
-              MatMesh.Normals.Add(MatNorm[0]);
-              MatMesh.Normals.Add(MatNorm[1]);
-              MatMesh.Normals.Add(MatNorm[2]);
+              id[0] := MatMesh.Normals.Add(MatNorm[0]);
+              id[1] := MatMesh.Normals.Add(MatNorm[1]);
+              id[2] := MatMesh.Normals.Add(MatNorm[2]);
+              FaceGroup.NormalIndices.Add(id[0], id[1], id[2]);
+
+              TexPoint3 := SMFile.MeshTextureFromMatFaceId(i, j, k);
+              id[0] := MatMesh.TexCoords.Add(TexPoint3[0]);
+              id[1] := MatMesh.TexCoords.Add(TexPoint3[1]);
+              id[2] := MatMesh.TexCoords.Add(TexPoint3[2]);
+              FaceGroup.TexCoordIndices.Add(id[0], id[1], id[2]);
             end;
 
-            //SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[LodMesh.Vertices.Capacity]);
-            //SendDebugFmt('Current Mesh.TriangleCount is %d',[LodMesh.TriangleCount]);
+          {$IfDef DEBUG_GLSM}
+            SendDebugFmt('VertexIndices =  %d',[FaceGroup.VertexIndices.Count]);
+            SendDebugFmt('NormalIndices =  %d',[FaceGroup.NormalIndices.Count]);
+            SendDebugFmt('TexCooIndices =  %d',[FaceGroup.TexCoordIndices.Count]);
+          {$EndIf}
+
+          {$IfDef DEBUG_GLSM}
+            SendDebugFmt('Current Mesh.Vertices.Capacity is %d',[MatMesh.Vertices.Capacity]);
+            SendDebugFmt('Current Mesh.TriangleCount is %d',[MatMesh.TriangleCount]);
+          {$EndIf}
+
           end;
       end;
     end;

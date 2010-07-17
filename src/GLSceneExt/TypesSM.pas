@@ -40,6 +40,8 @@ const
 
 type
 
+  TTexPoint3 = array[0..2] of TTexPoint;
+
   PSMBBox = ^TSMBBox;
   TSMBBox = record
     P1 : TVector3f;
