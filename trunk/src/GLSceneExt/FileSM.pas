@@ -25,7 +25,7 @@ interface
 {$DEFINE DEBUG_SM}
 {.$DEFINE DEBUG_SM_DETAILS}
 
-uses Classes, TypesSM, VectorTypes;
+uses Classes, TypesSM, VectorTypes, VectorGeometry;
 
 type
 
@@ -51,6 +51,7 @@ type
 
     function MeshVertexFromMatFaceId(MeshID : Longword; LodID: Longword; FaceID: Longword): TMatrix3f;
     function MeshNormaleFromMatFaceId(MeshID : Longword; LodID: Longword; FaceID: Longword): TMatrix3f;
+    function MeshTextureFromMatFaceId(MeshID, LodID, FaceID: Longword): TTexPoint3;
 
     property Header : Longword read FHeader;
     property CollMeshCount : Longword read FCollMeshCount;
@@ -65,7 +66,7 @@ implementation
 
 uses
   DbugIntf,
-  SysUtils, VectorGeometry, Math;
+  SysUtils, Math;
 
 const
   DWORD_SIZE = 4;
@@ -365,12 +366,14 @@ begin
                 aStream.Read(ptNormale.Value[2], FLOAT_SIZE);
 
                 aStream.Read(ptMaterial.TextureCoord[k].S, FLOAT_SIZE);
-                aStream.Read(ptMaterial.TextureCoord[k].T, FLOAT_SIZE); //ty = (1.0 - (ReadFloat fp)) - 1.0
+                aStream.Read(ptMaterial.TextureCoord[k].T, FLOAT_SIZE);
+                ptMaterial.TextureCoord[k].T := 1.0 - ptMaterial.TextureCoord[k].T;
 
                 if ptMaterial.VertLength = BS_40 then
                 begin
                   aStream.Read(ptMaterial.LightmapCoord[k].S, FLOAT_SIZE);
-                  aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
+                  aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);
+                  ptMaterial.LightmapCoord[k].T := 1.0 - ptMaterial.LightmapCoord[k].T;
                 end;
 
               end;
@@ -380,7 +383,8 @@ begin
                 for k := 0 to ptMeshdata.VertexCount - 1 do
                 begin
                   aStream.Read(ptMaterial.LightmapCoord[k].S, FLOAT_SIZE);
-                  aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);  //ty = (1.0 - (ReadFloat fp))
+                  aStream.Read(ptMaterial.LightmapCoord[k].T, FLOAT_SIZE);
+                  ptMaterial.LightmapCoord[k].T := 1.0 - ptMaterial.LightmapCoord[k].T;
 
                   // Unused data (24 bytes)
                   aStream.Position := aStream.Position + 24;
@@ -480,17 +484,29 @@ begin
   Assert(Face.A<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
   Assert(Face.B<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
   Assert(Face.C<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
-  (*
-  SendInteger('Face.A',Face.A);
-  SendInteger('Face.B',Face.B);
-  SendInteger('Face.C',Face.C);
-
-  SendInteger('FaceCount',FMeshes[MeshID].MatMeshes[LodID].MeshData.FaceCount);
-  *)
 
   Result[0] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.A].Value;
   Result[1] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.B].Value;
   Result[2] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.C].Value;
+end;
+
+function TFileSM.MeshTextureFromMatFaceId(MeshID, LodID, FaceID: Longword): TTexPoint3;
+var
+  Face : TSMFace;
+begin
+  Assert(MeshID<FMeshCount);
+  Assert(LodID<FMeshes[MeshID].MatMeshCount);
+  Assert(FaceID<FMeshes[MeshID].MatMeshes[LodID].MeshData.FaceCount);
+
+  Face := FMeshes[MeshID].MatMeshes[LodID].MeshData.Faces[FaceID];
+
+  Assert(Face.A<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
+  Assert(Face.B<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
+  Assert(Face.C<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
+
+  Result[0] := FMeshes[MeshID].MatMeshes[LodID].Material.TextureCoord[Face.A];
+  Result[1] := FMeshes[MeshID].MatMeshes[LodID].Material.TextureCoord[Face.B];
+  Result[2] := FMeshes[MeshID].MatMeshes[LodID].Material.TextureCoord[Face.C];
 end;
 
 function TFileSM.MeshNormaleFromMatFaceId(MeshID, LodID, FaceID: Longword): TMatrix3f;
@@ -534,5 +550,6 @@ begin
   Result[1] := FCollMeshes[CollMeshID].Normales[Face.B].Value;
   Result[2] := FCollMeshes[CollMeshID].Normales[Face.C].Value;
 end;
+
 
 end.

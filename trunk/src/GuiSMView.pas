@@ -24,11 +24,43 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses,
+  Dialogs, DDS, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses,
   GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels,
-  StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon, BGALib;
+  StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon, BGALib, Generics.Collections;
 
 type
+
+
+  TSMResource = class
+  private
+  public
+    Name : string;
+    SubType : string;
+    Lighting : boolean;
+    MaterialDiffuse : Array[1..3] of single;
+    LightingSpecular : boolean;
+    TwoSided : boolean;
+    Transparent : boolean;
+    DepthWrite : boolean;
+    AlphaTestRef : single;
+    Texture : string;
+  end;
+
+  TSMResourceList = TObjectList<TSMResource>;
+
+  (*
+subshader "plantsgroup1-large_Material0" "StandardMesh/Default"
+{
+	lighting false;
+	materialDiffuse .7 .7 .7;
+	lightingSpecular false;
+	twosided true;
+	transparent true;
+	depthWrite true;
+	alphaTestRef 0.4;
+	texture "bf1942/levels/DC_LostVillage/Texture/desertplants1";
+}
+  *)
 
   TSMViewForm = class(TFormCommon)
     Navigation: TGLSimpleNavigation;
@@ -52,12 +84,14 @@ type
       var Ghosted: Boolean; var ImageIndex: Integer);
     procedure MeshListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure MeshListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure FormDestroy(Sender: TObject);
   private
     { Déclarations privées }
     FWorldRootNode : PVirtualNode;
     FColRootNode : PVirtualNode;
     FMeshRootNode : PVirtualNode;
     FFilename : string;
+    FResourceList : TSMResourceList;
     procedure LoadSMData;
   protected
     function FindNodeID(ID : integer) : PVirtualNode;
@@ -71,6 +105,7 @@ type
   end;
 
 
+
 var
   SMViewForm: TSMViewForm;
 
@@ -79,7 +114,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, VirtualTreeviewTheme, GLFileSM, AppLib, Resources, Math;
+  DbugIntf, StringFunction, VirtualTreeviewTheme, GLFileSM, AppLib, Resources, Math;
 
 type
   pData = ^rData;
@@ -99,6 +134,13 @@ procedure TSMViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
   EnableSkinning(MeshList);
+  FResourceList := TSMResourceList.Create;
+end;
+
+procedure TSMViewForm.FormDestroy(Sender: TObject);
+begin
+  FResourceList.Free;
+  inherited;
 end;
 
 function TSMViewForm.FindNodeID(ID: integer): PVirtualNode;
@@ -244,8 +286,41 @@ begin
 end;
 
 procedure TSMViewForm.LoadMaterials(Filename: string);
+var
+  Data : TStringList;
+  Line, Pos : Integer;
+  Texture, Path: string;
+  Resource : TSMResource;
 begin
+  FResourceList.Clear;
   SendDebug(Filename);
+  if FileExists(Filename) then
+  try
+    Data := TStringList.Create;
+    Data.LoadFromFile(Filename);
+
+    for Line := 0 to Data.Count - 1 do
+    begin
+      Pos := AnsiPos('texture', Data[Line]);
+      if Pos > 0 then
+      begin
+        Texture := SFBetween('"', Data[Line]);
+        Texture := Texture +'.dds';
+        Path := GetFileByPath(Self, Texture);
+        SendDebug(Path);
+        if FileExists(Path) then
+        begin
+          FreeMesh.Material.Texture.Enabled := true;
+          FreeMesh.Material.Texture.Image.LoadFromFile(Path);
+
+        end;
+      end;
+    end;
+
+  finally
+    Data.Free;
+  end;
+
 end;
 
 

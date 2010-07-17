@@ -2,6 +2,7 @@ inherited SMViewForm: TSMViewForm
   Caption = 'SM View'
   ClientHeight = 513
   ClientWidth = 784
+  OnDestroy = FormDestroy
   ExplicitWidth = 800
   ExplicitHeight = 551
   PixelsPerInch = 96
