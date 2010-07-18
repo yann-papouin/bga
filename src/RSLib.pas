@@ -4,7 +4,7 @@ interface
 
 uses
    Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Generics.Collections,
-   GLState;
+   GLState, VectorTypes;
 
 type
 
@@ -13,8 +13,8 @@ type
   public
     Name : string;
     SubType : string;
-    MaterialDiffuse : Array[1..3] of single;
-    MaterialSpecular : Array[1..3] of single;
+    MaterialDiffuse : TVector4f;
+    MaterialSpecular : TVector4f;
     MaterialSpecularPower : single;
     Lighting : boolean;
     LightingSpecular : boolean;
@@ -57,12 +57,13 @@ implementation
 { TRsParser }
 
 uses
-  StringFunction;
+  StringFunction, GLColor;
 
 constructor TRsParser.Create;
 begin
   inherited;
   FParsed := false;
+  OwnsObjects := true;
 end;
 
 procedure TRsParser.Parse(Data: TStringList);
@@ -73,6 +74,23 @@ var
 
   SectionSubShader : boolean;
   TitleSubShader : boolean;
+
+  function ParseInlineVectorData(s : string) : TVector4f;
+  var
+    ArrayText : TStringList;
+  begin
+    ArrayText := TStringList.Create;
+    SFParseDelimited(ArrayText, trim(s), ' ');
+    if ArrayText.Count = 3 then
+    begin
+      Result[0] := StrToFloatDef(ArrayText[0], 0.0);
+      Result[1] := StrToFloatDef(ArrayText[1], 0.0);
+      Result[2] := StrToFloatDef(ArrayText[2], 0.0);
+      Result[3] := 1.0;
+    end;
+    ArrayText.Free;
+  end;
+
 begin
   FParsed := false;
   Clear;
@@ -88,6 +106,11 @@ begin
         TitleSubShader := true;
 
         Resource := TRsResource.Create;
+        Resource.MaterialDiffuse := clrWhite;
+        Resource.MaterialSpecular := clrBlack;
+        Resource.MaterialSpecularPower := 0.0;
+        Resource.Lighting := true;
+        Resource.LightingSpecular := false;
         Resource.Transparent := false;
         Resource.DepthWrite := true;
         Add(Resource);
@@ -121,19 +144,31 @@ begin
     if SectionSubShader then
     begin
 
+      Pos := AnsiPos('MaterialDiffuse ', Data[Line]);
+      if Pos > 0 then
+      begin
+        Resource.MaterialDiffuse := ParseInlineVectorData(Data[Line]);
+      end;
+
+      Pos := AnsiPos('MaterialSpecular ', Data[Line]);
+      if Pos > 0 then
+      begin
+        Resource.MaterialSpecular := ParseInlineVectorData(Data[Line]);
+      end;
+
       Pos := AnsiPos('MaterialSpecularPower ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.MaterialSpecularPower := StrToFloatDef(SFBetweenTwo(' ', ';', Data[Line]), 1.0);
       end;
 
-      Pos := AnsiPos('lighting ', Data[Line]);
+      Pos := AnsiPos('Lighting ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.Lighting := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
       end;
 
-      Pos := AnsiPos('lightingSpecular ', Data[Line]);
+      Pos := AnsiPos('LightingSpecular ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.LightingSpecular := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
@@ -184,7 +219,6 @@ begin
         else
           Resource.BlendSrc := bfZero;
       end;
-
 
       Pos := AnsiPos('AlphaTestRef ', Data[Line]);
       if Pos > 0 then

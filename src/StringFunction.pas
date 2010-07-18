@@ -44,6 +44,7 @@ uses
   function SFLeftNRight(substr: string; s: string;n:integer): string;
   function SFBetween(substr: string; s: string): string;
   function SFBetweenTwo(substrLeft: string; substrRight: string; s: string): string;
+  procedure SFParseDelimited(const Output : TStrings; const s : string; const delimiter : string);
 
   function VariantToString(AVar: OleVariant): string;
 
@@ -266,6 +267,30 @@ function SFBetweenTwo(substrLeft: string; substrRight: string; s: string): strin
 begin
   Result := SFRight(substrLeft, s);
   Result := SFLeftFromLast(substrRight, Result);
+end;
+
+procedure SFParseDelimited(const Output : TStrings; const s : string; const delimiter : string) ;
+var
+   dx : integer;
+   ns : string;
+   txt : string;
+   delta : integer;
+begin
+   delta := Length(delimiter) ;
+   txt := s + delimiter;
+   Output.BeginUpdate;
+   Output.Clear;
+   try
+     while Length(txt) > 0 do
+     begin
+       dx := Pos(delimiter, txt) ;
+       ns := Copy(txt,0,dx-1) ;
+       Output.Add(ns) ;
+       txt := Copy(txt,dx+delta,MaxInt) ;
+     end;
+   finally
+     Output.EndUpdate;
+   end;
 end;
 
 
