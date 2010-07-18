@@ -83,7 +83,13 @@ inherited SMViewForm: TSMViewForm
   object Scene: TGLScene
     Left = 8
     Top = 8
-    object Light: TGLLightSource
+    object LightFront: TGLLightSource
+      ConstAttenuation = 1.000000000000000000
+      Diffuse.Color = {9695153F9695153F9695153F0000803F}
+      Position.Coordinates = {0000204100002041000020410000803F}
+      SpotCutOff = 180.000000000000000000
+    end
+    object LightBack: TGLLightSource
       ConstAttenuation = 1.000000000000000000
       Diffuse.Color = {9695153F9695153F9695153F0000803F}
       Position.Coordinates = {0000204100002041000020410000803F}

@@ -28,7 +28,7 @@ uses
   BaseClasses,
   GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels,
   StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon, BGALib, GLMaterial, GLBitmapFont,
-  GLWindowsFont, RSLib;
+  GLWindowsFont, RSLib, GLSkydome, GLAtmosphere;
 
 type
 
@@ -40,7 +40,7 @@ type
     DummyCube: TGLDummyCube;
     CameraTarget: TGLDummyCube;
     Camera: TGLCamera;
-    Light: TGLLightSource;
+    LightFront: TGLLightSource;
     CamLight: TGLLightSource;
     FreeMesh: TGLFreeForm;
     Grid: TGLXYZGrid;
@@ -48,6 +48,7 @@ type
     Splitter: TSpTBXSplitter;
     GLMaterialLibrary: TGLMaterialLibrary;
     WindowsBitmapFont: TGLWindowsBitmapFont;
+    LightBack: TGLLightSource;
     procedure FormCreate(Sender: TObject);
     procedure MeshListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
@@ -102,7 +103,6 @@ type
 
 
 { TSMViewForm }
-
 
 procedure TSMViewForm.FormCreate(Sender: TObject);
 begin
@@ -247,7 +247,13 @@ begin
   Camera.Position.Y := CamDistance;
   Camera.Position.Z := CamDistance;
 
-  Light.Position.Assign(Camera.Position);
+  LightFront.Position.X := Camera.Position.X;
+  LightFront.Position.Y := Camera.Position.Y;
+  LightFront.Position.Z := Camera.Position.Z;
+
+  LightBack.Position.X := -Camera.Position.X;
+  LightBack.Position.Y := -Camera.Position.Y;
+  LightBack.Position.Z := -Camera.Position.Z;
 end;
 
 procedure TSMViewForm.LoadStandardMesh(Filename: string);
@@ -280,10 +286,18 @@ begin
     begin
       for i := 0 to FParser.Count - 1 do
       begin
+        Path := GetFileByPath(Self, FParser[i].Texture);
         LibMaterial := FreeMesh.MaterialLibrary.AddTextureMaterial(FParser[i].Name, Path);
 
         if FParser[i].Transparent then
           LibMaterial.Material.BlendingMode := bmTransparency;
+
+        LibMaterial.Material.FrontProperties.Diffuse.Color := FParser[i].MaterialDiffuse;
+        LibMaterial.Material.FrontProperties.Specular.Color := FParser[i].MaterialSpecular;
+        LibMaterial.Material.FrontProperties.Shininess := Round(FParser[i].MaterialSpecularPower);
+
+        if not FParser[i].Lighting then
+          LibMaterial.Material.MaterialOptions := LibMaterial.Material.MaterialOptions + [moNoLighting];
 
         LibMaterial.Material.DepthProperties.DepthWrite := FParser[i].DepthWrite;
         //LibMaterial.Material.FrontProperties.Specular.Red
