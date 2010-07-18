@@ -1,6 +1,7 @@
 program ExMapViewer;
 
 uses
+  ExceptionLog,
   Forms,
   ExMapViewerMain in 'ExMapViewerMain.pas' {ExMapViewerMainForm},
   GuiRAWView in 'GuiRAWView.pas' {RAWViewForm},

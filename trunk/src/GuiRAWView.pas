@@ -68,10 +68,8 @@ type
     Viewer: TGLSceneViewer;
     Scene: TGLScene;
     Camera: TGLCamera;
-    DummyCube: TGLDummyCube;
     Navigation: TGLSimpleNavigation;
     CamLight: TGLLightSource;
-    HeightFieldBase: TGLHeightField;
     WaterPlane: TGLPlane;
     CameraTarget: TGLDummyCube;
     Inspector: TJvInspector;
@@ -82,6 +80,7 @@ type
     TBSeparatorItem1: TTBSeparatorItem;
     TBSeparatorItem2: TTBSeparatorItem;
     GLMaterialLibrary: TGLMaterialLibrary;
+    Root: TGLDummyCube;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
@@ -168,8 +167,6 @@ var
   HeightField : TGLHeightField;
 begin
   GLMaterialLibrary.Materials.Clear;
-  HeightFieldBase.Visible := true;
-  HeightFieldBase.ClearStructureChanged;
 
   if FileExists(Filename) then
   begin
@@ -181,13 +178,8 @@ begin
     for Col := 0 to TexturePart - 1 do
       for Row := 0 to TexturePart - 1 do
       begin
-
         HeightField := TGLHeightField.Create(Self);
-        HeightField.Direction.Z := 0;
-        HeightField.Direction.Y := 1;
-        HeightField.Up.Z := 1;
-        HeightField.Up.Y := 0;
-        HeightField.Parent := Scene.Objects;
+        HeightField.Parent := Root;
         HeightField.Visible := true;
         FHeightfields.Add(HeightField);
 
@@ -201,7 +193,6 @@ begin
           HeightField.Material.LibMaterialName := TextureName;
         end;
       end;
-
 
     HeightMapFile := GetFileByPath(Self, HeightMap);
     Stream := TFileStream.Create(HeightMapFile, fmOpenRead);
@@ -250,7 +241,7 @@ procedure TRAWViewForm.LoadHeightmap(Data: TStream);
 var
   i :integer;
   XState, YState, Part : integer;
-    Row, Col: Integer;
+  Row, Col: Integer;
 begin
   FMinZ := MAXWORD;
   FMaxZ := 0;
@@ -260,21 +251,20 @@ begin
 
   XState := 0;
   YState := 0;
-  Part := Round(Sqrt(FHeightfields.Count)) ;
+  Part := (FWorldSize-1) div Round(Sqrt(FHeightfields.Count)) ;
 
   i := 0;
   for Col := 0 to TexturePart - 1 do
     for Row := 0 to TexturePart - 1 do
     begin
-
-      XState := Row * ((FWorldSize-1) div Part);
-      YState := Col * ((FWorldSize-1) div Part);
+      XState := Row * Part;
+      YState := Col * Part;
 
       FHeightfields[i].XSamplingScale.Min := XState;
       FHeightfields[i].YSamplingScale.Min := YState;
 
-      XState := (Row+1) * ((FWorldSize-1) div Part);
-      YState := (Col+1) * ((FWorldSize-1) div Part);
+      XState := (Row+1) * Part;
+      YState := (Col+1) * Part;
 
       if Row < TexturePart - 1 then
       begin
@@ -289,38 +279,17 @@ begin
       FHeightfields[i].XSamplingScale.Max := XState;
       FHeightfields[i].YSamplingScale.Max := YState;
 
-
       SendDebugFmt('HF %.2d  XMin = %.4d   XMax = %.4d',[i, Round(FHeightfields[i].XSamplingScale.Min), Round(FHeightfields[i].XSamplingScale.Max)]);
       SendDebugFmt('         YMin = %.4d   YMax = %.4d',[   Round(FHeightfields[i].YSamplingScale.Min), Round(FHeightfields[i].YSamplingScale.Max)]);
-
 
       FHeightfields[i].XSamplingScale.Step := FRawStep;
       FHeightfields[i].YSamplingScale.Step := FRawStep;
       FHeightfields[i].OnGetHeight2 := BattlefieldFormula;
       FHeightfields[i].StructureChanged;
+      FHeightfields[i].Options := FHeightfields[i].Options + [hfoTwoSided];
 
       Inc(i);
   end;
-
-
-  with HeightFieldBase do
-  begin
-    with XSamplingScale do
-    begin
-      Min := 0;
-      Max := FWorldSize - 1;
-      Step := FRawStep;
-    end;
-    with YSamplingScale do
-    begin
-      Min := 0;
-      Max := FWorldSize - 1;
-      Step := FRawStep;
-    end;
-    OnGetHeight2 := BattlefieldFormula;
-  end;
-  HeightFieldBase.StructureChanged;
-  HeightFieldBase.Options := HeightFieldBase.Options + [hfoTwoSided];
 
   FInitLoad := true;
 end;
@@ -394,11 +363,11 @@ begin
     // get absolute 3D coordinates of the point below the mouse
     v := Scene.CurrentBuffer.PixelRayToWorld(X, Y);
     // convert to heightfield local coordinates
-    v := HeightFieldBase.AbsoluteToLocal(v);
+    //v := HeightFieldBase.AbsoluteToLocal(v);
 
     XLabel.Caption := Format('X=%.2f', [v[0]]);
-    YLabel.Caption := Format('Y=%.2f', [v[1]]);
-    ZLabel.Caption := Format('Z=%.2f', [v[2]]);
+    YLabel.Caption := Format('Y=%.2f', [-v[2]]);
+    ZLabel.Caption := Format('Z=%.2f', [v[1]]);
   end;
 
   FMouseMoveMutex := false;
