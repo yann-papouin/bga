@@ -1187,6 +1187,7 @@ begin
 
   TotalProgress(roBegin, PG_NULL, RFAList.SelectedCount);
   Node := RFAList.GetFirstSelected;
+  RFAList.BeginUpdate;
   while Node <> nil do
   begin
     if not Cancel.Enabled then
@@ -1222,6 +1223,7 @@ begin
     TotalProgress(roExport, PG_AUTO, RFAList.SelectedCount);
     Node := RFAList.GetNextSelected(Node);
   end;
+  RFAList.EndUpdate;
   TotalProgress(roEnd, PG_NULL, PG_NULL);
 end;
 

@@ -121,7 +121,7 @@ const
 implementation
 
 uses
-  Math, CommonLib, MiniLZO;
+  GuiSkinDialog, Math, CommonLib, MiniLZO;
 
 const
   MAX_FILE_COUNT = 65535;
@@ -778,34 +778,43 @@ begin
 
     for i := 0 to Segments-1 do
     begin
-
-      GetMem(SBuff, DataH[i].csize);
-      GetMem(OBuff, DataH[i].ucsize);
-
-      FHandle.Seek(Offset+(segments*SEGMENT_HEADER_SIZE)+DataH[i].doffset+DWORD_SIZE,0);
-
-      {$IfDef DEBUG_RFA}
-      SendDebugFmt('DecompressRFAToStream::FHandle.Position = %d', [FHandle.Position]);
-      {$EndIf}
-      FHandle.Read(SBuff^,DataH[i].csize);
-
-      Result := _lzo1x_decompress_safe(SBuff, DataH[i].csize, OBuff, DataH[i].ucsize, nil);
-
-      if Result <> LZO_E_OK then
+      // Process only if the current segment will produce non empty data
+      if DataH[i].ucsize > 0 then
       begin
-        raise Exception.Create('not LZO_E_OK');
+        GetMem(SBuff, DataH[i].csize);
+        GetMem(OBuff, DataH[i].ucsize);
 
+        FHandle.Seek(Offset+(segments*SEGMENT_HEADER_SIZE)+DataH[i].doffset+DWORD_SIZE,0);
+
+        {$IfDef DEBUG_RFA}
+        SendDebugFmt('DecompressRFAToStream::FHandle.Position = %d', [FHandle.Position]);
+        {$EndIf}
+        FHandle.Read(SBuff^,DataH[i].csize);
+
+        Result := _lzo1x_decompress_safe(SBuff, DataH[i].csize, OBuff, DataH[i].ucsize, nil);
+
+        if Result <> LZO_E_OK then
+        begin
+          ShowError('Not LZO_E_OK', Format('Segments %d on offset 0x%x can''t be decompressed',[i, Offset]));
+
+          FreeMem(SBuff);
+          FreeMem(OBuff);
+          Break;
+        end;
+
+        outputstream.WriteBuffer(OBuff^, DataH[i].ucsize);
         FreeMem(SBuff);
         FreeMem(OBuff);
-        Break;
+
+        if Assigned(FOnProgress) then
+          FOnProgress(Self, roDecompress, PG_AUTO);
+      end
+        else
+      begin
+        {$IfDef DEBUG_RFA}
+        SendDebugWarning(Format('Segment %d of file at 0x%x is empty, no data to uncompressed', [i, Offset]));
+        {$EndIf}
       end;
-
-      outputstream.WriteBuffer(OBuff^, DataH[i].ucsize);
-      FreeMem(SBuff);
-      FreeMem(OBuff);
-
-      if Assigned(FOnProgress) then
-        FOnProgress(Self, roDecompress, PG_AUTO);
     end;
   end
     else

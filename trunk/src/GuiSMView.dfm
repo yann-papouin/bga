@@ -127,4 +127,13 @@ inherited SMViewForm: TSMViewForm
     Left = 8
     Top = 72
   end
+  object WindowsBitmapFont: TGLWindowsBitmapFont
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Left = 8
+    Top = 104
+  end
 end

@@ -56,6 +56,7 @@
 			<DCCReference Include="GLSceneExt\FileSM.pas"/>
 			<DCCReference Include="GLSceneExt\GLFileSM.pas"/>
 			<DCCReference Include="GLSceneExt\TypesSM.pas"/>
+			<DCCReference Include="RSLib.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
