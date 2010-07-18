@@ -53,28 +53,13 @@ inherited RAWViewForm: TRAWViewForm
   object Scene: TGLScene
     Left = 8
     Top = 8
-    object Camera: TGLCamera
-      DepthOfView = 10000.000000000000000000
-      FocalLength = 90.000000000000000000
-      TargetObject = CameraTarget
-      Position.Coordinates = {7EBAEE40C3686440C36864400000803F}
-      object CamLight: TGLLightSource
-        ConstAttenuation = 1.000000000000000000
-        SpotCutOff = 180.000000000000000000
-      end
-    end
-    object DummyCube: TGLDummyCube
-      CubeSize = 1.000000000000000000
-      EdgeColor.Color = {029F1F3FBEBEBE3E999F1F3F0000803F}
-    end
-    object HeightFieldBase: TGLHeightField
+    object Root: TGLDummyCube
       Direction.Coordinates = {000000000000803F0000000000000000}
       Up.Coordinates = {0000000000000000000080BF00000000}
-      XSamplingScale.Max = 16.000000000000000000
-      XSamplingScale.Step = 1.000000000000000000
-      YSamplingScale.Max = 16.000000000000000000
-      YSamplingScale.Step = 1.000000000000000000
-      ColorMode = hfcmDiffuse
+      CubeSize = 1.000000000000000000
+      object CameraTarget: TGLDummyCube
+        CubeSize = 1.000000000000000000
+      end
       object WaterPlane: TGLPlane
         Material.FrontProperties.Diffuse.Color = {00000000FDFC7C3ECDCC4C3F4A0C023E}
         Material.FrontProperties.Emission.Color = {EBEAEA3ED7D6D63EDFDEDE3E0000803F}
@@ -83,8 +68,15 @@ inherited RAWViewForm: TRAWViewForm
         Height = 16.000000000000000000
         Width = 16.000000000000000000
       end
-      object CameraTarget: TGLDummyCube
-        CubeSize = 1.000000000000000000
+    end
+    object Camera: TGLCamera
+      DepthOfView = 10000.000000000000000000
+      FocalLength = 90.000000000000000000
+      TargetObject = CameraTarget
+      Position.Coordinates = {7EBAEE4000000842000008420000803F}
+      object CamLight: TGLLightSource
+        ConstAttenuation = 1.000000000000000000
+        SpotCutOff = 180.000000000000000000
       end
     end
   end
