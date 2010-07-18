@@ -41,6 +41,7 @@ uses
   GLWin32Viewer,
   GLObjects,
   GLColor,
+  GLTexture,
   DDS,
   VectorGeometry,
   VectorTypes,
@@ -97,9 +98,9 @@ type
     FMinZ: Single;
     FMaxZ: Single;
 
-    FHeightfields : THFList;
+    FHeightfields: THFList;
     { Déclarations privées }
-    procedure BattlefieldFormula(Sender: TObject; const x, y: Single; var z: Single; var color: TVector4f; var texPoint: TTexPoint);
+    procedure BattlefieldFormula(Sender: TObject; const X, Y: Single; var z: Single; var color: TVector4f; var texPoint: TTexPoint);
     procedure SetMapSize(const Value: Integer);
     procedure SetMapHeightScale(const Value: Single);
     procedure SetWorldSize(const Value: Integer);
@@ -120,7 +121,6 @@ type
     property MapHeightScale: Single read FMapHeightScale write SetMapHeightScale;
     property WorldSize: Integer read FWorldSize write SetWorldSize;
   end;
-
 
 var
   RAWViewForm: TRAWViewForm;
@@ -164,7 +164,8 @@ var
   HeightMapFile, TextureName, TextureFile: string;
   Row, Col: Integer;
   LibMaterial: TGLLibMaterial;
-  HeightField : TGLHeightField;
+  HeightField: TGLHeightField;
+  Bmp : TBitmap;
 begin
   GLMaterialLibrary.Materials.Clear;
 
@@ -175,7 +176,7 @@ begin
     LoadTerrain(Stream);
     Stream.Free;
 
-    for Col := 0 to TexturePart - 1 do
+    for Col := TexturePart - 1 downto 0 do
       for Row := 0 to TexturePart - 1 do
       begin
         HeightField := TGLHeightField.Create(Self);
@@ -183,7 +184,7 @@ begin
         HeightField.Visible := true;
         FHeightfields.Add(HeightField);
 
-        TextureName := Format('%s%.2dx%.2d.dds', [TextureBaseName, Col, Row]); // SendDebug(TextureName);
+        TextureName := Format('%s%.2dx%.2d.dds', [TextureBaseName, Row, Col]); // SendDebug(TextureName);
         TextureFile := GetFileByPath(Self, TextureName);
 
         if FileExists(TextureFile) then
@@ -191,6 +192,20 @@ begin
           LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
           HeightField.Material.MaterialLibrary := GLMaterialLibrary;
           HeightField.Material.LibMaterialName := TextureName;
+
+          Bmp := TBitmap.Create;
+          Bmp.PixelFormat := pf24bit;
+          LibMaterial.Material.Texture.Image.AssignToBitmap(Bmp);
+          with Bmp.Canvas do
+          begin
+            Font.Size := 86;
+            Font.Color := clWhite;
+            Brush.Color := clBlack;
+            TextOut(50, 50, SFRightRight('\',TextureName));
+          end;
+          LibMaterial.Material.Texture.Image.Assign(Bmp);
+          Bmp.Free;
+
         end;
       end;
 
@@ -239,8 +254,8 @@ end;
 
 procedure TRAWViewForm.LoadHeightmap(Data: TStream);
 var
-  i :integer;
-  XState, YState, Part : integer;
+  i: Integer;
+  XState, YState, Part: Integer;
   Row, Col: Integer;
 begin
   FMinZ := MAXWORD;
@@ -251,7 +266,17 @@ begin
 
   XState := 0;
   YState := 0;
-  Part := (FWorldSize-1) div Round(Sqrt(FHeightfields.Count)) ;
+  Part := (FWorldSize - 1) div Round(Sqrt(FHeightfields.Count));
+
+  for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
+  begin
+    with GLMaterialLibrary.Materials[i].Material do
+    begin
+      Texture.MappingMode := tmmObjectLinear;
+      Texture.MappingSCoordinates.X := 1 / Part;
+      Texture.MappingTCoordinates.Y := 1 / Part;
+    end;
+  end;
 
   i := 0;
   for Col := 0 to TexturePart - 1 do
@@ -263,8 +288,8 @@ begin
       FHeightfields[i].XSamplingScale.Min := XState;
       FHeightfields[i].YSamplingScale.Min := YState;
 
-      XState := (Row+1) * Part;
-      YState := (Col+1) * Part;
+      XState := (Row + 1) * Part;
+      YState := (Col + 1) * Part;
 
       if Row < TexturePart - 1 then
       begin
@@ -279,17 +304,17 @@ begin
       FHeightfields[i].XSamplingScale.Max := XState;
       FHeightfields[i].YSamplingScale.Max := YState;
 
-      SendDebugFmt('HF %.2d  XMin = %.4d   XMax = %.4d',[i, Round(FHeightfields[i].XSamplingScale.Min), Round(FHeightfields[i].XSamplingScale.Max)]);
-      SendDebugFmt('         YMin = %.4d   YMax = %.4d',[   Round(FHeightfields[i].YSamplingScale.Min), Round(FHeightfields[i].YSamplingScale.Max)]);
+      SendDebugFmt('HF %.2d  XMin = %.4d   XMax = %.4d', [i, Round(FHeightfields[i].XSamplingScale.Min), Round(FHeightfields[i].XSamplingScale.Max)]);
+      SendDebugFmt('         YMin = %.4d   YMax = %.4d', [Round(FHeightfields[i].YSamplingScale.Min), Round(FHeightfields[i].YSamplingScale.Max)]);
 
       FHeightfields[i].XSamplingScale.Step := FRawStep;
       FHeightfields[i].YSamplingScale.Step := FRawStep;
       FHeightfields[i].OnGetHeight2 := BattlefieldFormula;
-      FHeightfields[i].StructureChanged;
       FHeightfields[i].Options := FHeightfields[i].Options + [hfoTwoSided];
+      FHeightfields[i].StructureChanged;
 
       Inc(i);
-  end;
+    end;
 
   FInitLoad := true;
 end;
@@ -313,6 +338,7 @@ begin
   FBuffer.Read(ZValue, 2);
 
   z := ZValue / (256 / FMapHeightScale);
+  //z := 100;
 
   FMinZ := Min(FMinZ, z);
   FMaxZ := Max(FMaxZ, z);
@@ -363,7 +389,7 @@ begin
     // get absolute 3D coordinates of the point below the mouse
     v := Scene.CurrentBuffer.PixelRayToWorld(X, Y);
     // convert to heightfield local coordinates
-    //v := HeightFieldBase.AbsoluteToLocal(v);
+    // v := HeightFieldBase.AbsoluteToLocal(v);
 
     XLabel.Caption := Format('X=%.2f', [v[0]]);
     YLabel.Caption := Format('Y=%.2f', [-v[2]]);
