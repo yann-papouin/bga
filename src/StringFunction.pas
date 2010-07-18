@@ -45,6 +45,7 @@ uses
   function SFBetween(substr: string; s: string): string;
   function SFBetweenTwo(substrLeft: string; substrRight: string; s: string): string;
   procedure SFParseDelimited(const Output : TStrings; const s : string; const delimiter : string);
+  function SFUniPos(substr: string; s: string): integer;
 
   function VariantToString(AVar: OleVariant): string;
 
@@ -293,6 +294,10 @@ begin
    end;
 end;
 
+function SFUniPos(substr: string; s: string): integer;
+begin
+  result := AnsiPos(UpperCase(substr), UpperCase(s));
+end;
 
 function VariantToString(AVar: OleVariant): string;
 var

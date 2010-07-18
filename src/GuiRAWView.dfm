@@ -67,7 +67,7 @@ inherited RAWViewForm: TRAWViewForm
       CubeSize = 1.000000000000000000
       EdgeColor.Color = {029F1F3FBEBEBE3E999F1F3F0000803F}
     end
-    object HeightField: TGLHeightField
+    object HeightFieldBase: TGLHeightField
       Direction.Coordinates = {000000000000803F0000000000000000}
       Up.Coordinates = {0000000000000000000080BF00000000}
       XSamplingScale.Max = 16.000000000000000000
@@ -110,5 +110,9 @@ inherited RAWViewForm: TRAWViewForm
     OnMouseMove = ViewerMouseMove
     Left = 8
     Top = 40
+  end
+  object GLMaterialLibrary: TGLMaterialLibrary
+    Left = 8
+    Top = 73
   end
 end

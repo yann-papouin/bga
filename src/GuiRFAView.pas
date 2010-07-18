@@ -1991,7 +1991,7 @@ begin
     HeightmapFile := ExtractTemporary(HeightmapNode);
 
     RAWViewForm.LoadTerrain(TerrainFile);
-    RAWViewForm.LoadHeightmap(HeightmapFile);
+    //RAWViewForm.LoadHeightmap(HeightmapFile);
     RAWViewForm.Show;
   end
     else
