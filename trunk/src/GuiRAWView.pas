@@ -54,7 +54,8 @@ uses
   GLMesh,
   SpTBXControls,
   BGALib,
-  Generics.Collections,
+  generics.defaults,
+  generics.Collections,
   GLMaterial;
 
 type
@@ -63,6 +64,11 @@ type
   private
   public
     constructor Create;
+    procedure SortByTag;
+  end;
+
+  THFComparer = class(TComparer<TGLHeightField>)
+    function Compare(const Left, Right: TGLHeightField): Integer; override;
   end;
 
   TRAWViewForm = class(TFormCommon)
@@ -165,7 +171,7 @@ var
   Row, Col: Integer;
   LibMaterial: TGLLibMaterial;
   HeightField: TGLHeightField;
-  Bmp : TBitmap;
+  Bmp: TBitmap;
 begin
   GLMaterialLibrary.Materials.Clear;
 
@@ -176,15 +182,16 @@ begin
     LoadTerrain(Stream);
     Stream.Free;
 
-    for Col := TexturePart - 1 downto 0 do
+    for Col := 0 to TexturePart - 1 do
       for Row := 0 to TexturePart - 1 do
       begin
         HeightField := TGLHeightField.Create(Self);
+        HeightField.Tag := Round(TexturePart) - Row - Col;
         HeightField.Parent := Root;
         HeightField.Visible := true;
         FHeightfields.Add(HeightField);
 
-        TextureName := Format('%s%.2dx%.2d.dds', [TextureBaseName, Row, Col]); // SendDebug(TextureName);
+        TextureName := Format('%s%.2dx%.2d.dds', [TextureBaseName, Col, Row]); // SendDebug(TextureName);
         TextureFile := GetFileByPath(Self, TextureName);
 
         if FileExists(TextureFile) then
@@ -199,15 +206,17 @@ begin
           with Bmp.Canvas do
           begin
             Font.Size := 86;
-            Font.Color := clWhite;
-            Brush.Color := clBlack;
-            TextOut(50, 50, SFRightRight('\',TextureName));
+            Font.color := clWhite;
+            Brush.color := clBlack;
+            TextOut(50, 50, SFRightRight('\', TextureName));
           end;
           LibMaterial.Material.Texture.Image.Assign(Bmp);
           Bmp.Free;
 
         end;
       end;
+
+    FHeightfields.SortByTag;
 
     HeightMapFile := GetFileByPath(Self, HeightMap);
     Stream := TFileStream.Create(HeightMapFile, fmOpenRead);
@@ -338,7 +347,7 @@ begin
   FBuffer.Read(ZValue, 2);
 
   z := ZValue / (256 / FMapHeightScale);
-  //z := 100;
+  // z := 100;
 
   FMinZ := Min(FMinZ, z);
   FMaxZ := Max(FMaxZ, z);
@@ -414,6 +423,22 @@ end;
 constructor THFList.Create;
 begin
   OwnsObjects := true;
+end;
+
+
+procedure THFList.SortByTag;
+begin
+  Sort(THfComparer.Default);
+end;
+
+{ THFComparer }
+
+function THFComparer.Compare(const Left, Right: TGLHeightField): Integer;
+begin
+  if (Left <> nil) and (Right <> nil) then
+    result := CompareValue(Left.Tag, Right.Tag)
+  else
+    result := -1;
 end;
 
 end.
