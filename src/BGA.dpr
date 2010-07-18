@@ -34,7 +34,8 @@ uses
   GuiFormCommon in 'GuiFormCommon.pas' {FormCommon},
   GuiPicView in 'GuiPicView.pas' {PICViewForm},
   UAC in 'UAC.pas',
-  BGALib in 'BGALib.pas';
+  BGALib in 'BGALib.pas',
+  RSLib in 'RSLib.pas';
 
 {$R *.res}
 

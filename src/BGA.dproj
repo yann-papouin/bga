@@ -113,6 +113,7 @@
 			</DCCReference>
 			<DCCReference Include="UAC.pas"/>
 			<DCCReference Include="BGALib.pas"/>
+			<DCCReference Include="RSLib.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
