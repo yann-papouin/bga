@@ -100,7 +100,7 @@ begin
 
     if not TitleSubShader then
     begin
-      Pos := AnsiPos('subshader', Data[Line]);
+      Pos := SFUniPos('subshader', Data[Line]);
       if Pos > 0 then
       begin
         TitleSubShader := true;
@@ -119,7 +119,7 @@ begin
 
     if TitleSubShader then
     begin
-      Pos := AnsiPos('{', Data[Line]);
+      Pos := SFUniPos('{', Data[Line]);
       if Pos > 0 then
       begin
         TitleSubShader := false;
@@ -134,7 +134,7 @@ begin
 
     if SectionSubShader then
     begin
-      Pos := AnsiPos('}', Data[Line]);
+      Pos := SFUniPos('}', Data[Line]);
       if Pos > 0 then
       begin
         SectionSubShader := false;
@@ -144,89 +144,89 @@ begin
     if SectionSubShader then
     begin
 
-      Pos := AnsiPos('MaterialDiffuse ', Data[Line]);
+      Pos := SFUniPos('MaterialDiffuse ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.MaterialDiffuse := ParseInlineVectorData(Data[Line]);
       end;
 
-      Pos := AnsiPos('MaterialSpecular ', Data[Line]);
+      Pos := SFUniPos('MaterialSpecular ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.MaterialSpecular := ParseInlineVectorData(Data[Line]);
       end;
 
-      Pos := AnsiPos('MaterialSpecularPower ', Data[Line]);
+      Pos := SFUniPos('MaterialSpecularPower ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.MaterialSpecularPower := StrToFloatDef(SFBetweenTwo(' ', ';', Data[Line]), 1.0);
       end;
 
-      Pos := AnsiPos('Lighting ', Data[Line]);
+      Pos := SFUniPos('Lighting ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.Lighting := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
       end;
 
-      Pos := AnsiPos('LightingSpecular ', Data[Line]);
+      Pos := SFUniPos('LightingSpecular ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.LightingSpecular := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
       end;
 
-      Pos := AnsiPos('TwoSided ', Data[Line]);
+      Pos := SFUniPos('TwoSided ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.TwoSided := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
       end;
 
-      Pos := AnsiPos('Transparent ', Data[Line]);
+      Pos := SFUniPos('Transparent ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.Transparent := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
       end;
 
-      Pos := AnsiPos('DepthWrite ', Data[Line]);
+      Pos := SFUniPos('DepthWrite ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.DepthWrite := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
       end;
 
-      Pos := AnsiPos('BlendSrc ', Data[Line]);
+      Pos := SFUniPos('BlendSrc ', Data[Line]);
       if Pos > 0 then
       begin
         BldFun := SFBetweenTwo(' ', ';', Data[Line]);
 
-        if AnsiPos('sourceAlpha ', BldFun) > 0 then
+        if SFUniPos('sourceAlpha ', BldFun) > 0 then
           Resource.BlendSrc := bfSrcAlpha
         else
-        if AnsiPos('one ', BldFun) > 0 then
+        if SFUniPos('one ', BldFun) > 0 then
           Resource.BlendSrc := bfOne
         else
           Resource.BlendSrc := bfZero;
       end;
 
-      Pos := AnsiPos('BlendDest ', Data[Line]);
+      Pos := SFUniPos('BlendDest ', Data[Line]);
       if Pos > 0 then
       begin
         BldFun := SFBetweenTwo(' ', ';', Data[Line]);
 
-        if AnsiPos('sourceAlpha ', BldFun) > 0 then
+        if SFUniPos('sourceAlpha ', BldFun) > 0 then
           Resource.BlendDest := bfSrcAlpha
         else
-        if AnsiPos('one ', BldFun) > 0 then
+        if SFUniPos('one ', BldFun) > 0 then
           Resource.BlendDest := bfOne
         else
           Resource.BlendSrc := bfZero;
       end;
 
-      Pos := AnsiPos('AlphaTestRef ', Data[Line]);
+      Pos := SFUniPos('AlphaTestRef ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.AlphaTestRef := StrToFloatDef(SFBetweenTwo(' ', ';', Data[Line]), 1.0);
       end;
 
-      Pos := AnsiPos('texture ', Data[Line]);
+      Pos := SFUniPos('texture ', Data[Line]);
       if Pos > 0 then
       begin
         Resource.Texture := SFBetween('"', Data[Line]) +'.dds';

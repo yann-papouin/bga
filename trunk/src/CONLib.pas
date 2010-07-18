@@ -753,6 +753,9 @@ type
 
 implementation
 
+uses
+  StringFunction;
+
 procedure GetStringListFromProperty(Data:TStringList; Elt : string; List : TStringList);
 var
   Line, Pos : Integer;
@@ -761,7 +764,7 @@ begin
   Assert(List <> nil);
   for Line := 0 to Data.Count - 1 do
   begin
-    Pos := AnsiPos(Elt, Data[Line]);
+    Pos := SFUniPos(Elt, Data[Line]);
     if Pos > 0 then
     begin
       Wtd := StringReplace(Data[Line], Elt, EmptyStr, [rfReplaceAll, rfIgnoreCase]);
@@ -780,7 +783,7 @@ begin
   Pos := -1;
   for Line := 0 to Data.Count - 1 do
   begin
-    Pos := AnsiPos(Elt, Data[Line]);
+    Pos := SFUniPos(Elt, Data[Line]);
     if Pos > 0 then
       break;
   end;

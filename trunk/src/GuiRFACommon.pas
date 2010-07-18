@@ -248,7 +248,7 @@ begin
   while Node <> nil do
   begin
     Data := RFAList.GetNodeData(Node);
-    Pos := AnsiPos(UpperCase(Path), UpperCase(Data.EntryName));
+    Pos := SFUniPos(Path, Data.EntryName);
     if Pos > 0 then
     begin
       SendDebugFmt('%s = %s',[Data.EntryName, Path]);

@@ -1,35 +1,69 @@
 (* ***** BEGIN LICENSE BLOCK *****
- * Version: GNU GPL 2.0
- *
- * The contents of this file are subject to the
- * GNU General Public License Version 2.0; you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- * http://www.gnu.org/licenses/gpl.html
- *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
- *
- * The Original Code is GuiRAWView (http://code.google.com/p/bga)
- *
- * The Initial Developer of the Original Code is
- * Yann Papouin <yann.papouin at @ gmail.com>
- *
- * ***** END LICENSE BLOCK ***** *)
+  * Version: GNU GPL 2.0
+  *
+  * The contents of this file are subject to the
+  * GNU General Public License Version 2.0; you may not use this file except
+  * in compliance with the License. You may obtain a copy of the License at
+  * http://www.gnu.org/licenses/gpl.html
+  *
+  * Software distributed under the License is distributed on an "AS IS" basis,
+  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  * for the specific language governing rights and limitations under the
+  * License.
+  *
+  * The Original Code is GuiRAWView (http://code.google.com/p/bga)
+  *
+  * The Initial Developer of the Original Code is
+  * Yann Papouin <yann.papouin at @ gmail.com>
+  *
+  * ***** END LICENSE BLOCK ***** *)
 
 unit GuiRAWView;
 
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, GuiFormCommon,
-  Dialogs, GLScene, GLGraph, GLCoordinates, GLCrossPlatform, BaseClasses,
-  GLWin32Viewer, GLObjects, GLColor, VectorGeometry, GLSimpleNavigation,
-  JvExControls, JvInspector, SpTBXItem, TB2Item, GLVectorFileObjects, GLMesh,
-  SpTBXControls;
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  GuiFormCommon,
+  Dialogs,
+  GLScene,
+  GLGraph,
+  GLCoordinates,
+  GLCrossPlatform,
+  BaseClasses,
+  GLWin32Viewer,
+  GLObjects,
+  GLColor,
+  DDS,
+  VectorGeometry,
+  VectorTypes,
+  GLSimpleNavigation,
+  JvExControls,
+  JvInspector,
+  SpTBXItem,
+  TB2Item,
+  GLVectorFileObjects,
+  GLMesh,
+  SpTBXControls,
+  BGALib,
+  Generics.Collections,
+  GLMaterial;
 
 type
+
+  THFList = class(TObjectList<TGLHeightField>)
+  private
+  public
+    constructor Create;
+  end;
+
   TRAWViewForm = class(TFormCommon)
     Viewer: TGLSceneViewer;
     Scene: TGLScene;
@@ -37,7 +71,7 @@ type
     DummyCube: TGLDummyCube;
     Navigation: TGLSimpleNavigation;
     CamLight: TGLLightSource;
-    HeightField: TGLHeightField;
+    HeightFieldBase: TGLHeightField;
     WaterPlane: TGLPlane;
     CameraTarget: TGLDummyCube;
     Inspector: TJvInspector;
@@ -47,37 +81,47 @@ type
     XLabel: TSpTBXLabelItem;
     TBSeparatorItem1: TTBSeparatorItem;
     TBSeparatorItem2: TTBSeparatorItem;
+    GLMaterialLibrary: TGLMaterialLibrary;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
+    procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure ViewerPostRender(Sender: TObject);
   private
-    FInitLoad : boolean;
-    FMouseMoveMutex : boolean;
-    FBuffer : TMemoryStream;
-    FMapSize: integer;
-    FWorldSize: integer;
-    FRawStep: integer;
+    FInitLoad: boolean;
+    FMouseMoveMutex: boolean;
+    FBuffer: TMemoryStream;
+    FMapSize: Integer;
+    FWorldSize: Integer;
+    FRawStep: Integer;
     FMapHeightScale: Single;
 
-    FMinZ : single;
-    FMaxZ : single;
+    FMinZ: Single;
+    FMaxZ: Single;
+
+    FHeightfields : THFList;
     { Déclarations privées }
-    procedure BattlefieldFormula(const x, y: Single; var z: Single; var color: TColorVector; var texPoint: TTexPoint);
-    procedure SetMapSize(const Value: integer);
+    procedure BattlefieldFormula(Sender: TObject; const x, y: Single; var z: Single; var color: TVector4f; var texPoint: TTexPoint);
+    procedure SetMapSize(const Value: Integer);
     procedure SetMapHeightScale(const Value: Single);
-    procedure SetWorldSize(const Value: integer);
+    procedure SetWorldSize(const Value: Integer);
+
+    procedure LoadTerrain(Data: TStream); overload;
+    procedure LoadHeightmap(Data: TStream); overload;
   public
     { Déclarations publiques }
+    GetFileByPath: TBgaGetFileByPath;
+
+    TexturePart: Integer;
+    TextureSize: Integer;
+    TextureBaseName: string;
+    HeightMap: string;
+
     procedure LoadTerrain(Filename: string); overload;
-    procedure LoadHeightmap(Filename: string); overload;
-    procedure LoadTerrain(Data: TStream); overload;
-    procedure LoadHeightmap(Data : TStream); overload;
-    property MapSize : integer read FMapSize write SetMapSize;
-    property MapHeightScale : Single read FMapHeightScale write SetMapHeightScale;
-    property WorldSize : integer read FWorldSize write SetWorldSize;
+    property MapSize: Integer read FMapSize write SetMapSize;
+    property MapHeightScale: Single read FMapHeightScale write SetMapHeightScale;
+    property WorldSize: Integer read FWorldSize write SetWorldSize;
   end;
+
 
 var
   RAWViewForm: TRAWViewForm;
@@ -90,17 +134,20 @@ implementation
 {$R *.dfm}
 
 uses
-  Math, VectorTypes, DbugIntf, StringFunction, AppLib, CONLib;
-
+  Math,
+  DbugIntf,
+  StringFunction,
+  AppLib,
+  CONLib;
 
 { TRAWViewForm }
-
 
 procedure TRAWViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
   FMapSize := -1;
   FBuffer := TMemoryStream.Create;
+  FHeightfields := THFList.Create;
 
   Inspector.InspectObject := WaterPlane;
   Inspector.Free;
@@ -108,63 +155,102 @@ end;
 
 procedure TRAWViewForm.FormDestroy(Sender: TObject);
 begin
+  FHeightfields.Free;
   FBuffer.Free;
 end;
 
 procedure TRAWViewForm.LoadTerrain(Filename: string);
 var
-  Stream : TFileStream;
+  Stream: TFileStream;
+  HeightMapFile, TextureName, TextureFile: string;
+  Row, Col: Integer;
+  LibMaterial: TGLLibMaterial;
+  HeightField : TGLHeightField;
 begin
+  GLMaterialLibrary.Materials.Clear;
+  HeightFieldBase.Visible := true;
+  HeightFieldBase.ClearStructureChanged;
+
   if FileExists(Filename) then
   begin
     Title := Filename;
     Stream := TFileStream.Create(Filename, fmOpenRead);
     LoadTerrain(Stream);
     Stream.Free;
+
+    for Col := 0 to TexturePart - 1 do
+      for Row := 0 to TexturePart - 1 do
+      begin
+
+        HeightField := TGLHeightField.Create(Self);
+        HeightField.Direction.Z := 0;
+        HeightField.Direction.Y := 1;
+        HeightField.Up.Z := 1;
+        HeightField.Up.Y := 0;
+        HeightField.Parent := Scene.Objects;
+        HeightField.Visible := true;
+        FHeightfields.Add(HeightField);
+
+        TextureName := Format('%s%.2dx%.2d.dds', [TextureBaseName, Col, Row]); // SendDebug(TextureName);
+        TextureFile := GetFileByPath(Self, TextureName);
+
+        if FileExists(TextureFile) then
+        begin
+          LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
+          HeightField.Material.MaterialLibrary := GLMaterialLibrary;
+          HeightField.Material.LibMaterialName := TextureName;
+        end;
+      end;
+
+
+    HeightMapFile := GetFileByPath(Self, HeightMap);
+    Stream := TFileStream.Create(HeightMapFile, fmOpenRead);
+    LoadHeightmap(Stream);
+    Stream.Free;
+
   end;
 end;
 
-
 procedure TRAWViewForm.LoadTerrain(Data: TStream);
 var
-  TxtData : TStringList;
-  flworldSize, flmaterialSize, flwaterLevel, flseaFloorLevel : extended;
-  flyScale : extended;
+  TxtData: TStringList;
+  flworldSize, flmaterialSize, flwaterLevel, flseaFloorLevel: extended;
+  flyScale: extended;
+  strFile, strtexBaseName: string;
 begin
   Data.Position := 0;
 
   TxtData := TStringList.Create;
   TxtData.LoadFromStream(Data);
 
-  flmaterialSize  := GetFloatFromProperty(TxtData, 'GeometryTemplate.materialSize');
-  flworldSize     := GetFloatFromProperty(TxtData, 'GeometryTemplate.worldSize');
-  flyScale        := GetFloatFromProperty(TxtData, 'GeometryTemplate.yScale');
-  flwaterLevel    := GetFloatFromProperty(TxtData, 'GeometryTemplate.waterLevel');
+  strFile := GetStringFromProperty(TxtData, 'GeometryTemplate.file');
+  strtexBaseName := GetStringFromProperty(TxtData, 'GeometryTemplate.texBaseName');
+
+  flmaterialSize := GetFloatFromProperty(TxtData, 'GeometryTemplate.materialSize');
+  flworldSize := GetFloatFromProperty(TxtData, 'GeometryTemplate.worldSize');
+  flyScale := GetFloatFromProperty(TxtData, 'GeometryTemplate.yScale');
+  flwaterLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.waterLevel');
   flseaFloorLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.seaFloorLevel');
 
-  MapSize               := Round(flmaterialSize);
-  MapHeightScale        := flyScale;
-  WorldSize             := Round(flworldSize);
-  WaterPlane.Position.Z := flwaterLevel;
-  FRawStep              := FWorldSize div MapSize;
+  HeightMap := strFile + '.raw';
+  TextureBaseName := strtexBaseName;
+
+  MapSize := Round(flmaterialSize);
+  MapHeightScale := flyScale;
+  WorldSize := Round(flworldSize);
+  WaterPlane.Position.z := flwaterLevel;
+  FRawStep := FWorldSize div MapSize;
+  TextureSize := WorldSize * 4;
+  TexturePart := TextureSize div 1024;
 
   TxtData.Free;
 end;
 
-
-procedure TRAWViewForm.LoadHeightmap(Filename: string);
-var
-  Stream : TFileStream;
-begin
-  if FileExists(Filename) then
-  begin
-    Stream := TFileStream.Create(Filename, fmOpenRead);
-    LoadHeightmap(Stream);
-    Stream.Free;
-  end;
-end;
-
 procedure TRAWViewForm.LoadHeightmap(Data: TStream);
+var
+  i :integer;
+  XState, YState, Part : integer;
+    Row, Col: Integer;
 begin
   FMinZ := MAXWORD;
   FMaxZ := 0;
@@ -172,33 +258,77 @@ begin
   Data.Position := 0;
   FBuffer.LoadFromStream(Data);
 
+  XState := 0;
+  YState := 0;
+  Part := Round(Sqrt(FHeightfields.Count)) ;
 
-  with HeightField do
+  i := 0;
+  for Col := 0 to TexturePart - 1 do
+    for Row := 0 to TexturePart - 1 do
+    begin
+
+      XState := Row * ((FWorldSize-1) div Part);
+      YState := Col * ((FWorldSize-1) div Part);
+
+      FHeightfields[i].XSamplingScale.Min := XState;
+      FHeightfields[i].YSamplingScale.Min := YState;
+
+      XState := (Row+1) * ((FWorldSize-1) div Part);
+      YState := (Col+1) * ((FWorldSize-1) div Part);
+
+      if Row < TexturePart - 1 then
+      begin
+        XState := XState + FRawStep;
+      end;
+
+      if Col < TexturePart - 1 then
+      begin
+        YState := YState + FRawStep;
+      end;
+
+      FHeightfields[i].XSamplingScale.Max := XState;
+      FHeightfields[i].YSamplingScale.Max := YState;
+
+
+      SendDebugFmt('HF %.2d  XMin = %.4d   XMax = %.4d',[i, Round(FHeightfields[i].XSamplingScale.Min), Round(FHeightfields[i].XSamplingScale.Max)]);
+      SendDebugFmt('         YMin = %.4d   YMax = %.4d',[   Round(FHeightfields[i].YSamplingScale.Min), Round(FHeightfields[i].YSamplingScale.Max)]);
+
+
+      FHeightfields[i].XSamplingScale.Step := FRawStep;
+      FHeightfields[i].YSamplingScale.Step := FRawStep;
+      FHeightfields[i].OnGetHeight2 := BattlefieldFormula;
+      FHeightfields[i].StructureChanged;
+
+      Inc(i);
+  end;
+
+
+  with HeightFieldBase do
   begin
     with XSamplingScale do
     begin
       Min := 0;
-      Max := FWorldSize-1;
+      Max := FWorldSize - 1;
       Step := FRawStep;
     end;
     with YSamplingScale do
     begin
       Min := 0;
-      Max := FWorldSize-1;
+      Max := FWorldSize - 1;
       Step := FRawStep;
     end;
-    OnGetHeight:=BattlefieldFormula;
+    OnGetHeight2 := BattlefieldFormula;
   end;
-  HeightField.StructureChanged;
-  HeightField.Options:=HeightField.Options+[hfoTwoSided];
+  HeightFieldBase.StructureChanged;
+  HeightFieldBase.Options := HeightFieldBase.Options + [hfoTwoSided];
+
   FInitLoad := true;
 end;
 
-procedure TRAWViewForm.BattlefieldFormula(const x, y: Single; var z: Single;
-  var color: TColorVector; var texPoint: TTexPoint);
+procedure TRAWViewForm.BattlefieldFormula(Sender: TObject; const X, Y: Single; var z: Single; var color: TColorVector; var texPoint: TTexPoint);
 var
-  XPos, YPos : LongWord;
-  ZValue : Word;
+  XPos, YPos: LongWord;
+  ZValue: Word;
 begin
   if FMapSize < 0 then
   begin
@@ -207,19 +337,18 @@ begin
   end;
 
   // We need a step of 2 due to WORD length
-  XPos := Round(x/HeightField.XSamplingScale.Step) * 2;
-  YPos := Round(y/HeightField.YSamplingScale.Step) * 2 * (FWorldSize div FRawStep);
+  XPos := Round(X / (Sender as TGLHeightField).XSamplingScale.Step) * 2;
+  YPos := Round(Y / (Sender as TGLHeightField).YSamplingScale.Step) * 2 * (FWorldSize div FRawStep);
 
-  FBuffer.Seek(XPos+YPos, soFromBeginning);
+  FBuffer.Seek(XPos + YPos, soFromBeginning);
   FBuffer.Read(ZValue, 2);
 
+  z := ZValue / (256 / FMapHeightScale);
 
-  z := ZValue/(256/FMapHeightScale);
+  FMinZ := Min(FMinZ, z);
+  FMaxZ := Max(FMaxZ, z);
 
-  FMinZ := Min(FMinZ,z);
-  FMaxZ := Max(FMaxZ,z);
-
-  VectorLerp(clrGreen, clrWhite, (z+1)/256, color);
+  VectorLerp(clrGreen, clrWhite, (z + 1) / 256, color);
 end;
 
 procedure TRAWViewForm.SetMapHeightScale(const Value: Single);
@@ -227,8 +356,7 @@ begin
   FMapHeightScale := Value;
 end;
 
-
-procedure TRAWViewForm.SetWorldSize(const Value: integer);
+procedure TRAWViewForm.SetWorldSize(const Value: Integer);
 begin
   FWorldSize := Value;
 
@@ -242,16 +370,15 @@ begin
   WaterPlane.Position.Y := FWorldSize div 2;
 end;
 
-procedure TRAWViewForm.SetMapSize(const Value: integer);
+procedure TRAWViewForm.SetMapSize(const Value: Integer);
 begin
   FMapSize := Value;
 end;
 
-
 procedure TRAWViewForm.ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
   Coo3D: TVector3f;
-  v : TAffineVector;
+  v: TAffineVector;
 begin
 
   if FMouseMoveMutex or not Assigned(Scene.CurrentBuffer) then
@@ -259,22 +386,22 @@ begin
   else
     FMouseMoveMutex := true;
 
-  if not (ssLeft in Shift) and not (ssRight in Shift) then
+  if not(ssLeft in Shift) and not(ssRight in Shift) then
   begin
-    Coo3D := Scene.CurrentBuffer.OrthoScreenToWorld(X,Y);
+    Coo3D := Scene.CurrentBuffer.OrthoScreenToWorld(X, Y);
 
     // In Paint mode
     // get absolute 3D coordinates of the point below the mouse
-    v:=Scene.CurrentBuffer.PixelRayToWorld(x, y);
+    v := Scene.CurrentBuffer.PixelRayToWorld(X, Y);
     // convert to heightfield local coordinates
-    v:=HeightField.AbsoluteToLocal(v);
+    v := HeightFieldBase.AbsoluteToLocal(v);
 
-    XLabel.Caption := Format('X=%.2f',[v[0]]);
-    YLabel.Caption := Format('Y=%.2f',[v[1]]);
-    ZLabel.Caption := Format('Z=%.2f',[v[2]]);
+    XLabel.Caption := Format('X=%.2f', [v[0]]);
+    YLabel.Caption := Format('Y=%.2f', [v[1]]);
+    ZLabel.Caption := Format('Z=%.2f', [v[2]]);
   end;
 
-   FMouseMoveMutex := false;
+  FMouseMoveMutex := false;
 end;
 
 procedure TRAWViewForm.ViewerPostRender(Sender: TObject);
@@ -287,5 +414,11 @@ begin
   end;
 end;
 
+{ THFList }
+
+constructor THFList.Create;
+begin
+  OwnsObjects := true;
+end;
 
 end.
