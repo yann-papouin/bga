@@ -2,16 +2,16 @@ inherited RAWViewForm: TRAWViewForm
   ActiveControl = Viewer
   Caption = 'RAW View'
   ClientHeight = 572
-  ClientWidth = 851
+  ClientWidth = 1049
   OnDestroy = FormDestroy
-  ExplicitWidth = 867
+  ExplicitWidth = 1065
   ExplicitHeight = 610
   PixelsPerInch = 96
   TextHeight = 13
   object Viewer: TGLSceneViewer
     Left = 0
     Top = 0
-    Width = 647
+    Width = 739
     Height = 547
     Camera = Camera
     PostRender = ViewerPostRender
@@ -19,14 +19,17 @@ inherited RAWViewForm: TRAWViewForm
     Buffer.FaceCulling = False
     FieldOfView = 143.570602416992200000
     Align = alClient
+    OnDblClick = ViewerDblClick
+    OnMouseDown = ViewerMouseDown
     TabOrder = 0
   end
   object Inspector: TJvInspector
-    Left = 647
+    Left = 744
     Top = 0
-    Width = 204
+    Width = 305
     Height = 547
     Align = alRight
+    Divider = 120
     ItemHeight = 16
     TabStop = True
     TabOrder = 1
@@ -34,8 +37,9 @@ inherited RAWViewForm: TRAWViewForm
   object StatusBar: TSpTBXStatusBar
     Left = 0
     Top = 547
-    Width = 851
+    Width = 1049
     Height = 25
+    ExplicitWidth = 851
     object XLabel: TSpTBXLabelItem
       Caption = 'X'
     end
@@ -50,12 +54,22 @@ inherited RAWViewForm: TRAWViewForm
       Caption = 'Z'
     end
   end
+  object SpTBXSplitter1: TSpTBXSplitter
+    Left = 739
+    Top = 0
+    Height = 547
+    Cursor = crSizeWE
+    Align = alRight
+    ExplicitLeft = 592
+    ExplicitTop = 200
+    ExplicitHeight = 100
+  end
   object Scene: TGLScene
     Left = 8
     Top = 8
     object Root: TGLDummyCube
-      Direction.Coordinates = {000000000000803F0000000000000000}
-      Up.Coordinates = {0000000000000000000080BF00000000}
+      Direction.Coordinates = {000000000000803F0000008000000000}
+      Up.Coordinates = {0000008000000000000080BF00000000}
       CubeSize = 1.000000000000000000
       object CameraTarget: TGLDummyCube
         CubeSize = 1.000000000000000000
@@ -73,7 +87,7 @@ inherited RAWViewForm: TRAWViewForm
       DepthOfView = 10000.000000000000000000
       FocalLength = 90.000000000000000000
       TargetObject = CameraTarget
-      Position.Coordinates = {7EBAEE4000000842000008420000803F}
+      Position.Coordinates = {000000000000A0410000A0400000803F}
       object CamLight: TGLLightSource
         ConstAttenuation = 1.000000000000000000
         SpotCutOff = 180.000000000000000000

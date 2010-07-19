@@ -1976,22 +1976,20 @@ end;
 
 procedure TRFAViewForm.PreviewRAWExecute(Sender: TObject);
 var
-  TerrainNode, HeightmapNode : PVirtualNode;
-  TerrainFile, HeightmapFile : string;
+  TerrainNode : PVirtualNode;
+  TerrainFile : string;
 begin
   if not tbMenuBar.Enabled then
     Exit;
 
   TerrainNode := FindFileByName('Terrain.con');
-  HeightmapNode := FindFileByName('Heightmap.raw');
 
-  if (TerrainNode <> nil) and (HeightmapNode <> nil) then
+  if (TerrainNode <> nil) then
   begin
     TerrainFile := ExtractTemporary(TerrainNode);
-    HeightmapFile := ExtractTemporary(HeightmapNode);
 
+    RAWViewForm.GetFileByPath := GetFileByPath;
     RAWViewForm.LoadTerrain(TerrainFile);
-    //RAWViewForm.LoadHeightmap(HeightmapFile);
     RAWViewForm.Show;
   end
     else
@@ -2014,7 +2012,7 @@ begin
     SubProgressBar.Position := 0;
     SubProgressBar.Max := Value;
   end
-    else
+else
   begin
     if Value = PG_AUTO then
       SubProgressBar.Position := SubProgressBar.Position+1
