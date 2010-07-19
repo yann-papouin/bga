@@ -244,6 +244,7 @@ begin
   Result := nil;
   PreviousDiff := -1;
   Node := RFAList.GetFirst;
+  Path := StringReplace(Path,'\','/',[rfReplaceAll]);
 
   while Node <> nil do
   begin

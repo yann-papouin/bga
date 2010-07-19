@@ -29,17 +29,17 @@ uses
 procedure TExMapViewerMainForm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   RAWViewForm.GetFileByPath := GetFileByPath;
-  RAWViewForm.LoadTerrain(ExtractFilePath(Application.ExeName)+'\Init\Terrain.con');
+  RAWViewForm.LoadTerrain(ExtractFilePath(Application.ExeName)+'Init\Terrain.con');
   RAWViewForm.Show;
 end;
 
 function TExMapViewerMainForm.GetFileByPath(Sender: TObject; const VirtualPath: string): string;
 begin
   if SFUniPos('heightmap.raw', VirtualPath) > 0 then
-    Result := ExtractFilePath(Application.ExeName)+'\heightmap.raw'
+    Result := ExtractFilePath(Application.ExeName)+'heightmap.raw'
   else
   begin
-    Result := ExtractFilePath(Application.ExeName)+ '\Textures\' + SFRightRight('\', VirtualPath);
+    Result := ExtractFilePath(Application.ExeName)+ 'Textures\' + SFRightRight('\', VirtualPath);
   end;
 
 end;
