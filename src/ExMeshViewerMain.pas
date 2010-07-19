@@ -29,14 +29,15 @@ uses
 procedure TExMeshViewerMainForm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   SMViewForm.GetFileByPath := GetFileByPath;
-  SMViewForm.LoadMaterials('C:\Users\Yann\Documents\RAD Studio\Projets\BGA\src\_bin_bga\Ranger\Ranger_Hull_M1.rs');
-  SMViewForm.LoadStandardMesh('C:\Users\Yann\Documents\RAD Studio\Projets\BGA\src\_bin_bga\Ranger\Ranger_Hull_M1.sm');
+  SMViewForm.LoadMaterials(ExtractFilePath(Application.ExeName)+'\Ranger\Ranger_Hull_M1.rs');
+  SMViewForm.LoadStandardMesh(ExtractFilePath(Application.ExeName)+'\Ranger\Ranger_Hull_M1.sm');
   SMViewForm.Preview;
+
 end;
 
 function TExMeshViewerMainForm.GetFileByPath(Sender: TObject; const VirtualPath: string): string;
 begin
-  Result := 'C:\Users\Yann\Documents\RAD Studio\Projets\BGA\src\_bin_bga\Ranger\Texture\manhunt.dds';
+  Result := ExtractFilePath(Application.ExeName)+ '\Ranger\Texture\manhunt.dds';
 end;
 
 end.

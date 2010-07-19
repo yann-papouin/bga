@@ -1,6 +1,7 @@
 program ExMeshViewer;
 
 uses
+  ExceptionLog,
   Forms,
   ExMeshViewerMain in 'ExMeshViewerMain.pas' {ExMeshViewerMainForm},
   GuiSMView in 'GuiSMView.pas' {SMViewForm},

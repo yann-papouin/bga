@@ -57,7 +57,7 @@ implementation
 { TRsParser }
 
 uses
-  StringFunction, GLColor;
+  StringFunction, GLColor, CommonLib, BGALib;
 
 constructor TRsParser.Create;
 begin
@@ -76,10 +76,14 @@ var
   TitleSubShader : boolean;
 
   function ParseInlineVectorData(s : string) : TVector4f;
+  const
+    FloatCharSet = [' ', ',', '.', '0' .. '9'];
   var
     ArrayText : TStringList;
   begin
+    EnableBFDecimal;
     ArrayText := TStringList.Create;
+    s := StripNonConforming(s, FloatCharSet);
     SFParseDelimited(ArrayText, trim(s), ' ');
     if ArrayText.Count = 3 then
     begin
@@ -89,6 +93,7 @@ var
       Result[3] := 1.0;
     end;
     ArrayText.Free;
+    DisableBFDecimal;
   end;
 
 begin
@@ -147,13 +152,13 @@ begin
       Pos := SFUniPos('MaterialDiffuse ', Data[Line]);
       if Pos > 0 then
       begin
-        Resource.MaterialDiffuse := ParseInlineVectorData(Data[Line]);
+        Resource.MaterialDiffuse := ParseInlineVectorData(SFRight(' ',Data[Line]));
       end;
 
       Pos := SFUniPos('MaterialSpecular ', Data[Line]);
       if Pos > 0 then
       begin
-        Resource.MaterialSpecular := ParseInlineVectorData(Data[Line]);
+        Resource.MaterialSpecular := ParseInlineVectorData(SFRight(' ',Data[Line]));
       end;
 
       Pos := SFUniPos('MaterialSpecularPower ', Data[Line]);
