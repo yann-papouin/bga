@@ -22,6 +22,8 @@ inherited RAWViewForm: TRAWViewForm
     OnDblClick = ViewerDblClick
     OnMouseDown = ViewerMouseDown
     TabOrder = 0
+    ExplicitLeft = -1
+    ExplicitTop = -6
   end
   object Inspector: TJvInspector
     Left = 744
@@ -60,6 +62,75 @@ inherited RAWViewForm: TRAWViewForm
     Cursor = crSizeWE
     Align = alRight
   end
+  object SpinEdit4: TSpTBXSpinEdit
+    Left = 8
+    Top = 228
+    Width = 121
+    Height = 21
+    TabOrder = 7
+    OnChange = SpinEditChange
+    SpinButton.Left = 103
+    SpinButton.Top = 0
+    SpinButton.Width = 14
+    SpinButton.Height = 17
+    SpinButton.Align = alRight
+    SpinOptions.Value = 0.250000000000000000
+    SpinOptions.ValueType = spnFloat
+  end
+  object SpinEdit1: TSpTBXSpinEdit
+    Left = 8
+    Top = 144
+    Width = 121
+    Height = 22
+    TabOrder = 4
+    OnChange = SpinEditChange
+    SpinButton.Left = 103
+    SpinButton.Top = 0
+    SpinButton.Width = 14
+    SpinButton.Height = 18
+    SpinButton.Align = alRight
+    SpinButton.ExplicitHeight = 17
+    SpinOptions.Value = 128.000000000000000000
+  end
+  object SpinEdit2: TSpTBXSpinEdit
+    Left = 8
+    Top = 172
+    Width = 121
+    Height = 22
+    TabOrder = 5
+    OnChange = SpinEditChange
+    SpinButton.Left = 103
+    SpinButton.Top = 0
+    SpinButton.Width = 14
+    SpinButton.Height = 18
+    SpinButton.Align = alRight
+    SpinButton.ExplicitHeight = 17
+    SpinOptions.Value = 8.000000000000000000
+  end
+  object SpinEdit3: TSpTBXSpinEdit
+    Left = 8
+    Top = 200
+    Width = 121
+    Height = 22
+    TabOrder = 6
+    OnChange = SpinEditChange
+    SpinButton.Left = 103
+    SpinButton.Top = 0
+    SpinButton.Width = 14
+    SpinButton.Height = 18
+    SpinButton.Align = alRight
+    SpinButton.ExplicitHeight = 17
+    SpinOptions.Value = 32.000000000000000000
+  end
+  object Button1: TButton
+    Left = 8
+    Top = 255
+    Width = 75
+    Height = 25
+    Caption = 'Button1'
+    TabOrder = 8
+    OnClick = SpinEditChange
+  end
   object Scene: TGLScene
     Left = 8
     Top = 8
@@ -76,8 +147,15 @@ inherited RAWViewForm: TRAWViewForm
         Width = 16.000000000000000000
       end
       object TerrainRenderer: TGLTerrainRenderer
-        Material.FrontProperties.Diffuse.Color = {0000803F0000803FC1C0403D0000803F}
-        Material.FrontProperties.Emission.Color = {8180003F8180003F8180003F0000803F}
+        Material.BackProperties.Ambient.Color = {CDCC4C3ED5D4543FCDCC4C3E0000803F}
+        Material.BackProperties.Diffuse.Color = {CDCC4C3F8180003FCDCC4C3F0000803F}
+        Material.BackProperties.Emission.Color = {00000000A5A4243FE2E1613F0000803F}
+        Material.BackProperties.Shininess = 128
+        Material.BackProperties.Specular.Color = {B7B6363F00000000F4F3733F0000803F}
+        Material.FrontProperties.Ambient.Color = {F7F6F63EA7A6A63ED3D2D23E0000803F}
+        Material.FrontProperties.Diffuse.Color = {00000000FDFC7C3E9594143F0000803F}
+        Material.FrontProperties.Emission.Color = {EBEAEA3ED7D6D63EF3F2F23E0000803F}
+        Material.FrontProperties.Shininess = 8
         Material.Texture.Image.Picture.Data = {
           0954506E67496D61676589504E470D0A1A0A0000000D49484452000000C80000
           00C8100200000072AAE58A000000097048597300000048000000480046C96B3E
@@ -144,11 +222,13 @@ inherited RAWViewForm: TRAWViewForm
           19ACC461755A755AAD0C56E2B03AAD3AAD56062B71589D569D562B839538AC4E
           AB4EAB95C14A1C56A755A7D5CA60250EABD3AAD36A65B01287D569D569B53258
           89C3EAB4EAB45AFD075258EF23917BADB00000000049454E44AE426082}
+        Material.Texture.FilteringQuality = tfAnisotropic
         Material.Texture.Disabled = False
-        Material.PolygonMode = pmLines
         HeightDataSource = BattlefieldHDS
+        TileSize = 32
         TilesPerTexture = 1.000000000000000000
-        QualityStyle = hrsTesselated
+        MaterialLibrary = GLMaterialLibrary
+        MaxCLODTriangles = 65535
         CLODPrecision = 5
       end
     end
