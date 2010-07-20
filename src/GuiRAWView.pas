@@ -57,7 +57,10 @@ uses
   generics.defaults,
   generics.Collections,
   GLMaterial,
-  SpTBXDkPanels, GLHeightData, GLTerrainRenderer;
+  GLState,
+  SpTBXDkPanels,
+  GLHeightData,
+  GLTerrainRenderer;
 
 type
 
@@ -158,7 +161,6 @@ uses
 
 { TRAWViewForm }
 
-
 procedure TRAWViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
@@ -167,7 +169,13 @@ begin
   HeightfieldList := THFList.Create;
 
   // Inspector.InspectObject := WaterPlane;
-  Inspector.Free;
+  //Inspector.Free;
+
+  Inspector.InspectObject := TerrainRenderer;
+
+  // TerrainRenderer.Free;
+  // TerrainRenderer.Material.PolygonMode:=pmLines;
+  //BattlefieldHDS.MaxPoolSize := 2048*2048;
 end;
 
 procedure TRAWViewForm.FormDestroy(Sender: TObject);
@@ -209,31 +217,34 @@ begin
         HeightField.Visible := true;
         HeightfieldList.Add(HeightField);
 
+        HeightField.Material.PolygonMode := pmLines;
+
         TextureName := Format('%s%.2dx%.2d.dds', [TextureBaseName, Col, Row]); // SendDebug(TextureName);
         TextureFile := GetFileByPath(Self, TextureName);
-
-        if FileExists(TextureFile) then
-        begin
+        (*
+          if FileExists(TextureFile) then
+          begin
           LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
           HeightField.Material.MaterialLibrary := GLMaterialLibrary;
           HeightField.Material.LibMaterialName := TextureName;
           LibMaterial.Texture2Name := DetailFile;
 
-{$IFDEF RAWVIEW_DRAW_NAME}
+          {$IFDEF RAWVIEW_DRAW_NAME}
           Bmp := TBitmap.Create;
           Bmp.PixelFormat := pf24bit;
           LibMaterial.Material.Texture.Image.AssignToBitmap(Bmp);
           with Bmp.Canvas do
           begin
-            Font.Size := 86;
-            Font.color := clWhite;
-            Brush.color := clBlack;
-            TextOut(50, 50, SFRightRight('\', TextureName));
+          Font.Size := 86;
+          Font.color := clWhite;
+          Brush.color := clBlack;
+          TextOut(50, 50, SFRightRight('\', TextureName));
           end;
           LibMaterial.Material.Texture.Image.Assign(Bmp);
           Bmp.Free;
-{$ENDIF}
-        end;
+          {$ENDIF}
+          end;
+          *)
       end;
 
     HeightMapFile := GetFileByPath(Self, HeightMap);
@@ -286,12 +297,13 @@ begin
   TxtData.Free;
 
 end;
-   {
-procedure TRAWViewForm.LoadHeightmap(Data: TStream);
-begin
+
+{
+  procedure TRAWViewForm.LoadHeightmap(Data: TStream);
+  begin
   FBuffer.LoadFromStream(Data);
   FInitLoad := true;
-end;
+  end;
   }
 procedure TRAWViewForm.LoadHeightmap(Data: TStream);
 var
@@ -305,6 +317,8 @@ begin
 
   Data.Position := 0;
   FBuffer.LoadFromStream(Data);
+
+   Exit;
 
   XState := 0;
   YState := 0;
@@ -333,7 +347,7 @@ begin
         Texture.TextureWrapR := twClampToBorder;
         Texture.TextureWrapS := twClampToBorder;
         Texture.TextureWrapT := twClampToBorder;
-      *)
+        *)
       TextureOffset.X := 0;
       TextureOffset.Y := 0;
 
@@ -384,8 +398,8 @@ begin
       // SendDebugFmt('HF %.2d  XMin = %.4d   XMax = %.4d', [i, Round(FHeightfields[i].XSamplingScale.Min), Round(FHeightfields[i].XSamplingScale.Max)]);
       // SendDebugFmt('         YMin = %.4d   YMax = %.4d', [Round(FHeightfields[i].YSamplingScale.Min), Round(FHeightfields[i].YSamplingScale.Max)]);
 
-      HeightfieldList[i].XSamplingScale.Step := FRawStep;
-      HeightfieldList[i].YSamplingScale.Step := FRawStep;
+      HeightfieldList[i].XSamplingScale.Step := 16;//FRawStep;
+      HeightfieldList[i].YSamplingScale.Step := 16;//FRawStep;
       HeightfieldList[i].OnGetHeight2 := BattlefieldFormula;
       HeightfieldList[i].Options := HeightfieldList[i].Options + [hfoTwoSided];
       HeightfieldList[i].StructureChanged;
@@ -400,61 +414,59 @@ begin
 end;
 
 
-
-
-
-
-
-
-
-
-
 procedure TRAWViewForm.BattlefieldHDSStartPreparingData(heightData: THeightData);
+type
+  PRasterArray = GLHeightData.PSingleArray;
+const
+  HdsType = hdtSingle;
 var
-  Y: integer;
-  X: integer;
-  ZValue: Word;
-  z : single;
-  RasterLine: GLHeightData.PSingleArray;
-  OldType    : THeightDataType;
-  Notify : boolean;
+  Y: Integer;
+  X: Integer;
+  Z: Single;
+  RawValue: Word;
+  RasterLine: PRasterArray;
+  OldType: THeightDataType;
+  Notify: boolean;
+  Position: Integer;
 begin
-  if not InRange(heightData.YTop,0 , FWorldSize) or not InRange(heightData.XLeft,0 , FWorldSize) then
+  if not InRange(heightData.YTop, 0, FWorldSize-1) or not InRange(heightData.XLeft, 0, FWorldSize-1) then
   begin
-
     heightData.DataState := hdsNone;
     Exit;
   end;
 
   heightData.DataState := hdsPreparing;
   OldType := heightData.DataType;
-  heightData.Allocate(hdtSingle);
+  heightData.Allocate(HdsType);
   Notify := false;
   for Y := heightData.YTop to heightData.YTop + heightData.Size - 1 do
   begin
     RasterLine := heightData.SingleRaster[Y - heightData.YTop];
     for X := heightData.XLeft to heightData.XLeft + heightData.Size - 1 do
     begin
-      if (Y mod FRawStep = 0) and (X mod FRawStep = 0) then
+      if (Y < FWorldSize) and (X < FWorldSize) then
       begin
-        FBuffer.Seek(X + Y, soFromBeginning);
-        FBuffer.Read(ZValue, 2);
-        z := Round(ZValue / (256 / FMapHeightScale));
-      end;
+        Position := Round(X/FRawStep) * 2 + (Round(Y/FRawStep) * 2 * (FWorldSize div FRawStep));
+        FBuffer.Seek(Position, soFromBeginning);
+        FBuffer.Read(RawValue, 2);
 
-      //SendDebugFmt('z=%f from X+Y=%d',[z,FBuffer.Position - X + Y]);
-      RasterLine[X - heightData.XLeft] := 76  ;//Random(200);
+        Z := Round(RawValue*FMapHeightScale / (256 ));
+        Z := RawValue  * FMapHeightScale / 2;
+      end
+        else
+         Z := 0;
+
+      //SendDebugFmt('z=%f (%d) from Position=%d',[z, ZValue, Position]);
+      RasterLine[X - heightData.XLeft] := Z;
     end;
 
   end;
-  if OldType <> hdtSingle then
+  (*
+    if OldType <> HdsType then
     heightData.DataType := OldType;
-
+    *)
   heightData.DataState := hdsReady;
 end;
-
-
-
 
 procedure TRAWViewForm.BattlefieldFormula(Sender: TObject; const X, Y: Single; var z: Single; var color: TColorVector; var texPoint: TTexPoint);
 var
@@ -468,15 +480,15 @@ begin
   end;
 
   // We need a step of 2 due to WORD length
-  XPos := Round(X / (Sender as TGLHeightField).XSamplingScale.Step) * 2;
-  YPos := Round(Y / (Sender as TGLHeightField).YSamplingScale.Step) * 2 * (FWorldSize div FRawStep);
+  XPos := Round(X / FRawStep) * 2;
+  YPos := Round(Y / FRawStep) * 2 * (FWorldSize div FRawStep);
 
   FBuffer.Seek(XPos + YPos, soFromBeginning);
   FBuffer.Read(ZValue, 2);
 
   z := ZValue / (256 / FMapHeightScale);
 
-  //SendDebugFmt('z=%f from X+Y=%d',[z,FBuffer.Position - XPos + YPos]);
+  // SendDebugFmt('z=%f from X+Y=%d',[z,FBuffer.Position - XPos + YPos]);
   // z := 100;
 
   FMinZ := Min(FMinZ, z);
@@ -484,17 +496,6 @@ begin
 
   VectorLerp(clrGreen, clrWhite, (z + 1) / 256, color);
 end;
-
-
-
-
-
-
-
-
-
-
-
 
 procedure TRAWViewForm.SetMapHeightScale(const Value: Single);
 begin
@@ -505,8 +506,13 @@ procedure TRAWViewForm.SetWorldSize(const Value: Integer);
 begin
   FWorldSize := Value;
 
-  CameraTarget.Position.X := FWorldSize div 2;
-  CameraTarget.Position.Y := FWorldSize div 2;
+  CameraTarget.Position.X := FWorldSize;
+  CameraTarget.Position.z := -FWorldSize;
+  CameraTarget.Position.Y := 100;
+
+  Camera.Position.X := FWorldSize + 100;
+  Camera.Position.z := -FWorldSize - 100;
+  Camera.Position.Y := 200;
 
   WaterPlane.Width := FWorldSize;
   WaterPlane.Height := FWorldSize;
@@ -546,7 +552,7 @@ begin
     end;
     end;
     end;
-  *)
+    *)
   (*
     p0:=viewer.Buffer.ScreenToWorld(vectormake(m.x,viewer.height-m.y,0));
     p1:=viewer.Buffer.ScreenToWorld(vectormake(m.x,viewer.height-m.y,1));
@@ -561,7 +567,7 @@ begin
     Inspector.AddComponent(FHeightfields[i], 'aa');
     end;
     end;
-  *)
+    *)
   (*
     PickList := TGLPicklist.Create;
     Scene.CurrentBuffer.PickObjects(Rect(M.x, M.y, M.x, M.y), PickList, 1);
@@ -578,7 +584,7 @@ begin
     end;
     end;
     PickList.Free;
-  *)
+    *)
 end;
 
 procedure TRAWViewForm.ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -620,7 +626,15 @@ procedure TRAWViewForm.ViewerPostRender(Sender: TObject);
 begin
   if FInitLoad then
   begin
-    Camera.Position.Y := FMaxZ;
+    (*
+      Camera.Position.X := FWorldSize;
+      Camera.Position.Z := -FWorldSize;
+      Camera.Position.Y := FMaxZ;
+
+      CameraTarget.Position.X := FWorldSize;
+      CameraTarget.Position.Z := FWorldSize;
+      CameraTarget.Position.Y := 0;
+      *)
 
     FInitLoad := false;
   end;
