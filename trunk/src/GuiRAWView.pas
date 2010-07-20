@@ -57,7 +57,7 @@ uses
   generics.defaults,
   generics.Collections,
   GLMaterial,
-  SpTBXDkPanels;
+  SpTBXDkPanels, GLHeightData, GLTerrainRenderer;
 
 type
 
@@ -90,12 +90,15 @@ type
     GLMaterialLibrary: TGLMaterialLibrary;
     Root: TGLDummyCube;
     SpTBXSplitter1: TSpTBXSplitter;
+    BattlefieldHDS: TGLCustomHDS;
+    TerrainRenderer: TGLTerrainRenderer;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure ViewerPostRender(Sender: TObject);
     procedure ViewerDblClick(Sender: TObject);
     procedure ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure BattlefieldHDSStartPreparingData(heightData: THeightData);
   private
     v: TAffineVector;
     M: TPoint;
@@ -154,6 +157,7 @@ uses
   CONLib;
 
 { TRAWViewForm }
+
 
 procedure TRAWViewForm.FormCreate(Sender: TObject);
 begin
@@ -282,7 +286,13 @@ begin
   TxtData.Free;
 
 end;
-
+   {
+procedure TRAWViewForm.LoadHeightmap(Data: TStream);
+begin
+  FBuffer.LoadFromStream(Data);
+  FInitLoad := true;
+end;
+  }
 procedure TRAWViewForm.LoadHeightmap(Data: TStream);
 var
   i: Integer;
@@ -389,6 +399,63 @@ begin
   FInitLoad := true;
 end;
 
+
+
+
+
+
+
+
+
+
+
+procedure TRAWViewForm.BattlefieldHDSStartPreparingData(heightData: THeightData);
+var
+  Y: integer;
+  X: integer;
+  ZValue: Word;
+  z : single;
+  RasterLine: GLHeightData.PSingleArray;
+  OldType    : THeightDataType;
+  Notify : boolean;
+begin
+  if not InRange(heightData.YTop,0 , FWorldSize) or not InRange(heightData.XLeft,0 , FWorldSize) then
+  begin
+
+    heightData.DataState := hdsNone;
+    Exit;
+  end;
+
+  heightData.DataState := hdsPreparing;
+  OldType := heightData.DataType;
+  heightData.Allocate(hdtSingle);
+  Notify := false;
+  for Y := heightData.YTop to heightData.YTop + heightData.Size - 1 do
+  begin
+    RasterLine := heightData.SingleRaster[Y - heightData.YTop];
+    for X := heightData.XLeft to heightData.XLeft + heightData.Size - 1 do
+    begin
+      if (Y mod FRawStep = 0) and (X mod FRawStep = 0) then
+      begin
+        FBuffer.Seek(X + Y, soFromBeginning);
+        FBuffer.Read(ZValue, 2);
+        z := Round(ZValue / (256 / FMapHeightScale));
+      end;
+
+      //SendDebugFmt('z=%f from X+Y=%d',[z,FBuffer.Position - X + Y]);
+      RasterLine[X - heightData.XLeft] := 76  ;//Random(200);
+    end;
+
+  end;
+  if OldType <> hdtSingle then
+    heightData.DataType := OldType;
+
+  heightData.DataState := hdsReady;
+end;
+
+
+
+
 procedure TRAWViewForm.BattlefieldFormula(Sender: TObject; const X, Y: Single; var z: Single; var color: TColorVector; var texPoint: TTexPoint);
 var
   XPos, YPos: LongWord;
@@ -408,6 +475,8 @@ begin
   FBuffer.Read(ZValue, 2);
 
   z := ZValue / (256 / FMapHeightScale);
+
+  //SendDebugFmt('z=%f from X+Y=%d',[z,FBuffer.Position - XPos + YPos]);
   // z := 100;
 
   FMinZ := Min(FMinZ, z);
@@ -415,6 +484,17 @@ begin
 
   VectorLerp(clrGreen, clrWhite, (z + 1) / 256, color);
 end;
+
+
+
+
+
+
+
+
+
+
+
 
 procedure TRAWViewForm.SetMapHeightScale(const Value: Single);
 begin

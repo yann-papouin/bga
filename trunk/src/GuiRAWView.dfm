@@ -39,7 +39,6 @@ inherited RAWViewForm: TRAWViewForm
     Top = 547
     Width = 1049
     Height = 25
-    ExplicitWidth = 851
     object XLabel: TSpTBXLabelItem
       Caption = 'X'
     end
@@ -60,9 +59,6 @@ inherited RAWViewForm: TRAWViewForm
     Height = 547
     Cursor = crSizeWE
     Align = alRight
-    ExplicitLeft = 592
-    ExplicitTop = 200
-    ExplicitHeight = 100
   end
   object Scene: TGLScene
     Left = 8
@@ -82,9 +78,13 @@ inherited RAWViewForm: TRAWViewForm
         Height = 16.000000000000000000
         Width = 16.000000000000000000
       end
+      object TerrainRenderer: TGLTerrainRenderer
+        HeightDataSource = BattlefieldHDS
+        TilesPerTexture = 1.000000000000000000
+      end
     end
     object Camera: TGLCamera
-      DepthOfView = 10000.000000000000000000
+      DepthOfView = 1200.000000000000000000
       FocalLength = 90.000000000000000000
       TargetObject = CameraTarget
       Position.Coordinates = {000000000000A0410000A0400000803F}
@@ -120,5 +120,11 @@ inherited RAWViewForm: TRAWViewForm
   object GLMaterialLibrary: TGLMaterialLibrary
     Left = 8
     Top = 73
+  end
+  object BattlefieldHDS: TGLCustomHDS
+    MaxPoolSize = 0
+    OnStartPreparingData = BattlefieldHDSStartPreparingData
+    Left = 8
+    Top = 104
   end
 end
