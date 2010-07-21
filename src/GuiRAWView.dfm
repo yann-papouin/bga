@@ -1,9 +1,10 @@
 inherited RAWViewForm: TRAWViewForm
-  ActiveControl = Viewer
   Caption = 'RAW View'
   ClientHeight = 572
   ClientWidth = 1049
+  OnCloseQuery = FormCloseQuery
   OnDestroy = FormDestroy
+  OnKeyPress = FormKeyPress
   ExplicitWidth = 1065
   ExplicitHeight = 610
   PixelsPerInch = 96
@@ -11,7 +12,7 @@ inherited RAWViewForm: TRAWViewForm
   object Viewer: TGLSceneViewer
     Left = 0
     Top = 0
-    Width = 739
+    Width = 1049
     Height = 547
     Camera = Camera
     PostRender = ViewerPostRender
@@ -22,19 +23,6 @@ inherited RAWViewForm: TRAWViewForm
     OnDblClick = ViewerDblClick
     OnMouseDown = ViewerMouseDown
     TabOrder = 0
-    ExplicitLeft = -1
-    ExplicitTop = -6
-  end
-  object Inspector: TJvInspector
-    Left = 744
-    Top = 0
-    Width = 305
-    Height = 547
-    Align = alRight
-    Divider = 120
-    ItemHeight = 16
-    TabStop = True
-    TabOrder = 1
   end
   object StatusBar: TSpTBXStatusBar
     Left = 0
@@ -55,85 +43,22 @@ inherited RAWViewForm: TRAWViewForm
       Caption = 'Z'
     end
   end
-  object SpTBXSplitter1: TSpTBXSplitter
-    Left = 739
-    Top = 0
-    Height = 547
-    Cursor = crSizeWE
-    Align = alRight
-  end
-  object SpinEdit4: TSpTBXSpinEdit
-    Left = 8
-    Top = 228
-    Width = 121
-    Height = 21
-    TabOrder = 7
-    OnChange = SpinEditChange
-    SpinButton.Left = 103
-    SpinButton.Top = 0
-    SpinButton.Width = 14
-    SpinButton.Height = 17
-    SpinButton.Align = alRight
-    SpinOptions.Value = 0.250000000000000000
-    SpinOptions.ValueType = spnFloat
-  end
-  object SpinEdit1: TSpTBXSpinEdit
-    Left = 8
-    Top = 144
-    Width = 121
-    Height = 22
-    TabOrder = 4
-    OnChange = SpinEditChange
-    SpinButton.Left = 103
-    SpinButton.Top = 0
-    SpinButton.Width = 14
-    SpinButton.Height = 18
-    SpinButton.Align = alRight
-    SpinButton.ExplicitHeight = 17
-    SpinOptions.Value = 128.000000000000000000
-  end
-  object SpinEdit2: TSpTBXSpinEdit
-    Left = 8
-    Top = 172
-    Width = 121
-    Height = 22
-    TabOrder = 5
-    OnChange = SpinEditChange
-    SpinButton.Left = 103
-    SpinButton.Top = 0
-    SpinButton.Width = 14
-    SpinButton.Height = 18
-    SpinButton.Align = alRight
-    SpinButton.ExplicitHeight = 17
-    SpinOptions.Value = 8.000000000000000000
-  end
-  object SpinEdit3: TSpTBXSpinEdit
-    Left = 8
-    Top = 200
-    Width = 121
-    Height = 22
-    TabOrder = 6
-    OnChange = SpinEditChange
-    SpinButton.Left = 103
-    SpinButton.Top = 0
-    SpinButton.Width = 14
-    SpinButton.Height = 18
-    SpinButton.Align = alRight
-    SpinButton.ExplicitHeight = 17
-    SpinOptions.Value = 32.000000000000000000
-  end
-  object Button1: TButton
-    Left = 8
-    Top = 255
-    Width = 75
-    Height = 25
-    Caption = 'Button1'
-    TabOrder = 8
-    OnClick = SpinEditChange
-  end
   object Scene: TGLScene
     Left = 8
     Top = 8
+    object CameraTarget: TGLDummyCube
+      CubeSize = 1.000000000000000000
+      object Camera: TGLCamera
+        DepthOfView = 1000.000000000000000000
+        FocalLength = 90.000000000000000000
+        TargetObject = CameraTarget
+        Position.Coordinates = {000000000000A0410000A0400000803F}
+        object CamLight: TGLLightSource
+          ConstAttenuation = 1.000000000000000000
+          SpotCutOff = 180.000000000000000000
+        end
+      end
+    end
     object Root: TGLDummyCube
       Direction.Coordinates = {000000000000803F0000008000000000}
       Up.Coordinates = {0000008000000000000080BF00000000}
@@ -225,25 +150,18 @@ inherited RAWViewForm: TRAWViewForm
         Material.Texture.FilteringQuality = tfAnisotropic
         Material.Texture.Disabled = False
         HeightDataSource = BattlefieldHDS
-        TileSize = 32
+        TileSize = 8
         TilesPerTexture = 1.000000000000000000
         MaterialLibrary = GLMaterialLibrary
+        QualityDistance = 100.000000000000000000
         MaxCLODTriangles = 65535
-        CLODPrecision = 5
+        CLODPrecision = 4
       end
     end
-    object Camera: TGLCamera
-      DepthOfView = 1000.000000000000000000
-      FocalLength = 90.000000000000000000
-      TargetObject = CameraTarget
-      Position.Coordinates = {000000000000A0410000A0400000803F}
-      object CamLight: TGLLightSource
-        ConstAttenuation = 1.000000000000000000
-        SpotCutOff = 180.000000000000000000
-      end
-    end
-    object CameraTarget: TGLDummyCube
-      CubeSize = 1.000000000000000000
+    object GLInfos: TGLHUDText
+      Position.Coordinates = {0000204100002041000000000000803F}
+      BitmapFont = WindowsBitmapFont
+      Text = 'GLInfos'
     end
   end
   object Navigation: TGLSimpleNavigation
@@ -278,5 +196,21 @@ inherited RAWViewForm: TRAWViewForm
     OnStartPreparingData = BattlefieldHDSStartPreparingData
     Left = 8
     Top = 104
+  end
+  object WindowsBitmapFont: TGLWindowsBitmapFont
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -15
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    Left = 8
+    Top = 136
+  end
+  object Cadencer: TGLCadencer
+    Scene = Scene
+    Enabled = False
+    OnProgress = CadencerProgress
+    Left = 8
+    Top = 168
   end
 end
