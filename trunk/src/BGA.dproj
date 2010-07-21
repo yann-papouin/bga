@@ -50,7 +50,7 @@
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="GuiRFASettings.pas">
-				<Form>RFASettingsForm</Form>
+				<Form> RFASettingsForm </Form>
 			</DCCReference>
 			<DCCReference Include="Lib\AppLib.pas"/>
 			<DCCReference Include="Lib\CommonLib.pas"/>
@@ -60,56 +60,56 @@
 			<DCCReference Include="RFALib.pas"/>
 			<DCCReference Include="StringFunction.pas"/>
 			<DCCReference Include="GuiRAWView.pas">
-				<Form>RAWViewForm</Form>
+				<Form> RAWViewForm </Form>
 			</DCCReference>
 			<DCCReference Include="CONLib.pas"/>
 			<DCCReference Include="GuiAbout.pas">
-				<Form>AboutForm</Form>
+				<Form> AboutForm </Form>
 			</DCCReference>
 			<DCCReference Include="GuiSMView.pas">
-				<Form>SMViewForm</Form>
+				<Form> SMViewForm </Form>
 			</DCCReference>
 			<DCCReference Include="GLSceneExt\FileSM.pas"/>
 			<DCCReference Include="GLSceneExt\GLFileSM.pas"/>
 			<DCCReference Include="GLSceneExt\TypesSM.pas"/>
 			<DCCReference Include="Lib\SvnInfo.pas"/>
 			<DCCReference Include="GuiUpdateManager.pas">
-				<Form>UpdateManagerForm</Form>
+				<Form> UpdateManagerForm </Form>
 			</DCCReference>
 			<DCCReference Include="GuiBrowse.pas">
-				<Form>BrowseForm</Form>
+				<Form> BrowseForm </Form>
 			</DCCReference>
 			<DCCReference Include="GuiSkinDialog.pas">
-				<Form>SkinDialogForm</Form>
+				<Form> SkinDialogForm </Form>
 			</DCCReference>
 			<DCCReference Include="GuiBrowsePack.pas">
-				<Form>BrowsePackForm</Form>
+				<Form> BrowsePackForm </Form>
 			</DCCReference>
 			<DCCReference Include="GuiBrowseExtract.pas">
-				<Form>BrowseExtractForm</Form>
+				<Form> BrowseExtractForm </Form>
 			</DCCReference>
 			<DCCReference Include="GuiRFACommon.pas">
-				<Form>RFACommonForm</Form>
+				<Form> RFACommonForm </Form>
 			</DCCReference>
 			<DCCReference Include="Resources.pas">
-				<Form>ResourcesForm</Form>
+				<Form> ResourcesForm </Form>
 			</DCCReference>
 			<DCCReference Include="GuiRFAView.pas">
-				<Form>RFAViewForm</Form>
+				<Form> RFAViewForm </Form>
 			</DCCReference>
 			<DCCReference Include="GuiFSView.pas">
-				<Form>FSViewForm</Form>
+				<Form> FSViewForm </Form>
 			</DCCReference>
 			<DCCReference Include="GuiFSSettings.pas">
-				<Form>FSSettingsForm</Form>
+				<Form> FSSettingsForm </Form>
 			</DCCReference>
 			<DCCReference Include="FSLib.pas"/>
 			<DCCReference Include="Lib\VirtualTreeviewTheme.pas"/>
 			<DCCReference Include="GuiFormCommon.pas">
-				<Form>FormCommon</Form>
+				<Form> FormCommon </Form>
 			</DCCReference>
 			<DCCReference Include="GuiPicView.pas">
-				<Form>PICViewForm</Form>
+				<Form> PICViewForm </Form>
 			</DCCReference>
 			<DCCReference Include="UAC.pas"/>
 			<DCCReference Include="BGALib.pas"/>
