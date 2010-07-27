@@ -68,7 +68,7 @@ uses
   GLWindowsFont,
   GLHUDObjects,
   GLCadencer,
-  GLRenderContextInfo;
+  GLRenderContextInfo, ExtCtrls;
 
 type
 
@@ -94,6 +94,13 @@ type
     WindowsBitmapFont: TGLWindowsBitmapFont;
     GLInfos: TGLHUDText;
     Cadencer: TGLCadencer;
+    SpTBXSpinEdit1: TSpTBXSpinEdit;
+    SpTBXSpinEdit2: TSpTBXSpinEdit;
+    SpTBXSpinEdit3: TSpTBXSpinEdit;
+    SpTBXSpinEdit4: TSpTBXSpinEdit;
+    Button1: TButton;
+    Button2: TButton;
+    Panel1: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
@@ -139,6 +146,8 @@ type
     TextureBaseName: string;
     DetailBaseName: string;
     HeightMap: string;
+    WaterLevel : single;
+    UseTexture : boolean;
 
     procedure LoadTerrain(Filename: string); overload;
     property MapSize: Integer read FMapSize write SetMapSize;
@@ -181,7 +190,7 @@ begin
   FBuffer := TMemoryStream.Create;
 
   TerrainRenderer.TileManagement := [tmClearUsedFlags, tmMarkUsedTiles, tmReleaseUnusedTiles, tmAllocateNewTiles, tmWaitForPreparing];
-  BattlefieldHDS.MaxPoolSize:= 1024 *1024*1024;
+  BattlefieldHDS.MaxPoolSize:= 256*1024*1024;
   SendDebugFmt('HDS size is fixed to %s',[SizeToStr(BattlefieldHDS.MaxPoolSize)]);
 
   Key := #0;
@@ -197,30 +206,46 @@ procedure TRAWViewForm.FormKeyPress(Sender: TObject; var Key: Char);
 var
   List : TStringList;
   i :integer;
-  PolygonMode : byte;
+  PolygonMode, QualityStyle : byte;
   MaterialOptions : TMaterialOptions;
 begin
   inherited;
    case Key of
+      'I','i' : with TerrainRenderer do
+         if TileSize > 8 then TileSize := TileSize div 2;
+
+      'U','u' : with TerrainRenderer do
+         if TileSize < 256 then TileSize := TileSize*2;
+
       'O','o' : with TerrainRenderer do
          if CLODPrecision = 0 then CLODPrecision := 1
          else
          if CLODPrecision>0 then CLODPrecision:=Round(CLODPrecision*1.2);
+
       'P','p' : with TerrainRenderer do
          if CLODPrecision<1000 then CLODPrecision:=Round(CLODPrecision*0.8);
+
       'L','l' : with TerrainRenderer do
          if QualityDistance>3 then QualityDistance:=Round(QualityDistance*0.8)
          else
           QualityDistance := 3;
+
       'M','m' : with TerrainRenderer do
          if QualityDistance<1000 then QualityDistance:=Round(QualityDistance*1.2);
+
+      'K','k' : with Camera do
+         if DepthOfView < 10000 then DepthOfView:=Round(DepthOfView*1.2);
+
+      'J','j' : with Camera do
+         if DepthOfView > 10 then DepthOfView:=Round(DepthOfView/1.2);
 
       'W','w' :
       for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
       begin
         PolygonMode := Byte(GLMaterialLibrary.Materials[i].Material.PolygonMode);
-        PolygonMode := (PolygonMode+1) mod 3;
+        PolygonMode := (PolygonMode+1) mod 2;
         GLMaterialLibrary.Materials[i].Material.PolygonMode := TPolygonMode(PolygonMode);
+        TerrainRenderer.Material.PolygonMode := TPolygonMode(PolygonMode);
       end;
 
       'X','x' :
@@ -233,7 +258,23 @@ begin
           Include(MaterialOptions, moNoLighting);
 
         GLMaterialLibrary.Materials[i].Material.MaterialOptions := MaterialOptions;
+        TerrainRenderer.Material.MaterialOptions := MaterialOptions;
       end;
+
+      'C','c' :
+      begin
+        QualityStyle := Byte(TerrainRenderer.QualityStyle);
+        QualityStyle := (QualityStyle+1) mod 2;
+        TerrainRenderer.QualityStyle := TTerrainHighResStyle(QualityStyle);
+        BattlefieldHDS.MarkDirty;
+      end;
+
+      'V','v' :
+      begin
+        UseTexture := not UseTexture;
+        BattlefieldHDS.MarkDirty;
+      end;
+
    end;
 
    Viewer.Buffer.FogEnable := True;
@@ -243,8 +284,19 @@ begin
 
 
    List := TStringList.Create;
-   List.Add(Format('CLODPrecision = %d',[TerrainRenderer.CLODPrecision]));
-   List.Add(Format('QualityDistance = %f',[TerrainRenderer.QualityDistance]));
+   List.Add(Format('[U-][I+] TileSize = %d',[TerrainRenderer.TileSize]));
+   List.Add(Format('[K-][J+] DepthOfView = %f',[Camera.DepthOfView]));
+   List.Add(Format('[L-][M+] QualityDistance = %f',[TerrainRenderer.QualityDistance]));
+
+   if TerrainRenderer.QualityStyle = hrsTesselated then
+    List.Add(Format('[O-][P+] Tesselation = %d',[TerrainRenderer.CLODPrecision]));
+
+   List.Add('');
+   List.Add('[W] Wireframe/Polygon');
+   List.Add('[X] Lighting ON/OFF');
+   List.Add('[C] Tesselation Enabled/Disabled');
+   List.Add('[V] Textures ON/OFF');
+
    GLInfos.Text := List.Text;
    List.free;
 end;
@@ -281,7 +333,9 @@ begin
 
         if FileExists(TextureFile) then
         begin
+          UseTexture := true;
           LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
+          LibMaterial.Material.MaterialOptions := [moNoLighting];
           LibMaterial.Texture2Name := DetailFile;
 {$IFDEF RAWVIEW_DRAW_NAME}
           Bmp := TBitmap.Create;
@@ -308,6 +362,19 @@ begin
       LoadHeightmap(Stream);
       Stream.Free;
     end;
+
+    TerrainRenderer.Scale.X := FRawStep;
+    TerrainRenderer.Scale.Y := FRawStep;
+    TerrainRenderer.Scale.Z := FRawStep;
+
+
+    CameraTarget.Position.X := FWorldSize div 2;
+    CameraTarget.Position.Z := -FWorldSize div 2;
+    CameraTarget.Position.Y := WaterLevel;
+
+    Camera.Position.X := 0;
+    Camera.Position.Z := -100;
+    Camera.Position.Y := WaterLevel*2;
 
     Cadencer.Enabled := true;
   end;
@@ -343,13 +410,15 @@ begin
     MapSize := Round(flmaterialSize);
     MapHeightScale := flyScale;
     WorldSize := Round(flworldSize);
-    WaterPlane.Position.z := flwaterLevel;
+    WaterLevel := flwaterLevel;
+    WaterPlane.Position.z := WaterLevel;
     FRawStep := FWorldSize div MapSize;
     TextureSize := WorldSize * 4;
-    TexturePart := TextureSize div 1024;
+    TexturePart := TextureSize div 256;
   finally
     TxtData.Free;
   end;
+
 
 end;
 
@@ -373,39 +442,39 @@ var
   Z: Single;
   RawValue: Word;
   RasterLine: PRasterArray;
-  OldType: THeightDataType;
-  Notify: boolean;
   Position: Integer;
   i, j, n: Integer;
   offset: TTexPoint;
 
-  MaxTileSize, OffsetModulo: Integer;
+  MaxTileSize, OffsetModulo, TileSize: Integer;
   TextureScale: Extended;
 begin
-  if not InRange(heightData.YTop, 0, FWorldSize - 1) or not InRange(heightData.XLeft, 0, FWorldSize - 1) then
+
+  if not InRange(heightData.YTop, 0, FWorldSize div 4 - 1) or not InRange(heightData.XLeft, 0, FWorldSize div 4 - 1) then
   begin
     heightData.DataState := hdsNone;
     Exit;
   end;
 
   heightData.DataState := hdsPreparing;
-  OldType := heightData.DataType;
   heightData.Allocate(HdsType);
-  Notify := false;
 
   MaxTileSize := FWorldSize div TexturePart;
   OffsetModulo := Sqr(TexturePart);
+  TileSize := TerrainRenderer.TileSize;
   TextureScale := TerrainRenderer.TileSize / MaxTileSize;
 
   i := (heightData.XLeft div MaxTileSize);
   j := (heightData.YTop div MaxTileSize);
   if (i < OffsetModulo) and (j < OffsetModulo) then
   begin
-    heightData.MaterialName := Format('%s%.2dx%.2d.dds', [TextureBaseName, i, j]);
+    if UseTexture then
+      heightData.MaterialName := Format('%s%.2dx%.2d.dds', [TextureBaseName, i, j]);
+
     heightData.TextureCoordinatesMode := tcmLocal;
-    n := (heightData.XLeft div TerrainRenderer.TileSize) mod OffsetModulo;
+    n := (heightData.XLeft div TileSize) mod OffsetModulo;
     offset.S := n * TextureScale;
-    n := (heightData.YTop div TerrainRenderer.TileSize) mod OffsetModulo;
+    n := (heightData.YTop div TileSize) mod OffsetModulo;
     offset.T := -n * TextureScale;
     heightData.TextureCoordinatesOffset := offset;
     TextureScale := TextureScale;// - 0.0025;
@@ -421,16 +490,15 @@ begin
     begin
       if (Y < FWorldSize) and (X < FWorldSize) then
       begin
-        Position := Round(X / FRawStep) * 2 + (Round(Y / FRawStep) * 2 * (FWorldSize div FRawStep));
+        Position := X*2 + Y*2 * (FWorldSize div FRawStep);
         FBuffer.Seek(Position, soFromBeginning);
         FBuffer.Read(RawValue, 2);
 
-        Z := RawValue * FMapHeightScale / 2;
+        Z := RawValue * (FMapHeightScale/2) * (1/FRawStep);
       end
       else
         Z := 0;
 
-      // SendDebugFmt('z=%f (%d) from Position=%d',[z, ZValue, Position]);
       RasterLine[X - heightData.XLeft] := Z;
     end;
   end;
@@ -466,15 +534,6 @@ end;
 procedure TRAWViewForm.SetWorldSize(const Value: Integer);
 begin
   FWorldSize := Value;
-
-  CameraTarget.Position.X := FWorldSize div 2;
-  CameraTarget.Position.Z := -FWorldSize div 2;
-  CameraTarget.Position.Y := 100;
-
-  Camera.Position.X := FWorldSize div 4;
-  Camera.Position.z := -FWorldSize div 4;
-  Camera.Position.Y := 120;
-
 
   WaterPlane.Width := FWorldSize;
   WaterPlane.Height := FWorldSize;

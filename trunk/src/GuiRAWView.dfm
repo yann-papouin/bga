@@ -24,6 +24,85 @@ inherited RAWViewForm: TRAWViewForm
     OnMouseDown = ViewerMouseDown
     TabOrder = 0
   end
+  object Panel1: TPanel
+    Left = 8
+    Top = 296
+    Width = 137
+    Height = 225
+    Caption = ' '
+    TabOrder = 2
+    Visible = False
+    object Button1: TButton
+      Left = 96
+      Top = 116
+      Width = 33
+      Height = 25
+      Caption = '+'
+      TabOrder = 0
+    end
+    object Button2: TButton
+      Left = 57
+      Top = 116
+      Width = 33
+      Height = 25
+      Caption = '-'
+      TabOrder = 1
+    end
+    object SpTBXSpinEdit1: TSpTBXSpinEdit
+      Left = 8
+      Top = 8
+      Width = 121
+      Height = 21
+      TabOrder = 2
+      SpinButton.Left = 103
+      SpinButton.Top = 0
+      SpinButton.Width = 14
+      SpinButton.Height = 17
+      SpinButton.Align = alRight
+      SpinOptions.Value = 256.000000000000000000
+    end
+    object SpTBXSpinEdit2: TSpTBXSpinEdit
+      Left = 8
+      Top = 35
+      Width = 121
+      Height = 21
+      TabOrder = 3
+      SpinButton.Left = 103
+      SpinButton.Top = 0
+      SpinButton.Width = 14
+      SpinButton.Height = 17
+      SpinButton.Align = alRight
+      SpinOptions.Value = 64.000000000000000000
+    end
+    object SpTBXSpinEdit3: TSpTBXSpinEdit
+      Left = 8
+      Top = 62
+      Width = 121
+      Height = 21
+      TabOrder = 4
+      SpinButton.Left = 103
+      SpinButton.Top = 0
+      SpinButton.Width = 14
+      SpinButton.Height = 17
+      SpinButton.Align = alRight
+      SpinOptions.Value = 16.000000000000000000
+    end
+    object SpTBXSpinEdit4: TSpTBXSpinEdit
+      Left = 8
+      Top = 89
+      Width = 121
+      Height = 21
+      TabOrder = 5
+      SpinButton.Left = 103
+      SpinButton.Top = 0
+      SpinButton.Width = 14
+      SpinButton.Height = 17
+      SpinButton.Align = alRight
+      SpinOptions.Decimal = 6
+      SpinOptions.Value = 0.015625000000000000
+      SpinOptions.ValueType = spnFloat
+    end
+  end
   object StatusBar: TSpTBXStatusBar
     Left = 0
     Top = 547
@@ -49,10 +128,10 @@ inherited RAWViewForm: TRAWViewForm
     object CameraTarget: TGLDummyCube
       CubeSize = 1.000000000000000000
       object Camera: TGLCamera
-        DepthOfView = 1000.000000000000000000
+        DepthOfView = 512.000000000000000000
         FocalLength = 90.000000000000000000
         TargetObject = CameraTarget
-        Position.Coordinates = {000000000000A0410000A0400000803F}
+        Position.Coordinates = {00000000000020410000A0400000803F}
         object CamLight: TGLLightSource
           ConstAttenuation = 1.000000000000000000
           SpotCutOff = 180.000000000000000000
@@ -152,7 +231,7 @@ inherited RAWViewForm: TRAWViewForm
         HeightDataSource = BattlefieldHDS
         TilesPerTexture = 1.000000000000000000
         MaterialLibrary = GLMaterialLibrary
-        QualityDistance = 256.000000000000000000
+        QualityDistance = 128.000000000000000000
         QualityStyle = hrsTesselated
         MaxCLODTriangles = 128000
         OnPatchPostRender = TerrainRendererPatchPostRender
