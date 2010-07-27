@@ -9,7 +9,8 @@ uses
   AppLib in 'Lib\AppLib.pas',
   CommonLib in 'Lib\CommonLib.pas',
   SvnInfo in 'Lib\SvnInfo.pas',
-  BGALib in 'BGALib.pas';
+  BGALib in 'BGALib.pas',
+  GuiFormCommon in 'GuiFormCommon.pas' {FormCommon};
 
 {$R *.res}
 

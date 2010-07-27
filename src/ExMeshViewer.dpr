@@ -13,7 +13,8 @@ uses
   FileSM in 'GLSceneExt\FileSM.pas',
   GLFileSM in 'GLSceneExt\GLFileSM.pas',
   TypesSM in 'GLSceneExt\TypesSM.pas',
-  RSLib in 'RSLib.pas';
+  RSLib in 'RSLib.pas',
+  GuiFormCommon in 'GuiFormCommon.pas' {FormCommon};
 
 {$R *.res}
 

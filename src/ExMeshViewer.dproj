@@ -62,6 +62,9 @@
 			<DCCReference Include="GLSceneExt\GLFileSM.pas"/>
 			<DCCReference Include="GLSceneExt\TypesSM.pas"/>
 			<DCCReference Include="RSLib.pas"/>
+			<DCCReference Include="GuiFormCommon.pas">
+				<Form>FormCommon</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -129,7 +132,7 @@
 
 <!-- EurekaLog First Line
 [Exception Log]
-EurekaLog Version=6023
+EurekaLog Version=6024
 Activate=1
 Activate Handle=1
 Save Log File=1
