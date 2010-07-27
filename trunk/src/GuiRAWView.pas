@@ -209,7 +209,9 @@ begin
       'P','p' : with TerrainRenderer do
          if CLODPrecision<1000 then CLODPrecision:=Round(CLODPrecision*0.8);
       'L','l' : with TerrainRenderer do
-         if QualityDistance>40 then QualityDistance:=Round(QualityDistance*0.8);
+         if QualityDistance>3 then QualityDistance:=Round(QualityDistance*0.8)
+         else
+          QualityDistance := 3;
       'M','m' : with TerrainRenderer do
          if QualityDistance<1000 then QualityDistance:=Round(QualityDistance*1.2);
 
@@ -233,6 +235,12 @@ begin
         GLMaterialLibrary.Materials[i].Material.MaterialOptions := MaterialOptions;
       end;
    end;
+
+   Viewer.Buffer.FogEnable := True;
+   Viewer.Buffer.FogEnvironment.FogColor.AsWinColor :=  Viewer.Buffer.BackgroundColor;
+   Viewer.Buffer.FogEnvironment.FogStart := TerrainRenderer.QualityDistance;
+   Viewer.Buffer.FogEnvironment.FogEnd := Camera.DepthOfView;
+
 
    List := TStringList.Create;
    List.Add(Format('CLODPrecision = %d',[TerrainRenderer.CLODPrecision]));
