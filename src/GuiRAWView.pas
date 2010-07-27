@@ -67,7 +67,8 @@ uses
   GLBitmapFont,
   GLWindowsFont,
   GLHUDObjects,
-  GLCadencer;
+  GLCadencer,
+  GLRenderContextInfo;
 
 type
 
@@ -103,6 +104,9 @@ type
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure CadencerProgress(Sender: TObject; const deltaTime, newTime: Double);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure TerrainRendererPatchPostRender(var rci: TRenderContextInfo; const patches: TList);
+    procedure TerrainRendererHeightDataPostRender(var rci: TRenderContextInfo; const heightDatas: TList);
+    procedure TerrainRendererMaxCLODTrianglesReached(var rci: TRenderContextInfo);
   private
     v: TAffineVector;
     M: TPoint;
@@ -157,6 +161,7 @@ uses
   DbugIntf,
   StringFunction,
   AppLib,
+  CommonLib,
   CONLib;
 
 { TRAWViewForm }
@@ -168,11 +173,19 @@ begin
 end;
 
 procedure TRAWViewForm.FormCreate(Sender: TObject);
+var
+  Key : Char;
 begin
   inherited;
   FMapSize := -1;
   FBuffer := TMemoryStream.Create;
 
+  TerrainRenderer.TileManagement := [tmClearUsedFlags, tmMarkUsedTiles, tmReleaseUnusedTiles, tmAllocateNewTiles, tmWaitForPreparing];
+  BattlefieldHDS.MaxPoolSize:= 1024 *1024*1024;
+  SendDebugFmt('HDS size is fixed to %s',[SizeToStr(BattlefieldHDS.MaxPoolSize)]);
+
+  Key := #0;
+  FormKeyPress(Self, Key);
 end;
 
 procedure TRAWViewForm.FormDestroy(Sender: TObject);
@@ -190,9 +203,11 @@ begin
   inherited;
    case Key of
       'O','o' : with TerrainRenderer do
-         if CLODPrecision>0 then CLODPrecision:=CLODPrecision-1;
+         if CLODPrecision = 0 then CLODPrecision := 1
+         else
+         if CLODPrecision>0 then CLODPrecision:=Round(CLODPrecision*1.2);
       'P','p' : with TerrainRenderer do
-         if CLODPrecision<1000 then CLODPrecision:=CLODPrecision+1;
+         if CLODPrecision<1000 then CLODPrecision:=Round(CLODPrecision*0.8);
       'L','l' : with TerrainRenderer do
          if QualityDistance>40 then QualityDistance:=Round(QualityDistance*0.8);
       'M','m' : with TerrainRenderer do
@@ -336,7 +351,6 @@ begin
   FMaxZ := 0;
   Data.Position := 0;
   FBuffer.LoadFromStream(Data);
-  BattlefieldHDS.MaxPoolSize := Sqr(FWorldSize);
   FInitLoad := true;
 end;
 
@@ -411,13 +425,7 @@ begin
       // SendDebugFmt('z=%f (%d) from Position=%d',[z, ZValue, Position]);
       RasterLine[X - heightData.XLeft] := Z;
     end;
-
   end;
-  (*
-    if OldType <> HdsType then
-    heightData.DataType := OldType;
-    *)
-  heightData.DataState := hdsReady;
 end;
 
 procedure TRAWViewForm.CadencerProgress(Sender: TObject; const deltaTime, newTime: Double);
@@ -465,6 +473,24 @@ begin
 
   WaterPlane.Position.X := FWorldSize div 2;
   WaterPlane.Position.Y := FWorldSize div 2;
+end;
+
+procedure TRAWViewForm.TerrainRendererHeightDataPostRender(var rci: TRenderContextInfo; const heightDatas: TList);
+begin
+  inherited;
+//
+end;
+
+procedure TRAWViewForm.TerrainRendererMaxCLODTrianglesReached(var rci: TRenderContextInfo);
+begin
+  inherited;
+  //SendDebug('MaxCLODTrianglesReached');
+end;
+
+procedure TRAWViewForm.TerrainRendererPatchPostRender(var rci: TRenderContextInfo; const patches: TList);
+begin
+  inherited;
+//
 end;
 
 procedure TRAWViewForm.SetMapSize(const Value: Integer);

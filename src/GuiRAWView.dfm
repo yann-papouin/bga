@@ -150,12 +150,14 @@ inherited RAWViewForm: TRAWViewForm
         Material.Texture.FilteringQuality = tfAnisotropic
         Material.Texture.Disabled = False
         HeightDataSource = BattlefieldHDS
-        TileSize = 8
         TilesPerTexture = 1.000000000000000000
         MaterialLibrary = GLMaterialLibrary
-        QualityDistance = 100.000000000000000000
-        MaxCLODTriangles = 65535
-        CLODPrecision = 4
+        QualityDistance = 256.000000000000000000
+        QualityStyle = hrsTesselated
+        MaxCLODTriangles = 128000
+        OnPatchPostRender = TerrainRendererPatchPostRender
+        OnHeightDataPostRender = TerrainRendererHeightDataPostRender
+        OnMaxCLODTrianglesReached = TerrainRendererMaxCLODTrianglesReached
       end
     end
     object GLInfos: TGLHUDText
