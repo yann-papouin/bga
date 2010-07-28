@@ -179,7 +179,7 @@
 
 <!-- EurekaLog First Line
 [Exception Log]
-EurekaLog Version=6023
+EurekaLog Version=6024
 Activate=1
 Activate Handle=1
 Save Log File=1
