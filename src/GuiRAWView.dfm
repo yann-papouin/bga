@@ -16,92 +16,13 @@ inherited RAWViewForm: TRAWViewForm
     Height = 547
     Camera = Camera
     PostRender = ViewerPostRender
-    Buffer.BackgroundColor = clSkyBlue
+    Buffer.BackgroundColor = clWhite
     Buffer.FaceCulling = False
     FieldOfView = 143.570602416992200000
     Align = alClient
     OnDblClick = ViewerDblClick
     OnMouseDown = ViewerMouseDown
     TabOrder = 0
-  end
-  object Panel1: TPanel
-    Left = 8
-    Top = 296
-    Width = 137
-    Height = 225
-    Caption = ' '
-    TabOrder = 2
-    Visible = False
-    object Button1: TButton
-      Left = 96
-      Top = 116
-      Width = 33
-      Height = 25
-      Caption = '+'
-      TabOrder = 0
-    end
-    object Button2: TButton
-      Left = 57
-      Top = 116
-      Width = 33
-      Height = 25
-      Caption = '-'
-      TabOrder = 1
-    end
-    object SpTBXSpinEdit1: TSpTBXSpinEdit
-      Left = 8
-      Top = 8
-      Width = 121
-      Height = 21
-      TabOrder = 2
-      SpinButton.Left = 103
-      SpinButton.Top = 0
-      SpinButton.Width = 14
-      SpinButton.Height = 17
-      SpinButton.Align = alRight
-      SpinOptions.Value = 256.000000000000000000
-    end
-    object SpTBXSpinEdit2: TSpTBXSpinEdit
-      Left = 8
-      Top = 35
-      Width = 121
-      Height = 21
-      TabOrder = 3
-      SpinButton.Left = 103
-      SpinButton.Top = 0
-      SpinButton.Width = 14
-      SpinButton.Height = 17
-      SpinButton.Align = alRight
-      SpinOptions.Value = 64.000000000000000000
-    end
-    object SpTBXSpinEdit3: TSpTBXSpinEdit
-      Left = 8
-      Top = 62
-      Width = 121
-      Height = 21
-      TabOrder = 4
-      SpinButton.Left = 103
-      SpinButton.Top = 0
-      SpinButton.Width = 14
-      SpinButton.Height = 17
-      SpinButton.Align = alRight
-      SpinOptions.Value = 16.000000000000000000
-    end
-    object SpTBXSpinEdit4: TSpTBXSpinEdit
-      Left = 8
-      Top = 89
-      Width = 121
-      Height = 21
-      TabOrder = 5
-      SpinButton.Left = 103
-      SpinButton.Top = 0
-      SpinButton.Width = 14
-      SpinButton.Height = 17
-      SpinButton.Align = alRight
-      SpinOptions.Decimal = 6
-      SpinOptions.Value = 0.015625000000000000
-      SpinOptions.ValueType = spnFloat
-    end
   end
   object StatusBar: TSpTBXStatusBar
     Left = 0
@@ -139,13 +60,15 @@ inherited RAWViewForm: TRAWViewForm
       end
     end
     object Root: TGLDummyCube
-      Direction.Coordinates = {000000000000803F0000008000000000}
-      Up.Coordinates = {0000008000000000000080BF00000000}
+      Direction.Coordinates = {000000000000803F0000000000000000}
+      Up.Coordinates = {0000803F000000000000008000000000}
       CubeSize = 1.000000000000000000
       object WaterPlane: TGLPlane
-        Material.FrontProperties.Diffuse.Color = {00000000FDFC7C3ECDCC4C3F4A0C023E}
-        Material.FrontProperties.Emission.Color = {EBEAEA3ED7D6D63EDFDEDE3E0000803F}
-        Material.BlendingMode = bmModulate
+        Material.FrontProperties.Diffuse.Color = {CDCC4C3EC1C0C03DC3C2423F17D92E3F}
+        Material.FrontProperties.Emission.Color = {C5C4443EC5C4443EB5B4343E0000803F}
+        Material.FrontProperties.Shininess = 5
+        Material.FrontProperties.Specular.Color = {9796963E9D9C1C3FCFCECE3E0000803F}
+        Material.BlendingMode = bmTransparency
         Up.Coordinates = {000000000000803F0000008000000000}
         Height = 16.000000000000000000
         Width = 16.000000000000000000
@@ -243,6 +166,7 @@ inherited RAWViewForm: TRAWViewForm
       Position.Coordinates = {0000204100002041000000000000803F}
       BitmapFont = WindowsBitmapFont
       Text = 'GLInfos'
+      ModulateColor.Color = {B1A8A83EB1A8A83EB1A8A83E0000803F}
     end
   end
   object Navigation: TGLSimpleNavigation
@@ -281,7 +205,7 @@ inherited RAWViewForm: TRAWViewForm
   object WindowsBitmapFont: TGLWindowsBitmapFont
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
-    Font.Height = -15
+    Font.Height = -11
     Font.Name = 'Tahoma'
     Font.Style = []
     Left = 8
