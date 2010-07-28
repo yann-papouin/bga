@@ -312,12 +312,57 @@ begin
    List.free;
 end;
 
+
+
+procedure TRAWViewForm.LoadTerrain(Data: TStream);
+var
+  TxtData: TStringList;
+  flworldSize, flmaterialSize, flwaterLevel, flseaFloorLevel: extended;
+  flyScale: extended;
+  strFile, strtexBaseName, strdetailTexName: string;
+begin
+
+  TxtData := TStringList.Create;
+  try
+    Data.Position := 0;
+    TxtData.LoadFromStream(Data);
+
+    strFile := GetStringFromProperty(TxtData, 'GeometryTemplate.file');
+    strtexBaseName := GetStringFromProperty(TxtData, 'GeometryTemplate.texBaseName');
+    strdetailTexName := GetStringFromProperty(TxtData, 'GeometryTemplate.detailTexName');
+
+    flmaterialSize := GetFloatFromProperty(TxtData, 'GeometryTemplate.materialSize');
+    flworldSize := GetFloatFromProperty(TxtData, 'GeometryTemplate.worldSize');
+    flyScale := GetFloatFromProperty(TxtData, 'GeometryTemplate.yScale');
+    flwaterLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.waterLevel');
+    flseaFloorLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.seaFloorLevel');
+
+    HeightMap := strFile + '.raw';
+    TextureBaseName := strtexBaseName;
+    DetailBaseName := strdetailTexName + '.dds';
+
+    MapSize := Round(flmaterialSize);
+    MapHeightScale := flyScale;
+    WorldSize := Round(flworldSize);
+    WaterLevel := flwaterLevel;
+    WaterPlane.Position.z := WaterLevel;
+    FRawStep := FWorldSize div MapSize;
+    TextureSize := WorldSize * 4;
+    TexturePart := TextureSize div 256;
+  finally
+    TxtData.Free;
+  end;
+
+
+end;
+
+
 procedure TRAWViewForm.LoadTerrain(Filename: string);
 var
   Stream: TFileStream;
   TextureName, TextureFile, DetailFile, HeightMapFile: string;
   Row, Col: Integer;
-  LibMaterial: TGLLibMaterial;
+  LibMaterial, DetailMaterial: TGLLibMaterial;
 {$IFDEF RAWVIEW_DRAW_NAME}
   Bmp: TBitmap;
 {$ENDIF}
@@ -326,6 +371,8 @@ begin
   BattlefieldHDS.MarkDirty;
   Assert(Assigned(GetFileByPath));
   GLMaterialLibrary.Materials.Clear;
+  LibMaterial := nil;
+  DetailMaterial := nil;
 
   UseTexture := True;
   FFirstRow := -1;
@@ -341,6 +388,15 @@ begin
     Stream.Free;
 
     DetailFile := GetFileByPath(Self, DetailBaseName);
+    if FileExists(DetailFile) then
+    begin
+      DetailMaterial := GLMaterialLibrary.AddTextureMaterial('Details', DetailFile);
+      DetailMaterial.Material.MaterialOptions := [moNoLighting];
+      DetailMaterial.Material.Texture.ImageBrightness := 2;
+      DetailMaterial.Material.Texture.TextureMode := tmModulate;
+      DetailMaterial.TextureScale.X := Sqrt(MapSize);
+      DetailMaterial.TextureScale.Y := Sqrt(MapSize);
+    end;
 
     for Row := 0 to TexturePart - 1 do
       for Col := 0 to TexturePart - 1 do
@@ -364,7 +420,10 @@ begin
           UseTexture := true;
           LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
           LibMaterial.Material.MaterialOptions := [moNoLighting];
-          LibMaterial.Texture2Name := DetailFile;
+
+          if Assigned(DetailMaterial) then
+            LibMaterial.Texture2Name := DetailMaterial.Name;
+
 {$IFDEF RAWVIEW_DRAW_NAME}
           Bmp := TBitmap.Create;
           Bmp.PixelFormat := pf24bit;
@@ -399,6 +458,15 @@ begin
 
     Cadencer.Enabled := true;
   end;
+end;
+
+procedure TRAWViewForm.LoadHeightmap(Data: TStream);
+begin
+  FMinZ := MAXWORD;
+  FMaxZ := 0;
+  Data.Position := 0;
+  FBuffer.LoadFromStream(Data);
+  FInitLoad := true;
 end;
 
 procedure TRAWViewForm.CalcCameraPosition;
@@ -445,56 +513,7 @@ begin
   WaterPlane.Position.Y := FRangeMin.Y*FRawStep + WaterPlane.Width/2;
 end;
 
-procedure TRAWViewForm.LoadTerrain(Data: TStream);
-var
-  TxtData: TStringList;
-  flworldSize, flmaterialSize, flwaterLevel, flseaFloorLevel: extended;
-  flyScale: extended;
-  strFile, strtexBaseName, strdetailTexName: string;
-begin
 
-  TxtData := TStringList.Create;
-  try
-    Data.Position := 0;
-    TxtData.LoadFromStream(Data);
-
-    strFile := GetStringFromProperty(TxtData, 'GeometryTemplate.file');
-    strtexBaseName := GetStringFromProperty(TxtData, 'GeometryTemplate.texBaseName');
-    strdetailTexName := GetStringFromProperty(TxtData, 'GeometryTemplate.detailTexName');
-
-    flmaterialSize := GetFloatFromProperty(TxtData, 'GeometryTemplate.materialSize');
-    flworldSize := GetFloatFromProperty(TxtData, 'GeometryTemplate.worldSize');
-    flyScale := GetFloatFromProperty(TxtData, 'GeometryTemplate.yScale');
-    flwaterLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.waterLevel');
-    flseaFloorLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.seaFloorLevel');
-
-    HeightMap := strFile + '.raw';
-    TextureBaseName := strtexBaseName;
-    DetailBaseName := strdetailTexName + '.dds';
-
-    MapSize := Round(flmaterialSize);
-    MapHeightScale := flyScale;
-    WorldSize := Round(flworldSize);
-    WaterLevel := flwaterLevel;
-    WaterPlane.Position.z := WaterLevel;
-    FRawStep := FWorldSize div MapSize;
-    TextureSize := WorldSize * 4;
-    TexturePart := TextureSize div 256;
-  finally
-    TxtData.Free;
-  end;
-
-
-end;
-
-procedure TRAWViewForm.LoadHeightmap(Data: TStream);
-begin
-  FMinZ := MAXWORD;
-  FMaxZ := 0;
-  Data.Position := 0;
-  FBuffer.LoadFromStream(Data);
-  FInitLoad := true;
-end;
 
 procedure TRAWViewForm.BattlefieldHDSStartPreparingData(heightData: THeightData);
 type
