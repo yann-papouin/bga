@@ -290,6 +290,7 @@ inherited RAWViewForm: TRAWViewForm
   object Cadencer: TGLCadencer
     Scene = Scene
     Enabled = False
+    SleepLength = 10
     OnProgress = CadencerProgress
     Left = 8
     Top = 168

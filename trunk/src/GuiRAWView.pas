@@ -118,6 +118,15 @@ type
     v: TAffineVector;
     M: TPoint;
 
+    FFirstRow : Integer;
+    FFirstCol : Integer;
+    FLastRow : Integer;
+    FLastCol : Integer;
+
+    // Terrain ranges
+    FRangeMin : TPoint;
+    FRangeMax : TPoint;
+
     FInitLoad: boolean;
     FMouseMoveMutex: boolean;
     FBuffer: TMemoryStream;
@@ -137,6 +146,7 @@ type
 
     procedure LoadTerrain(Data: TStream); overload;
     procedure LoadHeightmap(Data: TStream); overload;
+    procedure CalcTerrainRange;
   public
     { Déclarations publiques }
     GetFileByPath: TBgaGetFileByPath;
@@ -312,8 +322,15 @@ var
 {$ENDIF}
 begin
   Cadencer.Enabled := false;
+  BattlefieldHDS.MarkDirty;
   Assert(Assigned(GetFileByPath));
   GLMaterialLibrary.Materials.Clear;
+
+  UseTexture := True;
+  FFirstRow := -1;
+  FFirstCol := -1;
+  FLastRow := -1;
+  FLastCol := -1;
 
   if FileExists(Filename) then
   begin
@@ -333,6 +350,16 @@ begin
 
         if FileExists(TextureFile) then
         begin
+          if FFirstRow = -1 then
+            FFirstRow := Row
+          else
+            FLastRow := Row;
+
+          if FFirstCol = -1 then
+            FFirstCol := Col
+          else
+            FLastCol := Col;
+
           UseTexture := true;
           LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
           LibMaterial.Material.MaterialOptions := [moNoLighting];
@@ -363,13 +390,14 @@ begin
       Stream.Free;
     end;
 
+    CalcTerrainRange;
+
     TerrainRenderer.Scale.X := FRawStep;
     TerrainRenderer.Scale.Y := FRawStep;
     TerrainRenderer.Scale.Z := FRawStep;
 
-
-    CameraTarget.Position.X := FWorldSize div 2;
-    CameraTarget.Position.Z := -FWorldSize div 2;
+    CameraTarget.Position.X := WaterPlane.Position.X;
+    CameraTarget.Position.Z := -WaterPlane.Position.Y;
     CameraTarget.Position.Y := WaterLevel;
 
     Camera.Position.X := 0;
@@ -378,6 +406,32 @@ begin
 
     Cadencer.Enabled := true;
   end;
+end;
+
+
+procedure TRAWViewForm.CalcTerrainRange;
+begin
+  FRangeMin.X := (FWorldSize div FRawStep) * (FFirstRow) div (Round(Sqrt(FWorldSize div TexturePart)));
+  FRangeMin.Y := (FWorldSize div FRawStep) * (FFirstCol) div (Round(Sqrt(FWorldSize div TexturePart)));
+
+  if FRangeMin.X > 0 then
+    FRangeMin.X := FRangeMin.X -1;
+  if FRangeMin.Y > 0 then
+    FRangeMin.Y := FRangeMin.Y -1;
+
+  FRangeMax.X := (FWorldSize div FRawStep) * (FLastRow)  div (Round(Sqrt(FWorldSize div TexturePart))) + FWorldSize div TexturePart;
+  FRangeMax.Y := (FWorldSize div FRawStep) * (FLastCol)  div (Round(Sqrt(FWorldSize div TexturePart))) + FWorldSize div TexturePart;
+
+  if FRangeMax.X > 0 then
+    FRangeMax.X := FRangeMax.X -1;
+  if FRangeMax.Y > 0 then
+    FRangeMax.Y := FRangeMax.Y -1;
+
+  WaterPlane.Width := FRangeMax.X*FRawStep - FRangeMin.X*FRawStep;
+  WaterPlane.Height := FRangeMax.Y*FRawStep - FRangeMin.Y*FRawStep;
+
+  WaterPlane.Position.X := FRangeMin.X*FRawStep + (FRangeMax.X*FRawStep - FRangeMin.X*FRawStep) div 2;
+  WaterPlane.Position.Y := FRangeMin.Y*FRawStep + (FRangeMax.Y*FRawStep - FRangeMin.Y*FRawStep) div 2;
 end;
 
 procedure TRAWViewForm.LoadTerrain(Data: TStream);
@@ -449,8 +503,34 @@ var
   MaxTileSize, OffsetModulo, TileSize: Integer;
   TextureScale: Extended;
 begin
+(*
+  FRangeMin.X := FFirstRow;
+  FRangeMin.Y := FFirstCol;
 
-  if not InRange(heightData.YTop, 0, FWorldSize div 4 - 1) or not InRange(heightData.XLeft, 0, FWorldSize div 4 - 1) then
+  FRangeMax.X := FLastRow;
+  FRangeMax.Y := FLastCol;
+
+ // 512->2048
+
+  FRangeMin.X := 384;
+  FRangeMin.Y := 384;
+
+  FRangeMax.X := 512;
+  FRangeMax.Y := 512;
+*)
+
+
+
+
+(*
+  FRangeMin.X := 0;
+  FRangeMin.Y := 0;
+  FRangeMax.X := (FWorldSize div FRawStep)-1;
+  FRangeMax.Y := (FWorldSize div FRawStep)-1;
+*)
+
+  if not InRange(heightData.YTop, FRangeMin.Y, FRangeMax.Y)
+  or not InRange(heightData.XLeft, FRangeMin.X, FRangeMax.X) then
   begin
     heightData.DataState := hdsNone;
     Exit;
@@ -526,6 +606,7 @@ begin
 end;
 
 
+
 procedure TRAWViewForm.SetMapHeightScale(const Value: Single);
 begin
   FMapHeightScale := Value;
@@ -534,12 +615,6 @@ end;
 procedure TRAWViewForm.SetWorldSize(const Value: Integer);
 begin
   FWorldSize := Value;
-
-  WaterPlane.Width := FWorldSize;
-  WaterPlane.Height := FWorldSize;
-
-  WaterPlane.Position.X := FWorldSize div 2;
-  WaterPlane.Position.Y := FWorldSize div 2;
 end;
 
 procedure TRAWViewForm.TerrainRendererHeightDataPostRender(var rci: TRenderContextInfo; const heightDatas: TList);
