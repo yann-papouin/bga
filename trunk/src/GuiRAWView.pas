@@ -68,7 +68,7 @@ uses
   GLWindowsFont,
   GLHUDObjects,
   GLCadencer,
-  GLRenderContextInfo, ExtCtrls;
+  GLRenderContextInfo;
 
 type
 
@@ -94,13 +94,6 @@ type
     WindowsBitmapFont: TGLWindowsBitmapFont;
     GLInfos: TGLHUDText;
     Cadencer: TGLCadencer;
-    SpTBXSpinEdit1: TSpTBXSpinEdit;
-    SpTBXSpinEdit2: TSpTBXSpinEdit;
-    SpTBXSpinEdit3: TSpTBXSpinEdit;
-    SpTBXSpinEdit4: TSpTBXSpinEdit;
-    Button1: TButton;
-    Button2: TButton;
-    Panel1: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
@@ -147,6 +140,7 @@ type
     procedure LoadTerrain(Data: TStream); overload;
     procedure LoadHeightmap(Data: TStream); overload;
     procedure CalcTerrainRange;
+    procedure CalcCameraPosition;
   public
     { Déclarations publiques }
     GetFileByPath: TBgaGetFileByPath;
@@ -194,6 +188,7 @@ end;
 procedure TRAWViewForm.FormCreate(Sender: TObject);
 var
   Key : Char;
+  Color : TColorVector;
 begin
   inherited;
   FMapSize := -1;
@@ -202,7 +197,13 @@ begin
   TerrainRenderer.TileManagement := [tmClearUsedFlags, tmMarkUsedTiles, tmReleaseUnusedTiles, tmAllocateNewTiles, tmWaitForPreparing];
   BattlefieldHDS.MaxPoolSize:= 256*1024*1024;
   SendDebugFmt('HDS size is fixed to %s',[SizeToStr(BattlefieldHDS.MaxPoolSize)]);
-
+(*
+  Color[0] := 0.832;
+  Color[1] := 0.699;
+  Color[2] := 0.52;
+  Color[3] := 1;
+  Viewer.Buffer.BackgroundColor :=  ConvertColorVector(Color); //0.832/0.699/0.52
+*)
   Key := #0;
   FormKeyPress(Self, Key);
 end;
@@ -295,7 +296,7 @@ begin
 
    List := TStringList.Create;
    List.Add(Format('[U-][I+] TileSize = %d',[TerrainRenderer.TileSize]));
-   List.Add(Format('[K-][J+] DepthOfView = %f',[Camera.DepthOfView]));
+   List.Add(Format('[J-][K+] DepthOfView = %f',[Camera.DepthOfView]));
    List.Add(Format('[L-][M+] QualityDistance = %f',[TerrainRenderer.QualityDistance]));
 
    if TerrainRenderer.QualityStyle = hrsTesselated then
@@ -387,51 +388,61 @@ begin
     begin
       Stream := TFileStream.Create(HeightMapFile, fmOpenRead);
       LoadHeightmap(Stream);
+      TerrainRenderer.Scale.X := FRawStep;
+      TerrainRenderer.Scale.Y := FRawStep;
+      TerrainRenderer.Scale.Z := FRawStep;
       Stream.Free;
     end;
 
     CalcTerrainRange;
-
-    TerrainRenderer.Scale.X := FRawStep;
-    TerrainRenderer.Scale.Y := FRawStep;
-    TerrainRenderer.Scale.Z := FRawStep;
-
-    CameraTarget.Position.X := WaterPlane.Position.X;
-    CameraTarget.Position.Z := -WaterPlane.Position.Y;
-    CameraTarget.Position.Y := WaterLevel;
-
-    Camera.Position.X := 0;
-    Camera.Position.Z := -100;
-    Camera.Position.Y := WaterLevel*2;
+    CalcCameraPosition;
 
     Cadencer.Enabled := true;
   end;
 end;
 
+procedure TRAWViewForm.CalcCameraPosition;
+begin
+  CameraTarget.Position.X := WaterPlane.Position.X;
+  CameraTarget.Position.Z := WaterPlane.Position.Y;
+  CameraTarget.Position.Y := WaterLevel;
+
+  Camera.Position.X := 0;
+  Camera.Position.Z := -100;
+  Camera.Position.Y := WaterLevel*2;
+end;
 
 procedure TRAWViewForm.CalcTerrainRange;
+var
+  TileSize : Integer;
+  Rate : Integer;
 begin
-  FRangeMin.X := (FWorldSize div FRawStep) * (FFirstRow) div (Round(Sqrt(FWorldSize div TexturePart)));
-  FRangeMin.Y := (FWorldSize div FRawStep) * (FFirstCol) div (Round(Sqrt(FWorldSize div TexturePart)));
+  TileSize := FWorldSize div TexturePart;
+  Rate := Round(Sqrt(TileSize));
+
+  FRangeMin.X := (FWorldSize div FRawStep) * (FFirstRow) div Rate;
+  FRangeMin.Y := (FWorldSize div FRawStep) * (FFirstCol) div Rate;
 
   if FRangeMin.X > 0 then
     FRangeMin.X := FRangeMin.X -1;
   if FRangeMin.Y > 0 then
     FRangeMin.Y := FRangeMin.Y -1;
 
-  FRangeMax.X := (FWorldSize div FRawStep) * (FLastRow)  div (Round(Sqrt(FWorldSize div TexturePart))) + FWorldSize div TexturePart;
-  FRangeMax.Y := (FWorldSize div FRawStep) * (FLastCol)  div (Round(Sqrt(FWorldSize div TexturePart))) + FWorldSize div TexturePart;
+  FRangeMax.X := (FWorldSize div FRawStep) * (FLastRow)  div Rate + TileSize;
+  FRangeMax.Y := (FWorldSize div FRawStep) * (FLastCol)  div Rate + TileSize;
 
   if FRangeMax.X > 0 then
     FRangeMax.X := FRangeMax.X -1;
   if FRangeMax.Y > 0 then
     FRangeMax.Y := FRangeMax.Y -1;
 
-  WaterPlane.Width := FRangeMax.X*FRawStep - FRangeMin.X*FRawStep;
-  WaterPlane.Height := FRangeMax.Y*FRawStep - FRangeMin.Y*FRawStep;
+  // Set water plane position and size
 
-  WaterPlane.Position.X := FRangeMin.X*FRawStep + (FRangeMax.X*FRawStep - FRangeMin.X*FRawStep) div 2;
-  WaterPlane.Position.Y := FRangeMin.Y*FRawStep + (FRangeMax.Y*FRawStep - FRangeMin.Y*FRawStep) div 2;
+  WaterPlane.Width := (FRangeMax.X - FRangeMin.X)*FRawStep;
+  WaterPlane.Height := (FRangeMax.Y - FRangeMin.Y)*FRawStep;
+
+  WaterPlane.Position.X := FRangeMin.X*FRawStep + WaterPlane.Width/2;
+  WaterPlane.Position.Y := FRangeMin.Y*FRawStep + WaterPlane.Width/2;
 end;
 
 procedure TRAWViewForm.LoadTerrain(Data: TStream);
@@ -503,31 +514,6 @@ var
   MaxTileSize, OffsetModulo, TileSize: Integer;
   TextureScale: Extended;
 begin
-(*
-  FRangeMin.X := FFirstRow;
-  FRangeMin.Y := FFirstCol;
-
-  FRangeMax.X := FLastRow;
-  FRangeMax.Y := FLastCol;
-
- // 512->2048
-
-  FRangeMin.X := 384;
-  FRangeMin.Y := 384;
-
-  FRangeMax.X := 512;
-  FRangeMax.Y := 512;
-*)
-
-
-
-
-(*
-  FRangeMin.X := 0;
-  FRangeMin.Y := 0;
-  FRangeMax.X := (FWorldSize div FRawStep)-1;
-  FRangeMax.Y := (FWorldSize div FRawStep)-1;
-*)
 
   if not InRange(heightData.YTop, FRangeMin.Y, FRangeMax.Y)
   or not InRange(heightData.XLeft, FRangeMin.X, FRangeMax.X) then
@@ -669,7 +655,7 @@ begin
     v := Scene.CurrentBuffer.PixelRayToWorld(X, Y);
 
     XLabel.Caption := Format('X=%.2f', [v[0]]);
-    YLabel.Caption := Format('Y=%.2f', [-v[2]]);
+    YLabel.Caption := Format('Y=%.2f', [v[2]]);
     ZLabel.Caption := Format('Z=%.2f', [v[1]]);
   end;
 
