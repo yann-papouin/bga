@@ -27,7 +27,12 @@ http://img822.imageshack.us/img822/2968/sshot5y.png
 = File manipulation =
 
 BGA allow importation, modification, deletion of any files. All these operations are asynchronous because they required a lot of time (in terms computer time), so they are executed during a save operation.
-To be easilly 
+
+To be easily identified by the user, "importation" and "modification" are colored:
+
+ *Importation (File is highlighted in Green)
+ *Modification (File is highlighted in Orange)
+ *Deletion (File is not visible anymore)
 
 = Adding new files =
 
@@ -35,6 +40,7 @@ To be easilly
 
 == Packing ==
 
+This feature is directly inherited from WinRFA and allow level packing.
 
 http://img137.imageshack.us/img137/9299/sshot82.png
 http://img153.imageshack.us/img153/4186/sshot22.png
