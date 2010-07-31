@@ -5,7 +5,7 @@ interface
 uses
   Forms, Windows, Messages, ShellApi, SysUtils;
 
-  procedure RunAsAdmin(hWnd : HWND; aFile : String; aParameters : String);
+  function RunAsAdmin(hWnd : HWND; aFile : String; aParameters : String) : boolean;
   function Perform : boolean;
 
   procedure BgaFileAssociation;
@@ -19,7 +19,7 @@ implementation
 uses
   DbugIntf, CommonLib, Registry;
 
-procedure RunAsAdmin(hWnd : HWND; aFile : String; aParameters : String);
+function RunAsAdmin(hWnd : HWND; aFile : String; aParameters : String) : boolean;
 var
   Sei : TShellExecuteInfo;
 begin
@@ -32,7 +32,13 @@ begin
   sei.lpParameters := PChar(aParameters);
   sei.nShow := SW_SHOWNORMAL;
   if not ShellExecuteEx(@sei) then
-    RaiseLastOSError;
+  begin
+    Result := false;
+    if DebugHook <> 0 then
+      RaiseLastOSError;
+  end
+    else
+      Result := true;
 end;
 
 function Perform : boolean;
