@@ -4,8 +4,14 @@
 
 This content is a One-page documentation for BGA, all features are explained here.
 The first time you launch BGA, the window is empty because you directly start a new RFA file by adding new files, the next time it will automatically display the last file opened if it exists again.
+
 http://img375.imageshack.us/img375/6906/sshot15s.png
 
+= Recent opened/saved file list =
+
+After each open/save operation, the .rfa file is automaticaly added to the top of the recent list. It allows us to quicky re-open last archives.
+
+http://img375.imageshack.us/img375/1539/sshot20.png
 
 = Param read support =
 
@@ -14,12 +20,23 @@ A double-clic on a .rfa allow to open it in BGA, but first you need to associate
 
 http://img137.imageshack.us/img137/4249/sshot21.png
 
+As you can see below, .rfa files are now associated with BGA.
+
+http://img822.imageshack.us/img822/2968/sshot5y.png
+
+= File manipulation =
+
+BGA allow importation, modification, deletion of any files. All these operations are asynchronous because they required a lot of time (in terms computer time), so they are executed during a save operation.
+To be easilly 
+
+= Adding new files =
+
+== Drag&drop support ==
+
+== Packing ==
 
 
 http://img137.imageshack.us/img137/9299/sshot82.png
-
-http://img375.imageshack.us/img375/1539/sshot20.png
-
 http://img153.imageshack.us/img153/4186/sshot22.png
 http://img830.imageshack.us/img830/2389/sshot24.png
 http://img153.imageshack.us/img153/6664/sshot26.png
