@@ -1,20 +1,25 @@
 #One-page Documentation
 
-= Introduction =
+= Introduction and first launch =
 
 This content is a One-page documentation for BGA, all features are explained here.
+The first time you launch BGA, the window is empty because you directly start a new RFA file by adding new files, the next time it will automatically display the last file opened if it exists again.
+http://img375.imageshack.us/img375/6906/sshot15s.png
+
 
 = Param read support =
 
 BGA is a WinRFA replacement tool, all WinRFA features are implemented in BGA and the best one, that required only one line of code and is missing from WinRFA, is the ability to open RFA archives directly from the Operating System Shell (in most of cases it will be Microsoft Windows).
 A double-clic on a .rfa allow to open it in BGA, but first you need to associate .rfa with bga.exe, and you just have to run the "Associate RFA files with BGA" command that you can find in the "Help->Tools" menu. This command that requires administrator rights on Vista/Seven will be automatically run as it.
 
-<a href="http://img137.imageshack.us/my.php?image=sshot21.png" target="_blank"><img src="http://img137.imageshack.us/img137/4249/sshot21.png" alt="Free Image Hosting at www.ImageShack.us" border="0"/></a>
+http://img137.imageshack.us/img137/4249/sshot21.png
+
+
 
 http://img137.imageshack.us/img137/9299/sshot82.png
-http://img375.imageshack.us/img375/6906/sshot15s.png
+
 http://img375.imageshack.us/img375/1539/sshot20.png
-http://img137.imageshack.us/img137/4249/sshot21.png
+
 http://img153.imageshack.us/img153/4186/sshot22.png
 http://img830.imageshack.us/img830/2389/sshot24.png
 http://img153.imageshack.us/img153/6664/sshot26.png
