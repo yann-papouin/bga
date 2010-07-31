@@ -30,45 +30,67 @@ BGA allow importation, modification, deletion of any files. All these operations
 
 To be easily identified by the user, "importation" and "modification" are colored:
 
- *Importation (File is highlighted in Green)
- *Modification (File is highlighted in Orange)
- *Deletion (File is not visible anymore)
+ * Importation (File is highlighted in Green)
+ * Modification (File is highlighted in Orange)
+ * Deletion (File is not visible anymore)
 
 = Adding new files =
 
 == Drag&drop support ==
 
-== Packing ==
-
-This feature is directly inherited from WinRFA and allow level packing.
-
-http://img137.imageshack.us/img137/9299/sshot82.png
 http://img153.imageshack.us/img153/4186/sshot22.png
 http://img830.imageshack.us/img830/2389/sshot24.png
 http://img153.imageshack.us/img153/6664/sshot26.png
 http://img375.imageshack.us/img375/2646/sshot27.png
-http://img137.imageshack.us/img137/746/sshot28.png
+
+== Packing ==
+
+This feature is directly inherited from WinRFA and allow level packing.
+
 http://img294.imageshack.us/img294/6294/sshot29.png
+
 http://img375.imageshack.us/img375/6/sshot30e.png
 http://img705.imageshack.us/img705/1641/sshot31.png
+
+= Save, Edit and Defrag =
+
 http://img841.imageshack.us/img841/235/sshot33.png
 http://img137.imageshack.us/img137/1542/sshot36.png
 http://img137.imageshack.us/img137/4716/sshot38.png
 http://img705.imageshack.us/img705/7532/sshot39.png
 http://img137.imageshack.us/img137/3706/sshot40.png
+
 http://img137.imageshack.us/img137/677/sshot41.png
 http://img705.imageshack.us/img705/6038/sshot42m.png
-http://img580.imageshack.us/img580/3230/sshot43.png
+
+= Find bar =
 http://img705.imageshack.us/img705/2713/sshot44n.png
+
 http://img580.imageshack.us/img580/8408/sshot45.png
 http://img837.imageshack.us/img837/7848/sshot46.png
 http://img844.imageshack.us/img844/3503/sshot47.png
+
+
+= Standard mesh preview =
+
 http://img580.imageshack.us/img580/5885/sshot48.png
 http://img801.imageshack.us/img801/1623/sshot49.png
 http://img801.imageshack.us/img801/2457/sshot50.png
 http://img844.imageshack.us/img844/7575/sshot51.png
 http://img594.imageshack.us/img594/5060/sshot52.png
 http://img844.imageshack.us/img844/1410/sshot53.png
+
+= Standard mesh with texture preview =
+
+
+
+http://img137.imageshack.us/img137/9299/sshot82.png
+
+http://img137.imageshack.us/img137/746/sshot28.png
+
+http://img580.imageshack.us/img580/3230/sshot43.png
+
+
 http://img820.imageshack.us/img820/9826/sshot55.png
 http://img839.imageshack.us/img839/1227/sshot56.png
 http://img801.imageshack.us/img801/8420/sshot57.png
