@@ -1731,9 +1731,13 @@ end;
 
 
 procedure TRFAViewForm.FileAssociationExecute(Sender: TObject);
+var
+  Result : boolean;
 begin
   inherited;
-  RunAsAdmin(Self.Handle, Application.ExeName, BGA_FILE_ASSOCIATION_REQUEST);
+  Result :=  RunAsAdmin(Self.Handle, Application.ExeName, BGA_FILE_ASSOCIATION_REQUEST);
+  if not Result then
+    ShowError('File association', 'RFA files cannot be associated with BGA');
 end;
 
 procedure TRFAViewForm.FilesystemExecute(Sender: TObject);

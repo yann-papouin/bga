@@ -38,7 +38,10 @@ uses
 
 procedure TFormCommon.FormCreate(Sender: TObject);
 begin
-  FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
+  if DebugHook <> 0 then
+    FApplicationTitle := Caption
+  else
+    FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
 end;
 
 function TFormCommon.GetTitle: string;
