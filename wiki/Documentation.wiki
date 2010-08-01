@@ -36,6 +36,9 @@ To be easily identified by the user, "importation" and "modification" are colore
  * Modification (File is highlighted in Orange)
  * Deletion (File is not visible anymore)
 
+If you want to learn more about RFA file format you can read an explanation at:
+http://code.google.com/p/bga/wiki/Fragmentation#RFA_file_structure
+
 = Adding new files =
 
 == Drag&drop support ==
@@ -55,6 +58,9 @@ http://img375.imageshack.us/img375/6/sshot30e.png
 http://img705.imageshack.us/img705/1641/sshot31.png
 
 = Save, Edit and Defrag =
+
+To correctly understand the defrag operation, you can read an explanation at:
+http://code.google.com/p/bga/wiki/Fragmentation#RFA_file_fragmentation
 
 http://img841.imageshack.us/img841/235/sshot33.png
 http://img137.imageshack.us/img137/1542/sshot36.png
