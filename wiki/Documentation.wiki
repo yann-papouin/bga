@@ -86,27 +86,18 @@ http://img801.imageshack.us/img801/1623/sshot49.png
 http://img801.imageshack.us/img801/2457/sshot50.png
 http://img844.imageshack.us/img844/7575/sshot51.png
 http://img594.imageshack.us/img594/5060/sshot52.png
-http://img844.imageshack.us/img844/1410/sshot53.png
-
-= Standard mesh with texture preview =
-
-
-
-http://img137.imageshack.us/img137/9299/sshot82.png
-
-http://img137.imageshack.us/img137/746/sshot28.png
-
-http://img580.imageshack.us/img580/3230/sshot43.png
-
-
-http://img820.imageshack.us/img820/9826/sshot55.png
 http://img839.imageshack.us/img839/1227/sshot56.png
+http://img844.imageshack.us/img844/1410/sshot53.png
+http://img820.imageshack.us/img820/9826/sshot55.png
 http://img801.imageshack.us/img801/8420/sshot57.png
 http://img716.imageshack.us/img716/5462/sshot58.png
 http://img801.imageshack.us/img801/5922/sshot59.png
 http://img820.imageshack.us/img820/1844/sshot60j.png
 http://img507.imageshack.us/img507/4599/sshot61.png
 http://img339.imageshack.us/img339/9141/sshot62.png
+
+= Map preview =
+
 http://img339.imageshack.us/img339/5426/sshot64.png
 http://img839.imageshack.us/img839/528/sshot65.png
 http://img716.imageshack.us/img716/8228/sshot66.png
@@ -119,12 +110,23 @@ http://img541.imageshack.us/img541/581/sshot72.png
 http://img507.imageshack.us/img507/8168/sshot73.png
 http://img825.imageshack.us/img825/7774/sshot74.png
 http://img823.imageshack.us/img823/1308/sshot75.png
+
+= File edition =
+
 http://img827.imageshack.us/img827/4376/sshot76.png
 http://img827.imageshack.us/img827/9563/sshot77.png
 http://img827.imageshack.us/img827/4273/sshot78.png
-http://img230.imageshack.us/img230/4162/sshot79.png
-http://img831.imageshack.us/img831/6047/sshot80.png
 http://img836.imageshack.us/img836/4065/sshot81.png
+http://img831.imageshack.us/img831/6047/sshot80.png
+http://img137.imageshack.us/img137/9299/sshot82.png
+
+http://img580.imageshack.us/img580/3230/sshot43.png
+
+
+
+
+
+
 
 Add your content here.  Format your content with:
   * Text in *bold* or _italic_
