@@ -1,5 +1,7 @@
 #One-page Documentation
 
+<wiki:toc max_depth="3" />
+
 = Introduction and first launch =
 
 This content is a One-page documentation for BGA, all features are explained here.
