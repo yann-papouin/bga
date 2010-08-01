@@ -1,0 +1,32 @@
+#RFA file format quick description
+
+= Introduction =
+
+The RFA file format is a standalone file system, this page will try to explain you how data is hierarchised. In following explanations we are talking about a RFA archive that contains 5 files named a, b, c, d and e.
+
+= RFA file structure =
+
+Data and entries are stored in the same file, the RFA archive.
+http://img838.imageshack.us/img838/267/rect6720.png
+
+Data are not directly readable, because you need to know how they are organized. This organization is given by the entries table that can be found at the end of the file.
+http://img267.imageshack.us/img267/8954/rect6718.png
+
+Two other informations exist outside the data and entries structure, they are the data size and the quantity of entries that can be found in the table.
+With them, we can directly move our reading cursor at the start of the table and identify data.
+http://img261.imageshack.us/img261/3639/rect6716.png
+
+Identifying data is made when parsing each entry. In each of them we can know the path of the file (eg:"bf1942/levels/dc_lostvillage/detail.dds"), it's compressed size (that will be different from the uncompressed size only if the data has been compressed before), it's uncompressed size, and finally the offset
+http://img842.imageshack.us/img842/1368/rect6722.png
+http://img267.imageshack.us/img267/5017/rect6726.png
+http://img838.imageshack.us/img838/4338/rect6728.png
+http://img267.imageshack.us/img267/5199/rect6730.png
+http://img267.imageshack.us/img267/2923/rect6732.png
+http://img267.imageshack.us/img267/9490/rect6734.png
+
+
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
