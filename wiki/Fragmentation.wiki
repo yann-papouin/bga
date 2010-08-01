@@ -1,5 +1,7 @@
 #RFA file format quick description
 
+<wiki:toc max_depth="2" />
+
 = Introduction =
 
 The RFA file format is a standalone file system, this page will try to explain you how data is hierarchised. In following explanations we are talking about a RFA archive that contains 5 files named a, b, c, d and e.
