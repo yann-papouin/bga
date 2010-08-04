@@ -2,23 +2,25 @@ inherited RAWViewForm: TRAWViewForm
   Caption = 'RAW View'
   ClientHeight = 572
   ClientWidth = 1049
+  OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
   OnDestroy = FormDestroy
+  OnDeactivate = FormDeactivate
   OnKeyPress = FormKeyPress
-  ExplicitWidth = 1065
-  ExplicitHeight = 610
+  ExplicitWidth = 1057
+  ExplicitHeight = 599
   PixelsPerInch = 96
   TextHeight = 13
   object Viewer: TGLSceneViewer
     Left = 0
     Top = 0
     Width = 1049
-    Height = 547
+    Height = 549
     Camera = Camera
     PostRender = ViewerPostRender
     Buffer.BackgroundColor = clWhite
     Buffer.FaceCulling = False
-    FieldOfView = 143.570602416992200000
+    FieldOfView = 143.694595336914100000
     Align = alClient
     OnDblClick = ViewerDblClick
     OnMouseDown = ViewerMouseDown
@@ -26,9 +28,9 @@ inherited RAWViewForm: TRAWViewForm
   end
   object StatusBar: TSpTBXStatusBar
     Left = 0
-    Top = 547
+    Top = 549
     Width = 1049
-    Height = 25
+    Height = 23
     object XLabel: TSpTBXLabelItem
       Caption = 'X'
     end
@@ -157,9 +159,6 @@ inherited RAWViewForm: TRAWViewForm
         QualityDistance = 128.000000000000000000
         QualityStyle = hrsTesselated
         MaxCLODTriangles = 128000
-        OnPatchPostRender = TerrainRendererPatchPostRender
-        OnHeightDataPostRender = TerrainRendererHeightDataPostRender
-        OnMaxCLODTrianglesReached = TerrainRendererMaxCLODTrianglesReached
       end
     end
     object GLInfos: TGLHUDText
