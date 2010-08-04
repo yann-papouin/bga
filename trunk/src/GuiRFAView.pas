@@ -1990,11 +1990,13 @@ begin
 
   if (TerrainNode <> nil) then
   begin
+    PreviewRAW.Enabled := false;
     TerrainFile := ExtractTemporary(TerrainNode);
 
     RAWViewForm.GetFileByPath := GetFileByPath;
     RAWViewForm.LoadTerrain(TerrainFile);
     RAWViewForm.Show;
+    PreviewRAW.Enabled := true;
   end
     else
       ShowWarning('RAW Preview', 'Terrain data not found in this archive');

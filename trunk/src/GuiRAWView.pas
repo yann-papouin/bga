@@ -104,9 +104,8 @@ type
     procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure CadencerProgress(Sender: TObject; const deltaTime, newTime: Double);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure TerrainRendererPatchPostRender(var rci: TRenderContextInfo; const patches: TList);
-    procedure TerrainRendererHeightDataPostRender(var rci: TRenderContextInfo; const heightDatas: TList);
-    procedure TerrainRendererMaxCLODTrianglesReached(var rci: TRenderContextInfo);
+    procedure FormDeactivate(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
   private
     v: TAffineVector;
     M: TPoint;
@@ -130,7 +129,8 @@ type
 
     FMinZ: Single;
     FMaxZ: Single;
-
+    FWireFrame: boolean;
+    FRestrict: boolean;
     { Déclarations privées }
 
     procedure SetMapSize(const Value: Integer);
@@ -141,12 +141,17 @@ type
     procedure LoadHeightmap(Data: TStream); overload;
     procedure CalcTerrainRange;
     procedure CalcCameraPosition;
+
+    procedure InvalidateTerrain;
+    procedure SetWireFrame(const Value: boolean);
+    procedure SetRestrict(const Value: boolean);
   public
     { Déclarations publiques }
     GetFileByPath: TBgaGetFileByPath;
 
     TexturePart: Integer;
     TextureSize: Integer;
+    TextureOffset : TPoint;
     TextureBaseName: string;
     DetailBaseName: string;
     HeightMap: string;
@@ -157,6 +162,9 @@ type
     property MapSize: Integer read FMapSize write SetMapSize;
     property MapHeightScale: Single read FMapHeightScale write SetMapHeightScale;
     property WorldSize: Integer read FWorldSize write SetWorldSize;
+
+    property WireFrame : boolean read FWireFrame write SetWireFrame;
+    property Restrict : boolean read FRestrict write SetRestrict;
   end;
 
 var
@@ -178,6 +186,8 @@ uses
   CONLib;
 
 { TRAWViewForm }
+
+
 
 procedure TRAWViewForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
@@ -206,6 +216,26 @@ begin
 *)
   Key := #0;
   FormKeyPress(Self, Key);
+end;
+
+procedure TRAWViewForm.FormActivate(Sender: TObject);
+begin
+  inherited;
+  if Cadencer.Tag = 1 then
+  begin
+    Cadencer.Tag := 0;
+    Cadencer.Enabled := true;
+  end;
+end;
+
+procedure TRAWViewForm.FormDeactivate(Sender: TObject);
+begin
+  inherited;
+  if Cadencer.Enabled then
+  begin
+    Cadencer.Tag := 1;
+    Cadencer.Enabled := False;
+  end;
 end;
 
 procedure TRAWViewForm.FormDestroy(Sender: TObject);
@@ -250,14 +280,7 @@ begin
       'J','j' : with Camera do
          if DepthOfView > 10 then DepthOfView:=Round(DepthOfView/1.2);
 
-      'W','w' :
-      for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
-      begin
-        PolygonMode := Byte(GLMaterialLibrary.Materials[i].Material.PolygonMode);
-        PolygonMode := (PolygonMode+1) mod 2;
-        GLMaterialLibrary.Materials[i].Material.PolygonMode := TPolygonMode(PolygonMode);
-        TerrainRenderer.Material.PolygonMode := TPolygonMode(PolygonMode);
-      end;
+      'W','w' : Wireframe := not WireFrame;
 
       'X','x' :
       for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
@@ -286,6 +309,10 @@ begin
         BattlefieldHDS.MarkDirty;
       end;
 
+      'B','b' :
+      begin
+        Restrict := not Restrict;
+      end;
    end;
 
    Viewer.Buffer.FogEnable := True;
@@ -307,6 +334,7 @@ begin
    List.Add('[X] Lighting ON/OFF');
    List.Add('[C] Tesselation Enabled/Disabled');
    List.Add('[V] Textures ON/OFF');
+   List.Add('[B] Terrain restriction ON/OFF');
 
    GLInfos.Text := List.Text;
    List.free;
@@ -319,6 +347,7 @@ var
   TxtData: TStringList;
   flworldSize, flmaterialSize, flwaterLevel, flseaFloorLevel: extended;
   flyScale: extended;
+  intTexOffsetX, intTexOffsetY : integer;
   strFile, strtexBaseName, strdetailTexName: string;
 begin
 
@@ -337,6 +366,9 @@ begin
     flwaterLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.waterLevel');
     flseaFloorLevel := GetFloatFromProperty(TxtData, 'GeometryTemplate.seaFloorLevel');
 
+    intTexOffsetX := GetIntFromProperty(TxtData, 'GeometryTemplate.texOffsetX');
+    intTexOffsetY := GetIntFromProperty(TxtData, 'GeometryTemplate.texOffsetY');
+
     HeightMap := strFile + '.raw';
     TextureBaseName := strtexBaseName;
     DetailBaseName := strdetailTexName + '.dds';
@@ -347,8 +379,12 @@ begin
     WaterLevel := flwaterLevel;
     WaterPlane.Position.z := WaterLevel;
     FRawStep := FWorldSize div MapSize;
+
     TextureSize := WorldSize * 4;
     TexturePart := TextureSize div 256;
+
+    TextureOffset.X := intTexOffsetX;
+    TextureOffset.Y := intTexOffsetY;
   finally
     TxtData.Free;
   end;
@@ -356,6 +392,7 @@ begin
 
 end;
 
+{.$DEFINE RAWVIEW_DRAW_NAME}
 
 procedure TRAWViewForm.LoadTerrain(Filename: string);
 var
@@ -367,14 +404,16 @@ var
   Bmp: TBitmap;
 {$ENDIF}
 begin
-  Cadencer.Enabled := false;
-  BattlefieldHDS.MarkDirty;
   Assert(Assigned(GetFileByPath));
+  Cadencer.Enabled := false;
   GLMaterialLibrary.Materials.Clear;
   LibMaterial := nil;
   DetailMaterial := nil;
 
+  FWireFrame := false;
+  FRestrict := True;
   UseTexture := True;
+
   FFirstRow := -1;
   FFirstCol := -1;
   FLastRow := -1;
@@ -408,14 +447,14 @@ begin
         if FileExists(TextureFile) then
         begin
           if FFirstRow = -1 then
-            FFirstRow := Row
+            FFirstRow := Row + TextureOffset.X
           else
-            FLastRow := Row;
+            FLastRow := Row + TextureOffset.X;
 
           if FFirstCol = -1 then
-            FFirstCol := Col
+            FFirstCol := Col + TextureOffset.Y
           else
-            FLastCol := Col;
+            FLastCol := Col + TextureOffset.Y;
 
           UseTexture := true;
           LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
@@ -430,10 +469,10 @@ begin
           LibMaterial.Material.Texture.Image.AssignToBitmap(Bmp);
           with Bmp.Canvas do
           begin
-            Font.Size := 86;
+            Font.Size := 24;
             Font.color := clWhite;
             Brush.color := clBlack;
-            TextOut(50, 50, SFRightRight('\', TextureName));
+            TextOut(8, 8, SFRightRight('\', TextureName));
           end;
           LibMaterial.Material.Texture.Image.Assign(Bmp);
           Bmp.Free;
@@ -453,11 +492,18 @@ begin
       Stream.Free;
     end;
 
-    CalcTerrainRange;
+    InvalidateTerrain;
     CalcCameraPosition;
-
     Cadencer.Enabled := true;
   end;
+end;
+
+
+
+procedure TRAWViewForm.InvalidateTerrain;
+begin
+  CalcTerrainRange;
+  BattlefieldHDS.MarkDirty;
 end;
 
 procedure TRAWViewForm.LoadHeightmap(Data: TStream);
@@ -485,24 +531,34 @@ var
   TileSize : Integer;
   Rate : Integer;
 begin
-  TileSize := FWorldSize div TexturePart;
-  Rate := Round(Sqrt(TileSize));
 
-  FRangeMin.X := (FWorldSize div FRawStep) * (FFirstRow) div Rate;
-  FRangeMin.Y := (FWorldSize div FRawStep) * (FFirstCol) div Rate;
+  // Init with maximum values
+  FRangeMin.X := 0;
+  FRangeMin.Y := 0;
+  FRangeMax.X := (FWorldSize div FRawStep);
+  FRangeMax.Y := (FWorldSize div FRawStep);
 
-  if FRangeMin.X > 0 then
-    FRangeMin.X := FRangeMin.X -1;
-  if FRangeMin.Y > 0 then
-    FRangeMin.Y := FRangeMin.Y -1;
+  if FRestrict then
+  begin
+    TileSize := FWorldSize div TexturePart;
+    Rate := Round(Sqrt(TileSize));
 
-  FRangeMax.X := (FWorldSize div FRawStep) * (FLastRow)  div Rate + TileSize;
-  FRangeMax.Y := (FWorldSize div FRawStep) * (FLastCol)  div Rate + TileSize;
+    FRangeMin.X := (FWorldSize div FRawStep) * (FFirstRow) div Rate;
+    FRangeMin.Y := (FWorldSize div FRawStep) * (FFirstCol) div Rate;
 
-  if FRangeMax.X > 0 then
-    FRangeMax.X := FRangeMax.X -1;
-  if FRangeMax.Y > 0 then
-    FRangeMax.Y := FRangeMax.Y -1;
+    if FRangeMin.X > 0 then
+      FRangeMin.X := FRangeMin.X -1;
+    if FRangeMin.Y > 0 then
+      FRangeMin.Y := FRangeMin.Y -1;
+
+    FRangeMax.X := (FWorldSize div FRawStep) * (FLastRow)  div Rate + TileSize;
+    FRangeMax.Y := (FWorldSize div FRawStep) * (FLastCol)  div Rate + TileSize;
+
+    if FRangeMax.X > 0 then
+      FRangeMax.X := FRangeMax.X -1;
+    if FRangeMax.Y > 0 then
+      FRangeMax.Y := FRangeMax.Y -1;
+  end;
 
   // Set water plane position and size
 
@@ -554,7 +610,13 @@ begin
   if (i < OffsetModulo) and (j < OffsetModulo) then
   begin
     if UseTexture then
-      heightData.MaterialName := Format('%s%.2dx%.2d.dds', [TextureBaseName, i, j]);
+    begin
+      heightData.MaterialName := Format('%s%.2dx%.2d.dds', [TextureBaseName, i-TextureOffset.X, j-TextureOffset.Y]);
+
+      // Auto remove material if it doesn't exists
+      if GLMaterialLibrary.Materials.GetLibMaterialByName(heightData.MaterialName) = nil then
+        heightData.MaterialName := '';
+    end;
 
     heightData.TextureCoordinatesMode := tcmLocal;
     n := (heightData.XLeft div TileSize) mod OffsetModulo;
@@ -594,20 +656,20 @@ var
    speed : Single;
 begin
    // handle keypresses
-   if IsKeyDown(VK_SHIFT) then
-      speed:=5*deltaTime
-   else speed:=deltaTime;
-   with Camera.Position do
-   begin
-      if IsKeyDown(VK_RIGHT) then
-         CameraTarget.Translate(Z*speed, 0, -X*speed);
-      if IsKeyDown(VK_LEFT) then
-         CameraTarget.Translate(-Z*speed, 0, X*speed);
-      if IsKeyDown(VK_UP) then
-         CameraTarget.Translate(-X*speed, 0, -Z*speed);
-      if IsKeyDown(VK_DOWN) then
-         CameraTarget.Translate(X*speed, 0, Z*speed);
-   end;
+  if IsKeyDown(VK_SHIFT) then
+    speed:=5*deltaTime
+  else speed:=deltaTime;
+  with Camera.Position do
+  begin
+    if IsKeyDown(VK_RIGHT) then
+       CameraTarget.Translate(Z*speed, 0, -X*speed);
+    if IsKeyDown(VK_LEFT) then
+       CameraTarget.Translate(-Z*speed, 0, X*speed);
+    if IsKeyDown(VK_UP) then
+       CameraTarget.Translate(-X*speed, 0, -Z*speed);
+    if IsKeyDown(VK_DOWN) then
+       CameraTarget.Translate(X*speed, 0, Z*speed);
+  end;
 end;
 
 
@@ -617,32 +679,39 @@ begin
   FMapHeightScale := Value;
 end;
 
+procedure TRAWViewForm.SetWireFrame(const Value: boolean);
+var
+  i :integer;
+  PolygonMode : TPolygonMode;
+begin
+  FWireFrame := Value;
+
+  if FWireFrame then
+    PolygonMode := pmLines
+  else
+    PolygonMode := pmFill;
+
+  for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
+  begin
+    GLMaterialLibrary.Materials[i].Material.PolygonMode := PolygonMode;
+    TerrainRenderer.Material.PolygonMode := TPolygonMode(PolygonMode);
+  end;
+end;
+
 procedure TRAWViewForm.SetWorldSize(const Value: Integer);
 begin
   FWorldSize := Value;
 end;
 
-procedure TRAWViewForm.TerrainRendererHeightDataPostRender(var rci: TRenderContextInfo; const heightDatas: TList);
-begin
-  inherited;
-//
-end;
-
-procedure TRAWViewForm.TerrainRendererMaxCLODTrianglesReached(var rci: TRenderContextInfo);
-begin
-  inherited;
-  //SendDebug('MaxCLODTrianglesReached');
-end;
-
-procedure TRAWViewForm.TerrainRendererPatchPostRender(var rci: TRenderContextInfo; const patches: TList);
-begin
-  inherited;
-//
-end;
-
 procedure TRAWViewForm.SetMapSize(const Value: Integer);
 begin
   FMapSize := Value;
+end;
+
+procedure TRAWViewForm.SetRestrict(const Value: boolean);
+begin
+  FRestrict := Value;
+  InvalidateTerrain;
 end;
 
 procedure TRAWViewForm.ViewerDblClick(Sender: TObject);
@@ -674,8 +743,8 @@ begin
     v := Scene.CurrentBuffer.PixelRayToWorld(X, Y);
 
     XLabel.Caption := Format('X=%.2f', [v[0]]);
-    YLabel.Caption := Format('Y=%.2f', [v[2]]);
-    ZLabel.Caption := Format('Z=%.2f', [v[1]]);
+    YLabel.Caption := Format('Y=%.2f', [v[1]]);
+    ZLabel.Caption := Format('Z=%.2f', [v[2]]);
   end;
 
   FMouseMoveMutex := false;
