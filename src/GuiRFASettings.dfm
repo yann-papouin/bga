@@ -136,6 +136,7 @@ object RFASettingsForm: TRFASettingsForm
         OnGetText = ExtListGetText
         OnGetNodeDataSize = ExtListGetNodeDataSize
         OnNewText = ExtListNewText
+        ExplicitHeight = 155
         Columns = <
           item
             MinWidth = 80
@@ -169,7 +170,7 @@ object RFASettingsForm: TRFASettingsForm
           TabOrder = 0
           Caption = 'SpTBXToolbar1'
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 146
+            CustomWidth = 158
           end
           object SpTBXItem1: TSpTBXItem
             Action = Add
