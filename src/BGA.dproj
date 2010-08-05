@@ -114,6 +114,8 @@
 			<DCCReference Include="UAC.pas"/>
 			<DCCReference Include="BGALib.pas"/>
 			<DCCReference Include="RSLib.pas"/>
+			<DCCReference Include="GLSceneExt\FileTM.pas"/>
+			<DCCReference Include="GLSceneExt\TypesTM.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
