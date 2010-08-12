@@ -65,6 +65,9 @@
 			<DCCReference Include="GuiFormCommon.pas">
 				<Form>FormCommon</Form>
 			</DCCReference>
+			<DCCReference Include="Resources.pas">
+				<Form>ResourcesForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -132,7 +135,7 @@
 
 <!-- EurekaLog First Line
 [Exception Log]
-EurekaLog Version=6024
+EurekaLog Version=6023
 Activate=1
 Activate Handle=1
 Save Log File=1

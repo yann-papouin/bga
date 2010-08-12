@@ -25,10 +25,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DDS, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform,
-  BaseClasses,
+  BaseClasses, GLRenderContextInfo,
   GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels,
   StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon, BGALib, GLMaterial, GLBitmapFont,
-  GLWindowsFont, RSLib, GLSkydome, GLAtmosphere;
+  GLWindowsFont, RSLib, GLSkydome, GLAtmosphere, ActnList, TB2Dock, TB2Toolbar, TB2Item;
 
 type
 
@@ -49,6 +49,26 @@ type
     GLMaterialLibrary: TGLMaterialLibrary;
     WindowsBitmapFont: TGLWindowsBitmapFont;
     LightBack: TGLLightSource;
+    GLDirect: TGLDirectOpenGL;
+    Actions: TActionList;
+    DrawEdges: TAction;
+    Images: TPngImageList;
+    ToolDock: TSpTBXDock;
+    Toolbar: TSpTBXToolbar;
+    DrawVertices: TAction;
+    SpTBXItem1: TSpTBXItem;
+    DrawWireframe: TAction;
+    DrawEdgeVertices: TAction;
+    DrawMesh: TAction;
+    DrawTextures: TAction;
+    SpTBXItem2: TSpTBXItem;
+    SpTBXItem3: TSpTBXItem;
+    SpTBXItem4: TSpTBXItem;
+    SpTBXItem5: TSpTBXItem;
+    SpTBXItem6: TSpTBXItem;
+    Panel: TPanel;
+    SpTBXSeparatorItem1: TSpTBXSeparatorItem;
+    SkyDome: TGLSkyDome;
     procedure FormCreate(Sender: TObject);
     procedure MeshListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
@@ -60,6 +80,13 @@ type
     procedure MeshListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure MeshListChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure FormDestroy(Sender: TObject);
+    procedure GLDirectRender(Sender: TObject; var rci: TRenderContextInfo);
+    procedure DrawTexturesExecute(Sender: TObject);
+    procedure DrawWireframeExecute(Sender: TObject);
+    procedure DrawMeshExecute(Sender: TObject);
+    procedure DrawEdgesExecute(Sender: TObject);
+    procedure DrawVerticesExecute(Sender: TObject);
+    procedure DrawEdgeVerticesExecute(Sender: TObject);
   private
     { Déclarations privées }
     FWorldRootNode : PVirtualNode;
@@ -73,6 +100,11 @@ type
     function BranchSelected(Sender: TBaseVirtualTree; Node : PVirtualNode) : boolean;
   public
     { Déclarations publiques }
+    FDrawBackEdges : boolean;
+    FDrawNormals : boolean;
+    FDrawEdges : boolean;
+    FDrawVertices : boolean;
+    FDrawTextures : boolean;
     GetFileByPath: TBgaGetFileByPath;
     procedure LoadMaterials(Filename: string);    // Load textures from .RS file
     procedure LoadStandardMesh(Filename: string); // Load mesh from .SM file
@@ -89,7 +121,8 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, StringFunction, VirtualTreeviewTheme, GLFileSM, AppLib, Resources, Math;
+  DbugIntf, StringFunction, VirtualTreeviewTheme, OpenGL1x, OpenGLAdapter, GLState,
+  GLFileSM, AppLib, Resources, Math, VectorTypes, VectorGeometry, GLColor;
 
 type
   pData = ^rData;
@@ -109,6 +142,16 @@ begin
   inherited;
   EnableSkinning(MeshList);
   FParser := TRsParser.Create;
+
+  (*
+  FDrawWireFrame := true;
+  FDrawEdges := true;
+  FDrawBackEdges := false;
+  FDrawVertices := true;
+  FDrawNormals := false;
+  *)
+  DrawMesh.Checked := true;
+  DrawTextures.Checked := true;
 end;
 
 procedure TSMViewForm.FormDestroy(Sender: TObject);
@@ -116,6 +159,171 @@ begin
   FParser.Free;
   inherited;
 end;
+
+procedure TSMViewForm.GLDirectRender(Sender: TObject; var rci: TRenderContextInfo);
+var
+  i, j, k, id :integer;
+  vA, vB, vC, vP, vL, vM, vN : TAffineVector;
+  FaceGroup : TFGVertexNormalTexIndexList;
+  tes : TColorVector;
+begin
+
+  with rci.GLStates do
+  begin
+    Disable(stLighting);
+    Enable(stBlend);
+    SetBlendFunc(bfSrcAlpha, bfOneMinusSrcAlpha);
+
+    if FDrawEdges then
+    begin
+      Enable(stLineSmooth);
+      LineWidth := 1;
+      Enable(stPolygonOffsetFill);
+      SetPolygonOffset(1, 2);
+
+      if FDrawBackEdges then
+        SetDepthRange(0.0, 0.9);
+    end;
+
+    if FDrawVertices then
+    begin
+      Enable(stPointSmooth);
+      PointSize := 4;
+    end;
+  end;
+
+
+  for i := 0 to FreeMesh.MeshObjects.Count - 1 do
+  begin
+    if FreeMesh.MeshObjects[i].Visible then
+    begin
+      for j := 0 to FreeMesh.MeshObjects[i].FaceGroups.Count - 1 do
+      begin
+        FaceGroup := FreeMesh.MeshObjects[i].FaceGroups[j] as TFGVertexNormalTexIndexList;
+
+        if FDrawEdges or FDrawVertices then
+        begin
+          for k := 0 to FaceGroup.VertexIndices.Count - 1 do
+          begin
+            if k mod 3 = 0 then
+            begin
+              vA := FreeMesh.MeshObjects[i].Vertices[FaceGroup.VertexIndices[k+0]];
+              vB := FreeMesh.MeshObjects[i].Vertices[FaceGroup.VertexIndices[k+1]];
+              vC := FreeMesh.MeshObjects[i].Vertices[FaceGroup.VertexIndices[k+2]];
+
+              if FDrawEdges then
+              begin
+                glColor4fv(@clrWhite);
+                glBegin(GL_LINE_STRIP);
+                glVertex3f(vA[0], vA[1], vA[2]);
+                glVertex3f(vB[0], vB[1], vB[2]);
+                glVertex3f(vC[0], vC[1], vC[2]);
+                glEnd;
+              end;
+
+              if FDrawVertices then
+              begin
+                glColor4fv(@clrBlue);
+                glBegin(GL_POINTS);
+                glVertex3f(vA[0], vA[1], vA[2]);
+                glVertex3f(vB[0], vB[1], vB[2]);
+                glVertex3f(vC[0], vC[1], vC[2]);
+                glEnd;
+              end;
+
+            end;
+          end;
+        end;
+
+        if FDrawNormals then
+        begin
+          glColor3f(1, 1, 1);
+          for k := 0 to FaceGroup.VertexIndices.Count - 1 do
+          begin
+            if k mod 3 = 0 then
+            begin
+              vA := FreeMesh.MeshObjects[i].Vertices[FaceGroup.VertexIndices[k+0]];
+              vB := FreeMesh.MeshObjects[i].Vertices[FaceGroup.VertexIndices[k+1]];
+              vC := FreeMesh.MeshObjects[i].Vertices[FaceGroup.VertexIndices[k+2]];
+
+              vL := FreeMesh.MeshObjects[i].Normals[FaceGroup.NormalIndices[k+0]];
+              vM := FreeMesh.MeshObjects[i].Normals[FaceGroup.NormalIndices[k+1]];
+              vN := FreeMesh.MeshObjects[i].Normals[FaceGroup.NormalIndices[k+2]];
+
+              vP[0] := (vA[0] + vB[0] + vC[0]) /3;
+              vP[1] := (vA[1] + vB[1] + vC[1]) /3;
+              vP[2] := (vA[2] + vB[2] + vC[2]) /3;
+
+              glBegin(GL_POINTS);
+              glVertex3f(vP[0], vP[1], vP[2]);
+              glEnd;
+
+            end;
+          end;
+        end;
+
+
+      end;
+    end;
+  end;
+
+end;
+
+
+
+procedure TSMViewForm.DrawTexturesExecute(Sender: TObject);
+var
+  i :integer;
+begin
+  FDrawTextures := DrawTextures.Checked;
+  for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
+  begin
+    GLMaterialLibrary.Materials[i].Material.Texture.Enabled := FDrawTextures;
+  end;
+  Scene.NotifyChange(Self);
+end;
+
+procedure TSMViewForm.DrawWireframeExecute(Sender: TObject);
+begin
+  FreeMesh.Visible := not (Sender as TAction).Checked;
+  FDrawEdges := (Sender as TAction).Checked;
+  //FDrawEdges := false;
+  FDrawVertices := false;
+  Scene.NotifyChange(Self);
+end;
+
+procedure TSMViewForm.DrawMeshExecute(Sender: TObject);
+begin
+  FreeMesh.Visible := true;
+  FDrawEdges := false;
+  FDrawVertices := false;
+  Scene.NotifyChange(Self);
+end;
+
+procedure TSMViewForm.DrawEdgesExecute(Sender: TObject);
+begin
+  FreeMesh.Visible := true;
+  FDrawEdges := (Sender as TAction).Checked;
+  FDrawVertices := false;
+  Scene.NotifyChange(Self);
+end;
+
+procedure TSMViewForm.DrawEdgeVerticesExecute(Sender: TObject);
+begin
+  FreeMesh.Visible := true;
+  FDrawEdges := (Sender as TAction).Checked;
+  FDrawVertices := (Sender as TAction).Checked;
+  Scene.NotifyChange(Self);
+end;
+
+procedure TSMViewForm.DrawVerticesExecute(Sender: TObject);
+begin
+  FreeMesh.Visible := true;
+  FDrawEdges := false;
+  FDrawVertices := (Sender as TAction).Checked;
+  Scene.NotifyChange(Self);
+end;
+
 
 function TSMViewForm.FindNodeID(ID: integer): PVirtualNode;
 var
@@ -306,6 +514,7 @@ begin
   finally
     Data.Free;
   end;
+  DrawTexturesExecute(Self);
 end;
 
 
