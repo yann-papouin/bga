@@ -14,7 +14,8 @@ uses
   GLFileSM in 'GLSceneExt\GLFileSM.pas',
   TypesSM in 'GLSceneExt\TypesSM.pas',
   RSLib in 'RSLib.pas',
-  GuiFormCommon in 'GuiFormCommon.pas' {FormCommon};
+  GuiFormCommon in 'GuiFormCommon.pas' {FormCommon},
+  Resources in 'Resources.pas' {ResourcesForm};
 
 {$R *.res}
 
@@ -23,5 +24,6 @@ begin
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TExMeshViewerMainForm, ExMeshViewerMainForm);
   Application.CreateForm(TSMViewForm, SMViewForm);
+  Application.CreateForm(TResourcesForm, ResourcesForm);
   Application.Run;
 end.

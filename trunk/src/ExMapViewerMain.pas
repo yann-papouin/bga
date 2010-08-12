@@ -28,12 +28,13 @@ uses
 
 type
   TExMapViewerMainForm = class(TForm)
-    procedure FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure FormShow(Sender: TObject);
   private
     { Déclarations privées }
     function GetFileByPath(Sender: TObject; const VirtualPath : string) : string;
   public
     { Déclarations publiques }
+    procedure Launch;
   end;
 
 var
@@ -46,7 +47,13 @@ implementation
 uses
   StringFunction, GuiRawView;
 
-procedure TExMapViewerMainForm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+
+procedure TExMapViewerMainForm.FormShow(Sender: TObject);
+begin
+  Launch;
+end;
+
+procedure TExMapViewerMainForm.Launch;
 begin
   RAWViewForm.GetFileByPath := GetFileByPath;
   RAWViewForm.LoadTerrain(ExtractFilePath(Application.ExeName)+'Init\Terrain.con');
@@ -63,5 +70,7 @@ begin
   end;
 
 end;
+
+
 
 end.
