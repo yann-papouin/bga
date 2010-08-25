@@ -3,7 +3,7 @@ object RFASettingsForm: TRFASettingsForm
   Left = 0
   Top = 0
   Caption = 'Settings'
-  ClientHeight = 370
+  ClientHeight = 445
   ClientWidth = 421
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object RFASettingsForm: TRFASettingsForm
     Left = 0
     Top = 0
     Width = 421
-    Height = 370
+    Height = 445
     Caption = 'Background'
     Align = alClient
     Padding.Left = 5
@@ -30,48 +30,11 @@ object RFASettingsForm: TRFASettingsForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
-    object Footer: TPanel
-      AlignWithMargins = True
-      Left = 5
-      Top = 332
-      Width = 411
-      Height = 33
-      Margins.Left = 0
-      Margins.Top = 0
-      Margins.Right = 0
-      Margins.Bottom = 0
-      Align = alBottom
-      BevelOuter = bvNone
-      TabOrder = 0
-      object ButtonOk: TSpTBXButton
-        AlignWithMargins = True
-        Left = 174
-        Top = 3
-        Width = 114
-        Height = 27
-        Action = Ok
-        Align = alRight
-        TabOrder = 0
-        Images = ResourcesForm.Images16x16
-        ImageIndex = 1118
-      end
-      object ButtonCancel: TSpTBXButton
-        AlignWithMargins = True
-        Left = 294
-        Top = 3
-        Width = 114
-        Height = 27
-        Action = Cancel
-        Align = alRight
-        TabOrder = 1
-        Images = ResourcesForm.Images16x16
-        ImageIndex = 143
-      end
-    end
+    ExplicitHeight = 370
     object DoubleClickOption: TSpTBXRadioGroup
       AlignWithMargins = True
       Left = 5
-      Top = 5
+      Top = 59
       Width = 411
       Height = 94
       Margins.Left = 0
@@ -86,11 +49,12 @@ object RFASettingsForm: TRFASettingsForm
         'Preview the file with the internal viewer'
         'Open (Edit) the file with OS associated extension'
         'Open (Edit) the file with BGA associated extension (see below)')
+      ExplicitTop = 5
     end
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
       Left = 5
-      Top = 109
+      Top = 163
       Width = 411
       Height = 215
       Margins.Left = 0
@@ -104,6 +68,7 @@ object RFASettingsForm: TRFASettingsForm
       Padding.Right = 10
       Padding.Bottom = 10
       TabOrder = 2
+      ExplicitTop = 109
       object ExtList: TVirtualStringTree
         Left = 12
         Top = 25
@@ -136,7 +101,6 @@ object RFASettingsForm: TRFASettingsForm
         OnGetText = ExtListGetText
         OnGetNodeDataSize = ExtListGetNodeDataSize
         OnNewText = ExtListNewText
-        ExplicitHeight = 155
         Columns = <
           item
             MinWidth = 80
@@ -193,6 +157,69 @@ object RFASettingsForm: TRFASettingsForm
         end
       end
     end
+    object GeneralOptions: TSpTBXGroupBox
+      AlignWithMargins = True
+      Left = 5
+      Top = 5
+      Width = 411
+      Height = 44
+      Margins.Left = 0
+      Margins.Top = 0
+      Margins.Right = 0
+      Margins.Bottom = 10
+      Caption = 'GeneralOptions'
+      Align = alTop
+      TabOrder = 3
+      object OpenLast: TSpTBXCheckBox
+        Left = 12
+        Top = 17
+        Width = 147
+        Height = 21
+        Caption = 'Open last archive at start'
+        TabOrder = 0
+        Checked = True
+        State = cbChecked
+      end
+    end
+    object Footer: TSpTBXPanel
+      AlignWithMargins = True
+      Left = 5
+      Top = 407
+      Width = 411
+      Height = 33
+      Margins.Left = 0
+      Margins.Top = 0
+      Margins.Right = 0
+      Margins.Bottom = 0
+      Align = alBottom
+      UseDockManager = True
+      TabOrder = 0
+      Borders = False
+      object ButtonOk: TSpTBXButton
+        AlignWithMargins = True
+        Left = 174
+        Top = 3
+        Width = 114
+        Height = 27
+        Action = Ok
+        Align = alRight
+        TabOrder = 0
+        Images = ResourcesForm.Images16x16
+        ImageIndex = 1118
+      end
+      object ButtonCancel: TSpTBXButton
+        AlignWithMargins = True
+        Left = 294
+        Top = 3
+        Width = 114
+        Height = 27
+        Action = Cancel
+        Align = alRight
+        TabOrder = 1
+        Images = ResourcesForm.Images16x16
+        ImageIndex = 143
+      end
+    end
   end
   object FormStorage: TJvFormStorage
     AppStorage = RFAViewForm.AppStorage
@@ -201,7 +228,8 @@ object RFASettingsForm: TRFASettingsForm
     BeforeSavePlacement = FormStorageBeforeSavePlacement
     AfterRestorePlacement = FormStorageAfterRestorePlacement
     StoredProps.Strings = (
-      'DoubleClickOption.ItemIndex')
+      'DoubleClickOption.ItemIndex'
+      'OpenLast.Checked')
     StoredValues = <>
     Left = 304
     Top = 8

@@ -61,9 +61,6 @@ type
     ChoosePath: TAction;
     OpenDialog: TOpenDialog;
     Background: TSpTBXPanel;
-    Footer: TPanel;
-    ButtonOk: TSpTBXButton;
-    ButtonCancel: TSpTBXButton;
     DoubleClickOption: TSpTBXRadioGroup;
     Ok: TAction;
     Cancel: TAction;
@@ -72,6 +69,11 @@ type
     SpTBXItem3: TSpTBXItem;
     SpTBXItem4: TSpTBXItem;
     SpTBXSeparatorItem1: TSpTBXSeparatorItem;
+    GeneralOptions: TSpTBXGroupBox;
+    OpenLast: TSpTBXCheckBox;
+    Footer: TSpTBXPanel;
+    ButtonOk: TSpTBXButton;
+    ButtonCancel: TSpTBXButton;
     procedure ExtListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
     procedure ExtListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure ExtListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);
