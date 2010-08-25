@@ -526,7 +526,16 @@ begin
   end
     else
   if RecentMenu.Enabled then
-    RecentMenu.Items[0].Click
+  begin
+    if RFASettingsForm.OpenLast.Checked then
+    begin
+      RecentMenu.Items[0].Click
+    end
+      else
+    begin
+      New.Execute;
+    end;
+  end
   else
     OpenDialog.InitialDir := ExtractFilePath(Application.ExeName);
 
