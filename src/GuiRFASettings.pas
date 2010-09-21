@@ -74,6 +74,7 @@ type
     Footer: TSpTBXPanel;
     ButtonOk: TSpTBXButton;
     ButtonCancel: TSpTBXButton;
+    UseCompression: TSpTBXCheckBox;
     procedure ExtListGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
     procedure ExtListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure ExtListFreeNode(Sender: TBaseVirtualTree; Node: PVirtualNode);

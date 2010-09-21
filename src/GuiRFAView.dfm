@@ -138,11 +138,6 @@ inherited RFAViewForm: TRFAViewForm
         object SpTBXItem8: TSpTBXItem
           Action = PackDirectory
         end
-        object UseCompression: TSpTBXItem
-          Caption = 'Use compression'
-          AutoCheck = True
-          Checked = True
-        end
       end
       object SpTBXSubmenuItem5: TSpTBXSubmenuItem
         Caption = 'Theme'
@@ -497,8 +492,7 @@ inherited RFAViewForm: TRFAViewForm
     AppStoragePath = 'Main\'
     StoredProps.Strings = (
       'NewVersionAvailable.Visible'
-      'Theme.Text'
-      'UseCompression.Checked')
+      'Theme.Text')
     StoredValues = <>
     Left = 8
     Top = 128

@@ -130,7 +130,6 @@ type
     SpTBXSeparatorItem9: TSpTBXSeparatorItem;
     SpTBXSeparatorItem10: TSpTBXSeparatorItem;
     SelectionText: TSpTBXLabelItem;
-    UseCompression: TSpTBXItem;
     Revert: TAction;
     SpTBXItem24: TSpTBXItem;
     FileAssociation: TAction;
@@ -719,6 +718,7 @@ var
   NewResult : integer;
   TmpArchive : TRFAFile;
   TmpFilename : string;
+  TmpUseCompression : boolean;
 
 begin
   Result := false;
@@ -783,7 +783,7 @@ begin
 
           ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
           Size := ExternalFile.Size;
-          InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, UseCompression.Checked);
+          InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, FArchive.UseCompression);
           ShiftData(InsertResult, shRight, Node);
           ExternalFile.Free;
 
@@ -792,7 +792,7 @@ begin
           Exclude(Data.Status, fsExternal);
           Data.Size := Size;
           Data.Offset := InsertResult.offset;
-          Data.Compressed := UseCompression.Checked;
+          Data.Compressed := FArchive.UseCompression;
           Data.CompSize := InsertResult.size;
           Data.ExternalMD5 := MD5FromFile(Data.ExternalFilePath);
           RFAList.InvalidateNode(Node);
@@ -816,7 +816,7 @@ begin
         begin
           ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
           Size := ExternalFile.Size;
-          InsertResult := FArchive.InsertFile(ExternalFile, UseCompression.Checked);
+          InsertResult := FArchive.InsertFile(ExternalFile, FArchive.UseCompression);
           ShiftData(InsertResult, shRight, Node);
           ExternalFile.Free;
 
@@ -828,7 +828,7 @@ begin
           Exclude(Data.Status, fsEntry);
           Data.Size := Size;
           Data.Offset := InsertResult.offset;
-          Data.Compressed := UseCompression.Checked;
+          Data.Compressed := FArchive.UseCompression;
           Data.CompSize := InsertResult.size;
           Data.ExternalFilePath := EmptyStr;
           Data.ExternalMD5 := EmptyStr;
@@ -875,9 +875,13 @@ begin
           TmpFilename := ExtractFilePath(Path) + RandomString('333333') + '.tmp';
         until not FileExists(TmpFilename);
         NewResult := TmpArchive.New(TmpFilename);
+        TmpUseCompression := FArchive.UseCompression;
       end
       else
+      begin
         NewResult := TmpArchive.New(Path);
+        TmpUseCompression := RFASettingsForm.UseCompression.Checked;
+      end;
 
       if NewResult < 0 then
       begin
@@ -947,7 +951,7 @@ begin
           begin
             ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
             Size := ExternalFile.Size;
-            InsertResult := TmpArchive.InsertFile(ExternalFile, UseCompression.Checked);
+            InsertResult := TmpArchive.InsertFile(ExternalFile, TmpUseCompression);
             ExternalFile.Free;
             TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
           end;
@@ -970,7 +974,7 @@ begin
           begin
             ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
             Size := ExternalFile.Size;
-            InsertResult := TmpArchive.InsertFile(ExternalFile, UseCompression.Checked);
+            InsertResult := TmpArchive.InsertFile(ExternalFile, TmpUseCompression);
             ExternalFile.Free;
             TmpArchive.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
           end;
