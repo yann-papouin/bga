@@ -573,7 +573,7 @@ end;
 
 procedure TRAWViewForm.BattlefieldHDSStartPreparingData(heightData: THeightData);
 type
-  PRasterArray = GLHeightData.PSingleArray;
+  PRasterArray = PSingleArray;
 const
   HdsType = hdtSingle;
 var

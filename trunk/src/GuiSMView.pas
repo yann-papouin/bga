@@ -121,7 +121,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, StringFunction, VirtualTreeviewTheme, OpenGL1x, OpenGLAdapter, GLState,
+  DbugIntf, StringFunction, VirtualTreeviewTheme, OpenGL1x, OpenGLAdapter, OpenGLTokens, GLState,
   GLFileSM, AppLib, Resources, Math, VectorTypes, VectorGeometry, GLColor;
 
 type

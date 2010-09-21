@@ -63,6 +63,7 @@ type
     FCount: integer;
     FOnProgress: TRFAProgress;
     FIndexedDataSize: integer;
+    FUseCompression: boolean;
     procedure SetOnReadEntry(const Value: TRFAReadEntry);
 
     function ReadHeader : boolean;
@@ -104,6 +105,8 @@ type
 
     property IndexedDataSize : Integer read FIndexedDataSize;
     property Fragmentation : Integer read GetFragmentation;
+
+    property UseCompression : boolean read FUseCompression;
 
     property OnReadEntry: TRFAReadEntry read FOnReadEntry write SetOnReadEntry;
     property OnProgress: TRFAProgress read FOnProgress write SetOnProgress;
@@ -250,6 +253,7 @@ constructor TRFAFile.Create;
 begin
   inherited;
   FLargeBuf := TMemoryStream.Create;
+  FUseCompression := false;
   Release;
 end;
 
@@ -367,7 +371,10 @@ begin
           if (ENT.ucsize = ENT.csize) then
             FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, NORMAL_DATA, ENT.ucsize)
           else
-            FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, COMPRESSED_DATA, ENT.csize)
+          begin
+            FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, COMPRESSED_DATA, ENT.csize);
+            FUseCompression := true;
+          end;
         end
           else
         begin

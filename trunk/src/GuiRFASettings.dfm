@@ -3,7 +3,7 @@ object RFASettingsForm: TRFASettingsForm
   Left = 0
   Top = 0
   Caption = 'Settings'
-  ClientHeight = 445
+  ClientHeight = 462
   ClientWidth = 421
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object RFASettingsForm: TRFASettingsForm
     Left = 0
     Top = 0
     Width = 421
-    Height = 445
+    Height = 462
     Caption = 'Background'
     Align = alClient
     Padding.Left = 5
@@ -30,11 +30,11 @@ object RFASettingsForm: TRFASettingsForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
-    ExplicitHeight = 370
+    ExplicitHeight = 445
     object DoubleClickOption: TSpTBXRadioGroup
       AlignWithMargins = True
       Left = 5
-      Top = 59
+      Top = 83
       Width = 411
       Height = 94
       Margins.Left = 0
@@ -49,12 +49,12 @@ object RFASettingsForm: TRFASettingsForm
         'Preview the file with the internal viewer'
         'Open (Edit) the file with OS associated extension'
         'Open (Edit) the file with BGA associated extension (see below)')
-      ExplicitTop = 5
+      ExplicitTop = 59
     end
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
       Left = 5
-      Top = 163
+      Top = 187
       Width = 411
       Height = 215
       Margins.Left = 0
@@ -68,7 +68,7 @@ object RFASettingsForm: TRFASettingsForm
       Padding.Right = 10
       Padding.Bottom = 10
       TabOrder = 2
-      ExplicitTop = 109
+      ExplicitTop = 163
       object ExtList: TVirtualStringTree
         Left = 12
         Top = 25
@@ -162,12 +162,12 @@ object RFASettingsForm: TRFASettingsForm
       Left = 5
       Top = 5
       Width = 411
-      Height = 44
+      Height = 68
       Margins.Left = 0
       Margins.Top = 0
       Margins.Right = 0
       Margins.Bottom = 10
-      Caption = 'GeneralOptions'
+      Caption = 'General options'
       Align = alTop
       TabOrder = 3
       object OpenLast: TSpTBXCheckBox
@@ -180,11 +180,21 @@ object RFASettingsForm: TRFASettingsForm
         Checked = True
         State = cbChecked
       end
+      object UseCompression: TSpTBXCheckBox
+        Left = 12
+        Top = 41
+        Width = 176
+        Height = 21
+        Caption = 'Use compression with "Save as"'
+        TabOrder = 1
+        Checked = True
+        State = cbChecked
+      end
     end
     object Footer: TSpTBXPanel
       AlignWithMargins = True
       Left = 5
-      Top = 407
+      Top = 424
       Width = 411
       Height = 33
       Margins.Left = 0
@@ -195,6 +205,7 @@ object RFASettingsForm: TRFASettingsForm
       UseDockManager = True
       TabOrder = 0
       Borders = False
+      ExplicitTop = 407
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 174
@@ -229,7 +240,8 @@ object RFASettingsForm: TRFASettingsForm
     AfterRestorePlacement = FormStorageAfterRestorePlacement
     StoredProps.Strings = (
       'DoubleClickOption.ItemIndex'
-      'OpenLast.Checked')
+      'OpenLast.Checked'
+      'UseCompression.Checked')
     StoredValues = <>
     Left = 304
     Top = 8
