@@ -78,15 +78,15 @@ begin
     Application.CreateForm(TAboutForm, AboutForm);
     Application.CreateForm(TSMViewForm, SMViewForm);
     Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
-    Application.CreateForm(TBrowseForm, BrowseForm);
+    //Application.CreateForm(TBrowseForm, BrowseForm);
     Application.CreateForm(TSkinDialogForm, SkinDialogForm);
     Application.CreateForm(TBrowsePackForm, BrowsePackForm);
     Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
-    Application.CreateForm(TRFACommonForm, RFACommonForm);
+    //Application.CreateForm(TRFACommonForm, RFACommonForm);
     Application.CreateForm(TResourcesForm, ResourcesForm);
     Application.CreateForm(TFSViewForm, FSViewForm);
     Application.CreateForm(TFSSettingsForm, FSSettingsForm);
-    Application.CreateForm(TFormCommon, FormCommon);
+    //Application.CreateForm(TFormCommon, FormCommon);
     Application.CreateForm(TPICViewForm, PICViewForm);
     Application.Run;
   end;
