@@ -137,7 +137,7 @@ type
     function FindFile(Path: String): PVirtualNode;
     function FindPath(Path: String) : PVirtualNode;
     procedure PropagateStatus(Node: PVirtualNode; Status: TEntryModification);
-    procedure ExportFile(Node: PVirtualNode; OutputStream: TStream);
+    procedure ExportFile(const Node: PVirtualNode; OutputStream: TStream);
     function BuildEntryNameFromTree(Node : PVirtualNode; SelectionOnly : boolean = false) : string;
     function BuildTreeFromFullPath(Path: AnsiString) : PVirtualNode;
     procedure Sort;
@@ -589,7 +589,7 @@ begin
   ExpandSelection(true);
 end;
 
-procedure TRFACommonForm.ExportFile(Node: PVirtualNode; OutputStream : TStream);
+procedure TRFACommonForm.ExportFile(const Node: PVirtualNode; OutputStream : TStream);
 var
   Data : pFse;
 begin
