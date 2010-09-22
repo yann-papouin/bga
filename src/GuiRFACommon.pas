@@ -677,6 +677,7 @@ begin
     begin
       Result := true;
       SMViewForm.GetFileByPath := GetFileByPath;
+      SMViewForm.FreeMesh.MeshObjects.Clear;
       SMViewForm.LoadMaterials(ExtractTemporary(FindRs));
       SMViewForm.LoadStandardMesh(ExtractTemporary(Node));
       SMViewForm.Preview;
