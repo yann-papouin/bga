@@ -25,17 +25,16 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, DDS, GLWin32Viewer, GLObjects, GLScene, GLGraph, GLCoordinates, GLCrossPlatform,
-  BaseClasses, GLRenderContextInfo,
+  BaseClasses, GLRenderContextInfo, GLGizmoEx,
   GLSimpleNavigation, GLVectorFileObjects, ImgList, PngImageList, VirtualTrees, SpTBXDkPanels,
   StdCtrls, ExtCtrls, SpTBXItem, SpTBXControls, GuiFormCommon, BGALib, GLMaterial, GLBitmapFont,
-  GLWindowsFont, RSLib, GLSkydome, GLAtmosphere, ActnList, TB2Dock, TB2Toolbar, TB2Item;
+  GLWindowsFont, RSLib, GLSkydome, GLAtmosphere, ActnList, TB2Dock, TB2Toolbar, TB2Item, GLGizmo;
 
 type
 
 
 
   TSMViewForm = class(TFormCommon)
-    Navigation: TGLSimpleNavigation;
     Scene: TGLScene;
     DummyCube: TGLDummyCube;
     CameraTarget: TGLDummyCube;
@@ -54,7 +53,7 @@ type
     DrawEdges: TAction;
     Images: TPngImageList;
     ToolDock: TSpTBXDock;
-    Toolbar: TSpTBXToolbar;
+    ToolbarViewMode: TSpTBXToolbar;
     DrawVertices: TAction;
     SpTBXItem1: TSpTBXItem;
     DrawWireframe: TAction;
@@ -69,6 +68,19 @@ type
     Panel: TPanel;
     SpTBXSeparatorItem1: TSpTBXSeparatorItem;
     SkyDome: TGLSkyDome;
+    Viewer: TGLSceneViewer;
+    RootTemp: TGLDummyCube;
+    ToolbarControlMode: TSpTBXToolbar;
+    SpTBXItem7: TSpTBXItem;
+    SpTBXItem8: TSpTBXItem;
+    SpTBXItem9: TSpTBXItem;
+    ControlSelect: TAction;
+    ControlMove: TAction;
+    ControlScale: TAction;
+    ControlRotate: TAction;
+    ModeCamera: TAction;
+    SpTBXItem11: TSpTBXItem;
+    SpTBXSeparatorItem2: TSpTBXSeparatorItem;
     procedure FormCreate(Sender: TObject);
     procedure MeshListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
@@ -87,8 +99,18 @@ type
     procedure DrawEdgesExecute(Sender: TObject);
     procedure DrawVerticesExecute(Sender: TObject);
     procedure DrawEdgeVerticesExecute(Sender: TObject);
+    procedure ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure ControlSelectExecute(Sender: TObject);
+    procedure ControlMoveExecute(Sender: TObject);
+    procedure ControlRotateExecute(Sender: TObject);
+    procedure ControlScaleExecute(Sender: TObject);
+    procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure ViewerMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure ModeCameraExecute(Sender: TObject);
+    procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
   private
     { Déclarations privées }
+    FPreviousMouse : TPoint;
     FWorldRootNode : PVirtualNode;
     FColRootNode : PVirtualNode;
     FMeshRootNode : PVirtualNode;
@@ -106,6 +128,7 @@ type
     FDrawVertices : boolean;
     FDrawTextures : boolean;
     GetFileByPath: TBgaGetFileByPath;
+    Gizmo : TGLGizmoEx;
     procedure LoadMaterials(Filename: string);    // Load textures from .RS file
     procedure LoadStandardMesh(Filename: string); // Load mesh from .SM file
     procedure Preview;
@@ -152,13 +175,30 @@ begin
   *)
   DrawMesh.Checked := true;
   DrawTextures.Checked := true;
+  Gizmo := TGLGizmoEx.Create(Self);
+
+  Gizmo.LabelFont := WindowsBitmapFont;
+  Gizmo.SelectedObj := Grid;
+  Gizmo.Viewer := Viewer;
+  Gizmo.Enabled := False;
+
+  Gizmo.RootGizmo := DummyCube;
+  Gizmo.RootObjects:= Scene.Objects;
+  Gizmo.AutoZoomFactor := 10;
+  //Gizmo.GizmoTmpRoot := RootTemp;
+
+  Gizmo.ExcludeObjectsList.Add('Grid');
+  Gizmo.Visible := False;
 end;
 
 procedure TSMViewForm.FormDestroy(Sender: TObject);
 begin
+  Gizmo.Free;
   FParser.Free;
   inherited;
 end;
+
+
 
 procedure TSMViewForm.GLDirectRender(Sender: TObject; var rci: TRenderContextInfo);
 var
@@ -300,6 +340,30 @@ begin
   Scene.NotifyChange(Self);
 end;
 
+procedure TSMViewForm.ControlMoveExecute(Sender: TObject);
+begin
+  Gizmo.Enabled := True;
+  Gizmo.OperationMode := gomMove;
+end;
+
+procedure TSMViewForm.ControlRotateExecute(Sender: TObject);
+begin
+  Gizmo.Enabled := True;
+  Gizmo.OperationMode := gomRotate;
+end;
+
+procedure TSMViewForm.ControlScaleExecute(Sender: TObject);
+begin
+  Gizmo.Enabled := True;
+  Gizmo.OperationMode := gomScale;
+end;
+
+procedure TSMViewForm.ControlSelectExecute(Sender: TObject);
+begin
+  Gizmo.Enabled := True;
+  Gizmo.OperationMode := gomSelect;
+end;
+
 procedure TSMViewForm.DrawEdgesExecute(Sender: TObject);
 begin
   FreeMesh.Visible := true;
@@ -377,6 +441,7 @@ begin
   Data.MeshType := mtNone;
   Data.Text := 'Meshes';
   Data.Img := 571;
+
 
   for i := 0 to FreeMesh.MeshObjects.Count - 1 do
   begin
@@ -588,9 +653,107 @@ end;
 
 
 
+procedure TSMViewForm.ModeCameraExecute(Sender: TObject);
+begin
+  Gizmo.Enabled := false;
+end;
+
 procedure TSMViewForm.Preview;
 begin
   Show;
 end;
 
+procedure TSMViewForm.ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  SetFocus;
+  if Gizmo.Enabled or (Gizmo.OperationMode = gomSelect) then
+    Gizmo.ViewerMouseDown(X, Y);
+end;
+
+procedure TSMViewForm.ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var
+	Delta : TPoint;
+begin
+  if Gizmo.Enabled then
+    Gizmo.ViewerMouseMove(X,Y)
+  else
+  begin
+    if ssLeft in Shift then
+    begin
+      Delta.X := FPreviousMouse.X - X;
+      Delta.Y := FPreviousMouse.Y - Y;
+      Camera.MoveAroundTarget(Delta.Y, Delta.X);
+    end;
+  end;
+  FPreviousMouse.X := X;
+  FPreviousMouse.Y := Y;
+end;
+
+procedure TSMViewForm.ViewerMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Gizmo.Enabled then
+    Gizmo.ViewerMouseUp(X, Y);
+end;
+
+procedure TSMViewForm.FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+  if Gizmo.Enabled then
+  begin
+
+  end
+    else
+  begin
+    // Note that 1 wheel-step induces a WheelDelta of 120,
+    // this code adjusts the distance to target with a 10% per wheel-step ratio
+    Camera.AdjustDistanceToTarget(Power(1.1, WheelDelta/120));
+  end;
+end;
+
 end.
+
+(*
+
+procedure TForm1.GLSceneViewer1MouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+	// store mouse coordinates when a button went down
+	mdx:=x; mdy:=y;
+end;
+
+procedure TForm1.GLSceneViewer1MouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+var
+	dx, dy : Integer;
+	v : TVector;
+begin
+	// calculate delta since last move or last mousedown
+	dx:=mdx-x; dy:=mdy-y;
+	mdx:=x; mdy:=y;
+	if ssLeft in Shift then begin
+      if ssShift in Shift then begin
+         // right button with shift rotates the teapot
+         // (rotation happens around camera's axis)
+	   	GLCamera1.RotateObject(Teapot1, dy, dx);
+      end else begin
+   		// right button without shift changes camera angle
+	   	// (we're moving around the parent and target dummycube)
+		   GLCamera1.MoveAroundTarget(dy, dx)
+      end;
+	end else if Shift=[ssRight] then begin
+		// left button moves our target and parent dummycube
+		v:=GLCamera1.ScreenDeltaToVectorXY(dx, -dy,
+							0.12*GLCamera1.DistanceToTarget/GLCamera1.FocalLength);
+		DummyCube1.Position.Translate(v);
+		// notify camera that its position/target has been changed
+		GLCamera1.TransformationChanged;
+	end;
+end;
+
+procedure TForm1.FormMouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+	// Note that 1 wheel-step induces a WheelDelta of 120,
+	// this code adjusts the distance to target with a 10% per wheel-step ratio
+	GLCamera1.AdjustDistanceToTarget(Power(1.1, WheelDelta/120));
+end;
+*)

@@ -1,46 +1,49 @@
 inherited SMViewForm: TSMViewForm
   Caption = 'SM View'
-  ClientHeight = 513
-  ClientWidth = 784
+  ClientHeight = 543
+  ClientWidth = 965
   OnDestroy = FormDestroy
-  ExplicitWidth = 792
-  ExplicitHeight = 540
+  OnMouseWheel = FormMouseWheel
+  ExplicitWidth = 981
+  ExplicitHeight = 581
   PixelsPerInch = 96
   TextHeight = 13
   object Viewer: TGLSceneViewer
     Left = 205
     Top = 0
-    Width = 579
-    Height = 513
+    Width = 760
+    Height = 543
     Camera = Camera
     Buffer.BackgroundColor = 4210752
     Buffer.FaceCulling = False
-    FieldOfView = 141.330383300781300000
+    FieldOfView = 143.320144653320300000
     Align = alClient
+    OnMouseDown = ViewerMouseDown
+    OnMouseMove = ViewerMouseMove
+    OnMouseUp = ViewerMouseUp
     TabOrder = 0
   end
   object Splitter: TSpTBXSplitter
     Left = 200
     Top = 0
-    Height = 513
+    Height = 543
     Cursor = crSizeWE
     MinSize = 200
-    ExplicitLeft = 217
   end
   object Panel: TPanel
     Left = 0
     Top = 0
     Width = 200
-    Height = 513
+    Height = 543
     Align = alLeft
     BevelOuter = bvNone
     Constraints.MinWidth = 200
     TabOrder = 2
     object MeshList: TVirtualStringTree
       Left = 0
-      Top = 34
+      Top = 59
       Width = 200
-      Height = 479
+      Height = 484
       Align = alClient
       Ctl3D = True
       DragMode = dmAutomatic
@@ -66,20 +69,16 @@ inherited SMViewForm: TSMViewForm
       OnGetText = MeshListGetText
       OnGetImageIndex = MeshListGetImageIndex
       OnGetNodeDataSize = MeshListGetNodeDataSize
-      ExplicitLeft = -95
-      ExplicitTop = 19
-      ExplicitWidth = 199
-      ExplicitHeight = 477
       Columns = <>
     end
     object ToolDock: TSpTBXDock
       Left = 0
       Top = 0
       Width = 200
-      Height = 34
-      object Toolbar: TSpTBXToolbar
+      Height = 59
+      object ToolbarViewMode: TSpTBXToolbar
         Left = 0
-        Top = 0
+        Top = 25
         BorderStyle = bsNone
         DockMode = dmCannotFloatOrChangeDocks
         DragHandleStyle = dhNone
@@ -87,7 +86,7 @@ inherited SMViewForm: TSMViewForm
         Images = Images
         Stretch = True
         TabOrder = 0
-        Caption = 'Toolbar'
+        Caption = 'ToolbarViewMode'
         object SpTBXItem1: TSpTBXItem
           Action = DrawWireframe
         end
@@ -109,29 +108,34 @@ inherited SMViewForm: TSMViewForm
           Action = DrawTextures
         end
       end
+      object ToolbarControlMode: TSpTBXToolbar
+        Left = 0
+        Top = 0
+        BorderStyle = bsNone
+        DockMode = dmCannotFloatOrChangeDocks
+        DragHandleStyle = dhNone
+        FullSize = True
+        Images = Images
+        Stretch = True
+        TabOrder = 1
+        Visible = False
+        Caption = 'Toolbar'
+        object SpTBXItem11: TSpTBXItem
+          Action = ModeCamera
+        end
+        object SpTBXSeparatorItem2: TSpTBXSeparatorItem
+        end
+        object SpTBXItem9: TSpTBXItem
+          Action = ControlMove
+        end
+        object SpTBXItem8: TSpTBXItem
+          Action = ControlRotate
+        end
+        object SpTBXItem7: TSpTBXItem
+          Action = ControlScale
+        end
+      end
     end
-  end
-  object Navigation: TGLSimpleNavigation
-    Form = Owner
-    GLSceneViewer = Viewer
-    ZoomSpeed = 1.049999952316284000
-    FormCaption = 'SM View - %FPS'
-    Options = [snoMouseWheelHandled]
-    KeyCombinations = <
-      item
-        ShiftState = [ssLeft, ssRight]
-        Action = snaZoom
-      end
-      item
-        ShiftState = [ssLeft]
-        Action = snaMoveAroundTarget
-      end
-      item
-        ShiftState = [ssRight]
-        Action = snaMoveAroundTarget
-      end>
-    Left = 8
-    Top = 88
   end
   object Scene: TGLScene
     Left = 8
@@ -204,6 +208,9 @@ inherited SMViewForm: TSMViewForm
       OnRender = GLDirectRender
       Blend = False
     end
+    object RootTemp: TGLDummyCube
+      CubeSize = 1.000000000000000000
+    end
   end
   object GLMaterialLibrary: TGLMaterialLibrary
     Left = 8
@@ -262,6 +269,26 @@ inherited SMViewForm: TSMViewForm
       Caption = 'DrawTextures'
       ImageIndex = 5
       OnExecute = DrawTexturesExecute
+    end
+    object ControlSelect: TAction
+      Caption = 'S'
+      OnExecute = ControlSelectExecute
+    end
+    object ControlMove: TAction
+      Caption = 'M'
+      OnExecute = ControlMoveExecute
+    end
+    object ControlRotate: TAction
+      Caption = 'R'
+      OnExecute = ControlRotateExecute
+    end
+    object ControlScale: TAction
+      Caption = 'S'
+      OnExecute = ControlScaleExecute
+    end
+    object ModeCamera: TAction
+      Caption = 'C'
+      OnExecute = ModeCameraExecute
     end
   end
   object Images: TPngImageList
