@@ -567,8 +567,7 @@ begin
 
         LibMaterial.Material.FrontProperties.Diffuse.Color := FParser[i].MaterialDiffuse;
         LibMaterial.Material.FrontProperties.Specular.Color := FParser[i].MaterialSpecular;
-        LibMaterial.Material.FrontProperties.Shininess := Round(FParser[i].MaterialSpecularPower);
-
+        LibMaterial.Material.FrontProperties.Shininess := EnsureRange(Round(FParser[i].MaterialSpecularPower), 0, 128);
         if not FParser[i].Lighting then
           LibMaterial.Material.MaterialOptions := LibMaterial.Material.MaterialOptions + [moNoLighting];
 
