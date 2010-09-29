@@ -28,7 +28,8 @@ uses
   Dialogs, GuiRFACommon, ActnList, VirtualTrees, TB2Item, SpTBXItem, TB2Dock,
   TB2Toolbar, ExtCtrls, JvFormPlacement, JvAppStorage, JvAppRegistryStorage, Menus,
   JvComponentBase, JvMRUList, JvAppInst, DragDrop, DropSource, DragDropFile, StdCtrls,
-  SpTBXEditors, SpTBXControls, GuiUpdateManager, ActiveX, RFALib, JclFileUtils, ImgList, PngImageList;
+  SpTBXEditors, SpTBXControls, GuiUpdateManager, ActiveX, RFALib, JclFileUtils, ImgList,
+  PngImageList;
 
 type
 
@@ -513,8 +514,15 @@ begin
   UpdateManagerForm.OnUpdateReply := UpdateReply;
   UpdateManagerForm.Check.Execute;
 
-  RecentList.Open;
-  RebuildRecentList;
+  try
+    RecentList.SubKey := 'Software\Battlefield 1942\BGA\Recent';
+    RecentList.Open;
+    RebuildRecentList;
+  except
+    on e:EMruException do
+    ;
+  end;
+
   RebuildEditWithMenu;
   Application.ProcessMessages;
 
@@ -2006,15 +2014,20 @@ begin
     PreviewRAW.Enabled := false;
     TerrainFile := ExtractTemporary(TerrainNode);
 
-    RAWViewForm.GetFileByPath := GetFileByPath;
-    RAWViewForm.LoadTerrain(TerrainFile);
-    RAWViewForm.Show;
+    {$IfDef OPENGL_SUPPORT}
+      RAWViewForm.GetFileByPath := GetFileByPath;
+      RAWViewForm.LoadTerrain(TerrainFile);
+      RAWViewForm.Show;
+    {$Else}
+      WarnAboutOpenGL;
+    {$EndIf}
     PreviewRAW.Enabled := true;
   end
     else
       ShowWarning('RAW Preview', 'Terrain data not found in this archive');
 
 end;
+
 
 
 procedure TRFAViewForm.NewVersionAvailableExecute(Sender: TObject);
