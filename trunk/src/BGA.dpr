@@ -72,22 +72,24 @@ begin
     Application.Initialize;
     Application.MainFormOnTaskbar := True;
     Application.Title := 'BGA : Battlefield 1942 Game Archive Tool';
+    //Application.CreateForm(TFormCommon, FormCommon);
+    //Application.CreateForm(TBrowseForm, BrowseForm);
+    //Application.CreateForm(TRFACommonForm, RFACommonForm);
     Application.CreateForm(TRFAViewForm, RFAViewForm);
     Application.CreateForm(TRFASettingsForm, RFASettingsForm);
-    Application.CreateForm(TRAWViewForm, RAWViewForm);
     Application.CreateForm(TAboutForm, AboutForm);
-    Application.CreateForm(TSMViewForm, SMViewForm);
     Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
-    //Application.CreateForm(TBrowseForm, BrowseForm);
     Application.CreateForm(TSkinDialogForm, SkinDialogForm);
     Application.CreateForm(TBrowsePackForm, BrowsePackForm);
     Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
-    //Application.CreateForm(TRFACommonForm, RFACommonForm);
     Application.CreateForm(TResourcesForm, ResourcesForm);
     Application.CreateForm(TFSViewForm, FSViewForm);
     Application.CreateForm(TFSSettingsForm, FSSettingsForm);
-    //Application.CreateForm(TFormCommon, FormCommon);
+    {$IfDef OPENGL_SUPPORT}
+    Application.CreateForm(TRAWViewForm, RAWViewForm);
+    Application.CreateForm(TSMViewForm, SMViewForm);
     Application.CreateForm(TPICViewForm, PICViewForm);
+    {$EndIf}
     Application.Run;
   end;
 

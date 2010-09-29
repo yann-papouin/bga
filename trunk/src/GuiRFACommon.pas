@@ -149,6 +149,7 @@ type
     function ExtensionToType(Ext : string): TFileType;
     function PreviewSelection : boolean;
     function GetFileByPath(Sender: TObject; const VirtualPath : string) : string;
+    procedure WarnAboutOpenGL;
   public
     { Déclarations publiques }
     property SearchText : string read FSearchText write SetSearchText;
@@ -676,17 +677,27 @@ begin
     ftFileSM:
     begin
       Result := true;
-      SMViewForm.GetFileByPath := GetFileByPath;
-      SMViewForm.FreeMesh.MeshObjects.Clear;
-      SMViewForm.LoadMaterials(ExtractTemporary(FindRs));
-      SMViewForm.LoadStandardMesh(ExtractTemporary(Node));
-      SMViewForm.Preview;
+
+      {$IfDef OPENGL_SUPPORT}
+        SMViewForm.GetFileByPath := GetFileByPath;
+        SMViewForm.FreeMesh.MeshObjects.Clear;
+        SMViewForm.LoadMaterials(ExtractTemporary(FindRs));
+        SMViewForm.LoadStandardMesh(ExtractTemporary(Node));
+        SMViewForm.Preview;
+      {$Else}
+        WarnAboutOpenGL;
+      {$EndIf}
+
     end;
     ftFileDDS, ftFileTGA, ftFileBMP, ftFileJPG, ftFilePNG:
     begin
       Result := true;
-      PICViewForm.LoadTexture(ExtractTemporary(Node));
-      PICViewForm.Preview;
+      {$IfDef OPENGL_SUPPORT}
+        PICViewForm.LoadTexture(ExtractTemporary(Node));
+        PICViewForm.Preview;
+      {$Else}
+        WarnAboutOpenGL;
+      {$EndIf}
     end;
     else
       begin
@@ -1034,5 +1045,9 @@ begin
 end;
 
 
+procedure TRFACommonForm.WarnAboutOpenGL;
+begin
+  ShowMessage('OpenGL Disabled', 'OpenGL rendering disabled for compatibility reason (OS issue ?)');
+end;
 
 end.

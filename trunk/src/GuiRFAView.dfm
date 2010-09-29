@@ -441,7 +441,6 @@ inherited RFAViewForm: TRFAViewForm
     Top = 192
   end
   object RecentList: TJvMruList
-    SubKeyUnicode = 'Software\Battlefield 1942\BGA\Recent'
     MaxItems = 20
     OnEnumText = RecentListEnumText
     Active = False
