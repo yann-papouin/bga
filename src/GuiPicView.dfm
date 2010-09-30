@@ -2,10 +2,10 @@ inherited PICViewForm: TPICViewForm
   Caption = 'Picture View'
   ClientHeight = 496
   ClientWidth = 522
-  OnClose = FormClose
+  OnCloseQuery = FormCloseQuery
   OnMouseWheel = FormMouseWheel
-  ExplicitWidth = 530
-  ExplicitHeight = 523
+  ExplicitWidth = 538
+  ExplicitHeight = 534
   PixelsPerInch = 96
   TextHeight = 13
   object Viewer: TGLSceneViewer

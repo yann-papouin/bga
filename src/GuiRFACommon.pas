@@ -22,6 +22,8 @@ unit GuiRFACommon;
 
 interface
 
+{$I BGA.inc}
+
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, GuiFormCommon,
   Dialogs, VirtualTrees, ActnList, JCLFileUtils, RFALib, Types, SpTBXControls,
@@ -1047,7 +1049,7 @@ end;
 
 procedure TRFACommonForm.WarnAboutOpenGL;
 begin
-  ShowMessage('OpenGL Disabled', 'OpenGL rendering disabled for compatibility reason (OS issue ?)');
+  ShowMessage('OpenGL Disabled', '3D rendering disabled for compatibility reasons');
 end;
 
 end.
