@@ -3,8 +3,8 @@ inherited RFACommonForm: TRFACommonForm
   ClientHeight = 533
   ClientWidth = 933
   OnDestroy = FormDestroy
-  ExplicitWidth = 941
-  ExplicitHeight = 560
+  ExplicitWidth = 949
+  ExplicitHeight = 571
   PixelsPerInch = 96
   TextHeight = 13
   object Container: TSpTBXPanel
@@ -73,7 +73,7 @@ inherited RFACommonForm: TRFACommonForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 330
+          Width = 326
           WideText = 'Offset'
         end>
     end

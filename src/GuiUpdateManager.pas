@@ -99,8 +99,7 @@ uses
 
 procedure TUpdateManagerForm.CheckExecute(Sender: TObject);
 begin
-  if not DetectWineEnvironment then
-    CheckThread.Execute(nil);
+  CheckThread.Execute(nil)
 end;
 
 
@@ -115,12 +114,14 @@ var
   VersionList : TStringList;
   DownloadLine : integer;
   URL, Revision : string;
+  SourceCode : string;
 begin
   HtmlDoc := TXMLDocument.Create(Self);
 
   Result := rs_NoUpdate;
   try
-    HtmlDoc.XML.Text := FormatXMLData(wget.Get('http://code.google.com/feeds/p/bga/downloads/basic'));
+    SourceCode := wget.Get('http://code.google.com/feeds/p/bga/downloads/basic');
+    HtmlDoc.XML.Text := FormatXMLData(SourceCode);
     HtmlDoc.Active := true;
   except
     on e:exception do
