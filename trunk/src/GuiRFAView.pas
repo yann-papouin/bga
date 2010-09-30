@@ -22,6 +22,8 @@ unit GuiRFAView;
 
 interface
 
+{$I BGA.inc}
+
 uses
   JvGnuGetText, ShellAPI,
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
@@ -140,7 +142,6 @@ type
     EditWithOS: TAction;
     EditByExtension: TSpTBXItem;
     ExtensionImageList: TPngImageList;
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -515,6 +516,7 @@ begin
   UpdateManagerForm.Check.Execute;
 
   try
+    RecentMenu.Enabled := False;
     RecentList.SubKey := 'Software\Battlefield 1942\BGA\Recent';
     RecentList.Open;
     RebuildRecentList;
@@ -522,6 +524,8 @@ begin
     on e:EMruException do
     ;
   end;
+
+
 
   RebuildEditWithMenu;
   Application.ProcessMessages;
@@ -1384,9 +1388,12 @@ end;
 
 procedure TRFAViewForm.RebuildRecentList;
 begin
-  RecentMenu.Clear;
-  RecentList.EnumItems;
-  RecentMenu.Enabled := (RecentMenu.Count > 0);
+  if RecentList.Active then
+  begin
+    RecentMenu.Clear;
+    RecentList.EnumItems;
+    RecentMenu.Enabled := (RecentMenu.Count > 0);
+  end;
 end;
 
 procedure TRFAViewForm.RecentListEnumText(Sender: TObject; Value: string; Index: Integer);
@@ -1782,23 +1789,11 @@ begin
 end;
 
 
-procedure TRFAViewForm.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  inherited;
-  Theme.Text := SkinManager.CurrentSkinName;
-  FormStorage.SaveFormPlacement;
-
-  if DirectoryExists(GetAppTempDirectory) then
-    DeleteDirectory(GetAppTempDirectory, false);
-end;
-
-
 procedure TRFAViewForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   Result : TModalResult;
 begin
   inherited;
-
   if Save.Enabled or (CountFilesByStatus(RFAList.RootNode, [fsNew], false) > 0) then
   begin
     Result := ShowDialog('Close', 'Save changes before exiting?', mtInformation, mbYesNoCancel, mbCancel, 0);
@@ -1806,6 +1801,15 @@ begin
       mrYes : SaveAs.Execute;
       mrCancel: CanClose := false;
     end;
+  end;
+
+  if CanClose then
+  begin
+    Theme.Text := SkinManager.CurrentSkinName;
+    FormStorage.SaveFormPlacement;
+
+    if DirectoryExists(GetAppTempDirectory) then
+      DeleteDirectory(GetAppTempDirectory, false);
   end;
 end;
 
@@ -1896,7 +1900,8 @@ begin
   if not tbMenuBar.Enabled then
     Exit;
 
-  Application.Terminate;
+  //Application.Terminate;
+  Close;
 end;
 
 

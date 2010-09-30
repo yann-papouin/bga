@@ -94,12 +94,13 @@ implementation
 {$R *.dfm}
 
 uses
- SvnInfo, ActiveX, StringFunction, Resources;
+ SvnInfo, ActiveX, StringFunction, Resources, CommonLib;
 
 
 procedure TUpdateManagerForm.CheckExecute(Sender: TObject);
 begin
-  CheckThread.Execute(nil);
+  if not DetectWineEnvironment then
+    CheckThread.Execute(nil);
 end;
 
 

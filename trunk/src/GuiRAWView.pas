@@ -47,7 +47,7 @@ uses
   GLColor,
   GLTexture,
   TB2Item,
-  DDS,
+  DDSImage,
   VectorGeometry,
   VectorTypes,
   GLSimpleNavigation,

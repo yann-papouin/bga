@@ -25,7 +25,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GuiFormCommon, GLScene, GLObjects, GLCoordinates, GLWin32Viewer,
-  GLCrossPlatform, BaseClasses, DDS, GLSimpleNavigation, GLBitmapFont,
+  GLCrossPlatform, BaseClasses, DDSImage, GLSimpleNavigation, GLBitmapFont,
   GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage, GraphicEx;
 
 type
@@ -51,7 +51,6 @@ type
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure CadencerProgress(Sender: TObject; const deltaTime,
       newTime: Double);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
@@ -60,6 +59,7 @@ type
     procedure ViewerDblClick(Sender: TObject);
     procedure ViewerMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     { Déclarations privées }
     FInitPos : TSinglePoint;
@@ -102,7 +102,7 @@ begin
 end;
 
 
-procedure TPICViewForm.FormClose(Sender: TObject; var Action: TCloseAction);
+procedure TPICViewForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   inherited;
   Cadencer.Enabled := false;

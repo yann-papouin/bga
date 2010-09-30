@@ -23,7 +23,7 @@ unit CommonLib;
 interface
 
 uses
-  JvGnuGetText, shlobj,  TypInfo, ShellAPI,
+  JvGnuGetText, shlobj,  TypInfo, ShellAPI, Registry,
   SysUtils, StrUtils, Windows, Messages, Classes, Controls, ExtCtrls, Dialogs,  Graphics,
   Forms, Math, Variants, Varutils;
 
@@ -153,6 +153,8 @@ type
   function GetDllVersion(DllName: string; var DLLVersionInfo: TDLLVersionInfo): Boolean;
 
   function ExtractUrlFileName(const AUrl: string): string;
+
+  function DetectWineEnvironment : boolean;
 
   procedure EnableDecimalSeparatorCompatibility;
   procedure DisableDecimalSeparatorCompatibility;
@@ -978,6 +980,21 @@ begin
 end;
 
 
+function DetectWineEnvironment : boolean;
+var
+  Reg:TRegistry;
+  FileList : TStringList;
+  i :integer;
+begin
+  Result := False;
+  try
+    Reg:= TRegistry.Create(KEY_READ);
+    Reg.RootKey := HKEY_CURRENT_USER;
+    Result := Reg.KeyExists('SOFTWARE\Wine\');
+  finally
+    Reg.Free;
+  end;
+end;
 
 
 procedure EnableDecimalSeparatorCompatibility;
