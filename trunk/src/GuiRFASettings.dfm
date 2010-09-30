@@ -30,7 +30,6 @@ object RFASettingsForm: TRFASettingsForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
-    ExplicitHeight = 445
     object DoubleClickOption: TSpTBXRadioGroup
       AlignWithMargins = True
       Left = 5
@@ -49,7 +48,6 @@ object RFASettingsForm: TRFASettingsForm
         'Preview the file with the internal viewer'
         'Open (Edit) the file with OS associated extension'
         'Open (Edit) the file with BGA associated extension (see below)')
-      ExplicitTop = 59
     end
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
@@ -68,7 +66,6 @@ object RFASettingsForm: TRFASettingsForm
       Padding.Right = 10
       Padding.Bottom = 10
       TabOrder = 2
-      ExplicitTop = 163
       object ExtList: TVirtualStringTree
         Left = 12
         Top = 25
@@ -134,7 +131,7 @@ object RFASettingsForm: TRFASettingsForm
           TabOrder = 0
           Caption = 'SpTBXToolbar1'
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 158
+            CustomWidth = 146
           end
           object SpTBXItem1: TSpTBXItem
             Action = Add
@@ -205,7 +202,6 @@ object RFASettingsForm: TRFASettingsForm
       UseDockManager = True
       TabOrder = 0
       Borders = False
-      ExplicitTop = 407
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 174

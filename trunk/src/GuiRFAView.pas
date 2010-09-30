@@ -29,7 +29,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GuiRFACommon, ActnList, VirtualTrees, TB2Item, SpTBXItem, TB2Dock,
   TB2Toolbar, ExtCtrls, JvFormPlacement, JvAppStorage, JvAppRegistryStorage, Menus,
-  JvComponentBase, JvMRUList, JvAppInst, DragDrop, DropSource, DragDropFile, StdCtrls,
+  JvComponentBase, JvAppInst, DragDrop, DropSource, DragDropFile, StdCtrls,
   SpTBXEditors, SpTBXControls, GuiUpdateManager, ActiveX, RFALib, JclFileUtils, ImgList,
   PngImageList;
 
@@ -100,7 +100,6 @@ type
     OpenDialog: TOpenDialog;
     SaveDialog: TSaveDialog;
     AppInstances: TJvAppInstances;
-    RecentList: TJvMruList;
     ViewerPopup: TSpTBXPopupMenu;
     SpTBXItem22: TSpTBXItem;
     EditWithMenuItem: TSpTBXSubmenuItem;
@@ -142,6 +141,7 @@ type
     EditWithOS: TAction;
     EditByExtension: TSpTBXItem;
     ExtensionImageList: TPngImageList;
+    RecentList: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -158,7 +158,6 @@ type
     procedure DefragExecute(Sender: TObject);
     procedure AboutExecute(Sender: TObject);
     procedure RecentExecute(Sender: TObject);
-    procedure RecentListEnumText(Sender: TObject; Value: string; Index: Integer);
     procedure SyncTimer(Sender: TObject);
     procedure RFAListDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
     procedure RFAListDblClick(Sender: TObject);
@@ -211,6 +210,7 @@ type
     function QuickOpen: boolean;
     function QuickSave(Defragmentation: boolean): boolean;
     procedure RebuildRecentList;
+    procedure AddToRecentList(Filename : string);
     procedure RemoveEmptyFolders;
     function Reset(Ask : boolean = false) : TModalResult;
     function SaveMap(Path: string; Defrag: boolean = false): boolean;
@@ -464,6 +464,7 @@ begin
 end;
 
 
+
 procedure TRFAViewForm.RemoveEmptyFolders;
 var
   Node, NextNode: PVirtualNode;
@@ -508,24 +509,13 @@ begin
   inherited;
   ApplicationRun.Enabled := false;
   FormStorage.RestoreFormPlacement;
+  RebuildRecentList;
 
   if Theme.Text <> EmptyStr then
     SkinManager.SetSkin(Theme.Text);
 
   UpdateManagerForm.OnUpdateReply := UpdateReply;
   UpdateManagerForm.Check.Execute;
-
-  try
-    RecentMenu.Enabled := False;
-    RecentList.SubKey := 'Software\Battlefield 1942\BGA\Recent';
-    RecentList.Open;
-    RebuildRecentList;
-  except
-    on e:EMruException do
-    ;
-  end;
-
-
 
   RebuildEditWithMenu;
   Application.ProcessMessages;
@@ -1065,7 +1055,7 @@ begin
     // Loading file
     if LoadMap(OpenDialog.FileName) then
     begin
-      RecentList.AddString(OpenDialog.FileName);
+      AddToRecentList(OpenDialog.FileName);
       RebuildRecentList;
       SaveDialog.FileName := OpenDialog.FileName;
       CancelChange;
@@ -1085,7 +1075,7 @@ begin
   if SaveMap(SaveDialog.FileName, Defragmentation) then
   begin
     OpenDialog.FileName := SaveDialog.FileName;
-    RecentList.AddString(SaveDialog.FileName);
+    AddToRecentList(SaveDialog.FileName);
     RebuildRecentList;
     CancelChange;
     Result := true;
@@ -1387,25 +1377,34 @@ begin
 end;
 
 procedure TRFAViewForm.RebuildRecentList;
-begin
-  if RecentList.Active then
-  begin
-    RecentMenu.Clear;
-    RecentList.EnumItems;
-    RecentMenu.Enabled := (RecentMenu.Count > 0);
-  end;
-end;
-
-procedure TRFAViewForm.RecentListEnumText(Sender: TObject; Value: string; Index: Integer);
 var
   MenuItem : TSpTBXItem;
+  i,j :Integer;
 begin
-  MenuItem := TSpTBXItem.Create(RecentMenu);
-  MenuItem.OnClick := OpenRecentClick;
-  MenuItem.Caption := Value;
-  RecentMenu.Add(MenuItem);
+  RecentMenu.Clear;
+  for i := 0 to RecentList.Lines.Count - 1 do
+  begin
+    MenuItem := TSpTBXItem.Create(RecentMenu);
+    MenuItem.OnClick := OpenRecentClick;
+    MenuItem.Caption := RecentList.Lines[i];
+    RecentMenu.Add(MenuItem);
+  end;
+  RecentMenu.Enabled := (RecentMenu.Count > 0);
 end;
 
+procedure TRFAViewForm.AddToRecentList(Filename : string);
+var
+  Idx : Integer;
+begin
+  Idx := RecentList.Lines.IndexOf(OpenDialog.FileName);
+  if RecentList.Lines.IndexOf(OpenDialog.FileName) >= 0 then
+    RecentList.Lines.Delete(Idx);
+
+  RecentList.Lines.Insert(0, OpenDialog.FileName);
+
+  while RecentList.Lines.Count > 20 do
+    RecentList.Lines.Delete(RecentList.Lines.Count-1);
+end;
 
 function FilesFromIDataObject(ADataObject: IDataObject; AFiles: TStrings): Integer;
 var

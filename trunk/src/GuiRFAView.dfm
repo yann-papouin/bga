@@ -2,15 +2,13 @@ inherited RFAViewForm: TRFAViewForm
   Caption = 'RFA View'
   OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
-  ExplicitWidth = 949
-  ExplicitHeight = 571
   PixelsPerInch = 96
   TextHeight = 13
   inherited Container: TSpTBXPanel
     Top = 25
     Height = 451
     ExplicitTop = 25
-    ExplicitHeight = 453
+    ExplicitHeight = 451
     inherited RFAList: TVirtualStringTree
       Height = 416
       PopupMenu = ViewerPopup
@@ -24,50 +22,30 @@ inherited RFAViewForm: TRFAViewForm
       OnNodeMoved = RFAListNodeMoved
       OnStartDrag = RFAListStartDrag
       OnStateChange = RFAListStateChange
-      ExplicitHeight = 418
-      Columns = <
-        item
-          MinWidth = 300
-          Position = 0
-          Width = 350
-          WideText = 'Filename'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 1
-          Width = 90
-          WideText = 'Size'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 2
-          Width = 90
-          WideText = 'Compressed'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 3
-          Width = 73
-          WideText = 'Ratio'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 4
-          Width = 326
-          WideText = 'Offset'
-        end>
+      ExplicitLeft = 3
+      ExplicitTop = 1
+      ExplicitHeight = 416
     end
     inherited SearchBar: TSpTBXPanel
       Top = 416
-      ExplicitTop = 418
+      ExplicitTop = 416
     end
     object Theme: TSpTBXEdit
       Left = 8
       Top = 264
-      Width = 69
+      Width = 185
       Height = 21
       TabOrder = 2
       Visible = False
+    end
+    object RecentList: TMemo
+      Left = 8
+      Top = 291
+      Width = 185
+      Height = 89
+      TabOrder = 3
+      Visible = False
+      WordWrap = False
     end
   end
   object TopDock: TSpTBXDock [1]
@@ -202,7 +180,6 @@ inherited RFAViewForm: TRFAViewForm
     Top = 508
     Width = 933
     Height = 25
-    ExplicitTop = 510
     object ArchiveSize: TSpTBXLabelItem
       Caption = 'ArchiveSize'
     end
@@ -473,13 +450,6 @@ inherited RFAViewForm: TRFAViewForm
     Left = 40
     Top = 192
   end
-  object RecentList: TJvMruList
-    MaxItems = 20
-    OnEnumText = RecentListEnumText
-    Active = False
-    Left = 8
-    Top = 192
-  end
   object ViewerPopup: TSpTBXPopupMenu
     Images = ResourcesForm.Images16x16
     Left = 40
@@ -524,7 +494,8 @@ inherited RFAViewForm: TRFAViewForm
     AppStoragePath = 'Main\'
     StoredProps.Strings = (
       'NewVersionAvailable.Visible'
-      'Theme.Text')
+      'Theme.Text'
+      'RecentList.Lines')
     StoredValues = <>
     Left = 8
     Top = 128
