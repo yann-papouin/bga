@@ -557,6 +557,10 @@ begin
         SaveAs.Execute;
         FResetMutex := false;
       end;
+      mrNo:
+      begin
+        FResetMutex := false;
+      end;
       mrCancel:
       begin
         FResetMutex := false;
@@ -1247,8 +1251,10 @@ var
   Node, ExtendNode, NextNode: PVirtualNode;
   Data : pFse;
 begin
-  Node := RFAList.GetFirstSelected;
   RFAList.BeginUpdate;
+
+  /// In a first time, we semi-delete all selected files
+  Node := RFAList.GetFirstSelected;
   while Node <> Nil do
   begin
     ExtendNode := Node;
@@ -1264,12 +1270,36 @@ begin
         RFAList.DeleteNode(Node);
       end
         else
-      if (Data.Status = []) or (fsEntry in Data.Status) then
+      if (Data.Status = []) or (fsEntry in Data.Status) or (fsExternal in Data.Status) then
       begin
         Exclude(Data.Status, fsEntry);
+        Exclude(Data.Status, fsExternal);
         Include(Data.Status, fsDelete);
         RFAList.FullyVisible[Node] := false;
+        NotifyChange;
       end
+    end;
+
+    Node := NextNode;
+  end;
+
+  /// In a second time, we semi-delete all selected empty folders
+  Node := RFAList.GetFirstSelected;
+  while Node <> Nil do
+  begin
+    ExtendNode := Node;
+    ExtendSelection(ExtendNode);
+
+    NextNode := RFAList.GetNextSelected(Node, true);
+    Data := RFAList.GetNodeData(Node);
+
+    if (Data.FileType = ftFolder) and (CountFilesByStatus(Node, [fsNew, fsEntry, fsExternal], true) = 0) then
+    begin
+      /// We can jumped all selected children now
+      NextNode := RFAList.GetNextSelected(Node, false);
+      Include(Data.Status, fsDelete);
+      RFAList.FullyVisible[Node] := false;
+      NotifyChange;
     end;
 
     Node := NextNode;
@@ -1914,7 +1944,7 @@ begin
   if not tbMenuBar.Enabled then
     Exit;
 
-  Reset;
+  Reset(true);
 end;
 
 procedure TRFAViewForm.NewFolderExecute(Sender: TObject);
