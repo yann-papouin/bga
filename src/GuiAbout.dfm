@@ -2008,8 +2008,8 @@ object AboutForm: TAboutForm
     Color = clBtnFace
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Tahoma'
+    Font.Height = -13
+    Font.Name = 'Arial'
     Font.Style = []
     Lines.Strings = (
       'Credits goes to:'
