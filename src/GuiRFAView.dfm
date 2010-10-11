@@ -5,12 +5,12 @@ inherited RFAViewForm: TRFAViewForm
   PixelsPerInch = 96
   TextHeight = 13
   inherited Container: TSpTBXPanel
-    Top = 23
-    Height = 455
-    ExplicitTop = 23
+    Top = 25
+    Height = 451
+    ExplicitTop = 25
     ExplicitHeight = 453
     inherited RFAList: TVirtualStringTree
-      Height = 420
+      Height = 416
       PopupMenu = ViewerPopup
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme]
       OnBeforeCellPaint = RFAListBeforeCellPaint
@@ -25,7 +25,7 @@ inherited RFAViewForm: TRFAViewForm
       ExplicitHeight = 418
     end
     inherited SearchBar: TSpTBXPanel
-      Top = 420
+      Top = 416
       ExplicitTop = 418
     end
     object Theme: TSpTBXEdit
@@ -50,7 +50,7 @@ inherited RFAViewForm: TRFAViewForm
     Left = 0
     Top = 0
     Width = 933
-    Height = 23
+    Height = 25
     object tbMenuBar: TSpTBXToolbar
       Left = 0
       Top = 0
@@ -175,10 +175,10 @@ inherited RFAViewForm: TRFAViewForm
   end
   object StatusBar: TSpTBXStatusBar [2]
     Left = 0
-    Top = 510
+    Top = 508
     Width = 933
-    Height = 23
-    ExplicitTop = 508
+    Height = 25
+    ExplicitTop = 510
     object ArchiveSize: TSpTBXLabelItem
       Caption = 'ArchiveSize'
     end
@@ -200,7 +200,7 @@ inherited RFAViewForm: TRFAViewForm
   end
   object ProgressPanel: TSpTBXPanel [3]
     Left = 0
-    Top = 478
+    Top = 476
     Width = 933
     Height = 32
     Caption = 'LoadBar'
