@@ -120,7 +120,7 @@ type
     procedure SearchStartExecute(Sender: TObject);
     procedure SearchStopExecute(Sender: TObject);
     procedure SearchEditChange(Sender: TObject);
-    procedure RFAListHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure RFAListHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
     procedure SearchTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -840,12 +840,12 @@ begin
 
 end;
 
-procedure TRFACommonForm.RFAListHeaderClick(Sender: TVTHeader; Column: TColumnIndex; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TRFACommonForm.RFAListHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
 var
   NewSort : TSortBy;
 begin
 
-  case Column of
+  case HitInfo.Column of
     0: NewSort := sbFilename;
     1: NewSort := sbSize;
     2: NewSort := sbCompressed;

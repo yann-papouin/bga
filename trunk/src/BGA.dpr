@@ -57,7 +57,8 @@ uses
   BGALib in 'BGALib.pas',
   RSLib in 'RSLib.pas',
   FileTM in 'GLSceneExt\FileTM.pas',
-  TypesTM in 'GLSceneExt\TypesTM.pas';
+  TypesTM in 'GLSceneExt\TypesTM.pas',
+  GuiWait in 'GuiWait.pas' {WaitForm};
 
 {$R *.res}
 
@@ -75,25 +76,56 @@ begin
     Application.Initialize;
     Application.MainFormOnTaskbar := True;
     Application.Title := 'BGA : Battlefield 1942 Game Archive Tool';
-    //Application.CreateForm(TFormCommon, FormCommon);
-    //Application.CreateForm(TBrowseForm, BrowseForm);
-    //Application.CreateForm(TRFACommonForm, RFACommonForm);
+
+    WaitForm := TWaitForm.Create(Application);
+    WaitForm.BeginWait;
+
     Application.CreateForm(TRFAViewForm, RFAViewForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TRFASettingsForm, RFASettingsForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TAboutForm, AboutForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TSkinDialogForm, SkinDialogForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TBrowsePackForm, BrowsePackForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TResourcesForm, ResourcesForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TFSViewForm, FSViewForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TFSSettingsForm, FSSettingsForm);
-    {$IfDef OPENGL_SUPPORT}
+    WaitForm.IncProgress();
+
+  {$IfDef OPENGL_SUPPORT}
     Application.CreateForm(TRAWViewForm, RAWViewForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TSMViewForm, SMViewForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TPICViewForm, PICViewForm);
-    {$EndIf}
+    WaitForm.IncProgress();
+  {$EndIf}
+
+    WaitForm.EndWait;
+
     Application.Run;
+
+    WaitForm.Free;
   end;
 
 end.
