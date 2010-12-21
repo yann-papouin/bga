@@ -201,6 +201,22 @@ begin
   end;
 end;
 
+
+procedure TRFASettingsForm.FormStorageBeforeSavePlacement(Sender: TObject);
+var
+  Node: PVirtualNode;
+  Data: pExtData;
+begin
+  Node := ExtList.GetFirst;
+  FormStorage.WriteInteger('ExtensionCount', ExtList.RootNodeCount);
+  while Node <> nil do
+  begin
+    Data := ExtList.GetNodeData(Node);
+    FormStorage.WriteString(IntToStr(Node.Index), Data.Extension + EXT_SEPARATOR + Data.Path);
+    Node := ExtList.GetNext(Node);
+  end;
+end;
+
 procedure TRFASettingsForm.FormStorageAfterRestorePlacement(Sender: TObject);
 var
   Node: PVirtualNode;
@@ -220,20 +236,6 @@ begin
   end;
 end;
 
-procedure TRFASettingsForm.FormStorageBeforeSavePlacement(Sender: TObject);
-var
-  Node: PVirtualNode;
-  Data: pExtData;
-begin
-  Node := ExtList.GetFirst;
-  FormStorage.WriteInteger('ExtensionCount', ExtList.RootNodeCount);
-  while Node <> nil do
-  begin
-    Data := ExtList.GetNodeData(Node);
-    FormStorage.WriteString(IntToStr(Node.Index), Data.Extension + EXT_SEPARATOR + Data.Path);
-    Node := ExtList.GetNext(Node);
-  end;
-end;
 
 function TRFASettingsForm.GetProgramByExt(Ext: string): string;
 var

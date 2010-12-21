@@ -38,10 +38,6 @@ type
     BattlefieldDir: TSpTBXButtonEdit;
     FilesystemName: TSpTBXEdit;
     SpTBXLabel2: TSpTBXLabel;
-    Mods: TSpTBXListBox;
-    SpTBXLabel3: TSpTBXLabel;
-    SpTBXLabel4: TSpTBXLabel;
-    ModPath: TSpTBXListBox;
     Actions: TActionList;
     AutoFill: TAction;
     Footer: TPanel;
@@ -49,6 +45,11 @@ type
     ButtonCancel: TSpTBXButton;
     Ok: TAction;
     Cancel: TAction;
+    GridPanel1: TGridPanel;
+    SpTBXLabel3: TSpTBXLabel;
+    SpTBXLabel4: TSpTBXLabel;
+    Mods: TSpTBXListBox;
+    ModPath: TSpTBXListBox;
     procedure OkExecute(Sender: TObject);
     procedure CancelExecute(Sender: TObject);
     procedure FormShow(Sender: TObject);
