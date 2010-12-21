@@ -2,8 +2,8 @@ object FSSettingsForm: TFSSettingsForm
   Left = 0
   Top = 0
   Caption = 'Settings'
-  ClientHeight = 548
-  ClientWidth = 433
+  ClientHeight = 461
+  ClientWidth = 661
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,8 +16,8 @@ object FSSettingsForm: TFSSettingsForm
   OnDestroy = FormDestroy
   OnShow = FormShow
   DesignSize = (
-    433
-    548)
+    661
+    461)
   PixelsPerInch = 96
   TextHeight = 13
   object SpTBXLabel1: TSpTBXLabel
@@ -33,25 +33,28 @@ object FSSettingsForm: TFSSettingsForm
     AlignWithMargins = True
     Left = 8
     Top = 91
-    Width = 417
+    Width = 645
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 1
     OnChange = BattlefieldDirChange
-    EditButton.Left = 394
+    EditButton.Left = 622
     EditButton.Top = 0
     EditButton.Width = 19
     EditButton.Height = 17
     EditButton.Caption = '...'
     EditButton.Align = alRight
+    EditButton.ExplicitLeft = 394
+    ExplicitWidth = 417
   end
   object FilesystemName: TSpTBXEdit
     Left = 8
     Top = 36
-    Width = 417
+    Width = 645
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 2
+    ExplicitWidth = 417
   end
   object SpTBXLabel2: TSpTBXLabel
     Left = 8
@@ -62,51 +65,11 @@ object FSSettingsForm: TFSSettingsForm
     Images = ResourcesForm.Images16x16
     ImageIndex = 522
   end
-  object Mods: TSpTBXListBox
-    AlignWithMargins = True
-    Left = 8
-    Top = 146
-    Width = 417
-    Height = 164
-    Anchors = [akLeft, akTop, akRight]
-    IntegralHeight = True
-    ItemHeight = 20
-    TabOrder = 4
-    OnClick = ModsClick
-  end
-  object SpTBXLabel3: TSpTBXLabel
-    Left = 8
-    Top = 118
-    Width = 185
-    Height = 22
-    Caption = 'Select a mod for this file system :'
-    Images = ResourcesForm.Images16x16
-    ImageIndex = 1181
-  end
-  object SpTBXLabel4: TSpTBXLabel
-    Left = 8
-    Top = 316
-    Width = 230
-    Height = 22
-    Caption = 'Ordered data paths for the selected mod :'
-    Images = ResourcesForm.Images16x16
-    ImageIndex = 124
-  end
-  object ModPath: TSpTBXListBox
-    AlignWithMargins = True
-    Left = 8
-    Top = 344
-    Width = 417
-    Height = 158
-    Anchors = [akLeft, akTop, akRight, akBottom]
-    ItemHeight = 20
-    TabOrder = 7
-  end
   object Footer: TPanel
     AlignWithMargins = True
     Left = 0
-    Top = 505
-    Width = 433
+    Top = 418
+    Width = 661
     Height = 43
     Margins.Left = 0
     Margins.Top = 0
@@ -118,10 +81,12 @@ object FSSettingsForm: TFSSettingsForm
     Padding.Top = 5
     Padding.Right = 5
     Padding.Bottom = 5
-    TabOrder = 8
+    TabOrder = 4
+    ExplicitTop = 505
+    ExplicitWidth = 433
     object ButtonOk: TSpTBXButton
       AlignWithMargins = True
-      Left = 191
+      Left = 419
       Top = 8
       Width = 114
       Height = 27
@@ -130,10 +95,11 @@ object FSSettingsForm: TFSSettingsForm
       TabOrder = 0
       Images = ResourcesForm.Images16x16
       ImageIndex = 1118
+      ExplicitLeft = 191
     end
     object ButtonCancel: TSpTBXButton
       AlignWithMargins = True
-      Left = 311
+      Left = 539
       Top = 8
       Width = 114
       Height = 27
@@ -142,6 +108,101 @@ object FSSettingsForm: TFSSettingsForm
       TabOrder = 1
       Images = ResourcesForm.Images16x16
       ImageIndex = 143
+      ExplicitLeft = 311
+    end
+  end
+  object GridPanel1: TGridPanel
+    Left = 8
+    Top = 118
+    Width = 645
+    Height = 267
+    Anchors = [akLeft, akTop, akRight]
+    BevelOuter = bvNone
+    ColumnCollection = <
+      item
+        Value = 50.000000000000000000
+      end
+      item
+        Value = 50.000000000000000000
+      end>
+    ControlCollection = <
+      item
+        Column = 0
+        Control = SpTBXLabel3
+        Row = 0
+      end
+      item
+        Column = 1
+        Control = SpTBXLabel4
+        Row = 0
+      end
+      item
+        Column = 0
+        Control = Mods
+        Row = 1
+      end
+      item
+        Column = 1
+        Control = ModPath
+        Row = 1
+      end>
+    ParentColor = True
+    RowCollection = <
+      item
+        SizeStyle = ssAbsolute
+        Value = 30.000000000000000000
+      end
+      item
+        Value = 100.000000000000000000
+      end>
+    TabOrder = 5
+    object SpTBXLabel3: TSpTBXLabel
+      Left = 0
+      Top = 0
+      Width = 184
+      Height = 30
+      Caption = 'Mods loaded for this file system :'
+      Align = alLeft
+      ParentColor = True
+      Images = ResourcesForm.Images16x16
+      ImageIndex = 1181
+    end
+    object SpTBXLabel4: TSpTBXLabel
+      Left = 322
+      Top = 0
+      Width = 230
+      Height = 30
+      Caption = 'Ordered data paths for the selected mod :'
+      Align = alLeft
+      ParentColor = True
+      Images = ResourcesForm.Images16x16
+      ImageIndex = 124
+    end
+    object Mods: TSpTBXListBox
+      AlignWithMargins = True
+      Left = 3
+      Top = 33
+      Width = 316
+      Height = 224
+      Align = alClient
+      IntegralHeight = True
+      ItemHeight = 20
+      TabOrder = 2
+      OnClick = ModsClick
+      ExplicitTop = 36
+      ExplicitHeight = 204
+    end
+    object ModPath: TSpTBXListBox
+      AlignWithMargins = True
+      Left = 325
+      Top = 33
+      Width = 317
+      Height = 224
+      Align = alClient
+      IntegralHeight = True
+      ItemHeight = 20
+      TabOrder = 3
+      ExplicitHeight = 204
     end
   end
   object Actions: TActionList
