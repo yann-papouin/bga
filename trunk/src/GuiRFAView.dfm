@@ -8,7 +8,7 @@ inherited RFAViewForm: TRFAViewForm
     Top = 23
     Height = 455
     ExplicitTop = 23
-    ExplicitHeight = 453
+    ExplicitHeight = 455
     inherited RFAList: TVirtualStringTree
       Height = 420
       PopupMenu = ViewerPopup
@@ -22,11 +22,11 @@ inherited RFAViewForm: TRFAViewForm
       OnNodeMoved = RFAListNodeMoved
       OnStartDrag = RFAListStartDrag
       OnStateChange = RFAListStateChange
-      ExplicitHeight = 418
+      ExplicitHeight = 420
     end
     inherited SearchBar: TSpTBXPanel
       Top = 420
-      ExplicitTop = 418
+      ExplicitTop = 420
     end
     object Theme: TSpTBXEdit
       Left = 8
@@ -178,7 +178,6 @@ inherited RFAViewForm: TRFAViewForm
     Top = 510
     Width = 933
     Height = 23
-    ExplicitTop = 508
     object ArchiveSize: TSpTBXLabelItem
       Caption = 'ArchiveSize'
     end

@@ -15,6 +15,9 @@
 			<Projects Include="ExMapViewer.dproj">
 				<Dependencies/>
 			</Projects>
+			<Projects Include="ExFilesystemViewer.dproj">
+				<Dependencies/>
+			</Projects>
 		</ItemGroup>
 		<ProjectExtensions>
 			<Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -59,14 +62,23 @@
 		<Target Name="ExMapViewer:Make">
 			<MSBuild Targets="Make" Projects="ExMapViewer.dproj"/>
 		</Target>
+		<Target Name="ExFilesystemViewer">
+			<MSBuild Projects="ExFilesystemViewer.dproj"/>
+		</Target>
+		<Target Name="ExFilesystemViewer:Clean">
+			<MSBuild Targets="Clean" Projects="ExFilesystemViewer.dproj"/>
+		</Target>
+		<Target Name="ExFilesystemViewer:Make">
+			<MSBuild Targets="Make" Projects="ExFilesystemViewer.dproj"/>
+		</Target>
 		<Target Name="Build">
-			<CallTarget Targets="BGA;ExPictureViewer;ExMeshViewer;ExMapViewer"/>
+			<CallTarget Targets="BGA;ExPictureViewer;ExMeshViewer;ExMapViewer;ExFilesystemViewer"/>
 		</Target>
 		<Target Name="Clean">
-			<CallTarget Targets="BGA:Clean;ExPictureViewer:Clean;ExMeshViewer:Clean;ExMapViewer:Clean"/>
+			<CallTarget Targets="BGA:Clean;ExPictureViewer:Clean;ExMeshViewer:Clean;ExMapViewer:Clean;ExFilesystemViewer:Clean"/>
 		</Target>
 		<Target Name="Make">
-			<CallTarget Targets="BGA:Make;ExPictureViewer:Make;ExMeshViewer:Make;ExMapViewer:Make"/>
+			<CallTarget Targets="BGA:Make;ExPictureViewer:Make;ExMeshViewer:Make;ExMapViewer:Make;ExFilesystemViewer:Make"/>
 		</Target>
 		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 	</Project>

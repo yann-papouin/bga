@@ -25,7 +25,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GuiFormCommon, ActnList, SpTBXControls, StdCtrls, SpTBXEditors, SpTBXItem, VirtualTrees,
-  ExtCtrls, TB2Item, TB2Dock, TB2Toolbar, FSLib, JvComponentBase, JvFormPlacement, DB, SqlitePassDbo;
+  ExtCtrls, TB2Item, TB2Dock, TB2Toolbar, FSLib, JvComponentBase, JvFormPlacement, DB, SqlitePassDbo, JvAppStorage, JvAppRegistryStorage, Grids, DBGrids, JvExDBGrids, JvDBGrid;
 
 type
 
@@ -64,6 +64,7 @@ type
     Database: TSqlitePassDatabase;
     Dataset: TSqlitePassDataset;
     DataSource: TDataSource;
+    TemporaryAppStorage: TJvAppRegistryStorage;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -111,12 +112,14 @@ procedure TFSViewForm.OkExecute(Sender: TObject);
 begin
   FormStorage.SaveFormPlacement;
   ModalResult := mrOk;
+  Close;
 end;
 
 procedure TFSViewForm.CancelExecute(Sender: TObject);
 begin
   FormStorage.RestoreFormPlacement;
   ModalResult := mrCancel;
+  Close;
 end;
 
 
@@ -154,8 +157,16 @@ begin
   // Open database if settings are correct
   if FileExists(Database.Database) then
   begin
-    Database.Connected := true;
+    Database.SQLiteLibrary := 'C:\Users\Yann\Documents\RAD Studio\Libs\SQLitePass_0.55\sqlite3.dll';
+    Database.Open;
+    if Database.Connected then
+    begin
+      //Dataset.SQL.Text := 'INSERT INTO ARCHIVES VALUES(1,"coucou","coucou",1,"coucou")';
+      Dataset.SQL.Text := 'SELECT * FROM ARCHIVES';
+      Dataset.ExecSQL;
+      Database.Close;
 
+    end;
   end;
 end;
 
