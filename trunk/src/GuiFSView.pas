@@ -161,11 +161,12 @@ begin
     Database.Open;
     if Database.Connected then
     begin
-      //Dataset.SQL.Text := 'INSERT INTO ARCHIVES VALUES(1,"coucou","coucou",1,"coucou")';
-      Dataset.SQL.Text := 'SELECT * FROM ARCHIVES';
+      Dataset.Active := true;
+      Dataset.SQL.Text := 'INSERT INTO ARCHIVE VALUES(NULL, "Name", "Path", "md5", NULL)';
+      //Dataset.SQL.Text := 'SELECT * FROM ARCHIVES';
       Dataset.ExecSQL;
+      Dataset.Active := false;
       Database.Close;
-
     end;
   end;
 end;
