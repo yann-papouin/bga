@@ -3,8 +3,8 @@ inherited RFACommonForm: TRFACommonForm
   ClientHeight = 533
   ClientWidth = 933
   OnDestroy = FormDestroy
-  ExplicitWidth = 949
-  ExplicitHeight = 571
+  ExplicitWidth = 941
+  ExplicitHeight = 560
   PixelsPerInch = 96
   TextHeight = 13
   object Container: TSpTBXPanel
