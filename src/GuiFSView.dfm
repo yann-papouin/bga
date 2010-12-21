@@ -21,15 +21,12 @@ inherited FSViewForm: TFSViewForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
-    ExplicitTop = -1
-    ExplicitWidth = 421
-    ExplicitHeight = 462
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
       Left = 5
       Top = 5
       Width = 501
-      Height = 188
+      Height = 236
       Margins.Left = 0
       Margins.Top = 0
       Margins.Right = 0
@@ -41,16 +38,14 @@ inherited FSViewForm: TFSViewForm
       Padding.Right = 10
       Padding.Bottom = 10
       TabOrder = 0
-      ExplicitWidth = 612
       object SpTBXDock1: TSpTBXDock
         Left = 12
-        Top = 150
+        Top = 198
         Width = 477
         Height = 26
         AllowDrag = False
         Position = dpBottom
-        ExplicitTop = 139
-        ExplicitWidth = 598
+        ExplicitTop = 150
         object SpTBXToolbar1: TSpTBXToolbar
           Left = 0
           Top = 0
@@ -90,7 +85,7 @@ inherited FSViewForm: TFSViewForm
         Left = 12
         Top = 25
         Width = 477
-        Height = 125
+        Height = 173
         Align = alClient
         DragMode = dmAutomatic
         DragOperations = [doMove]
@@ -114,8 +109,7 @@ inherited FSViewForm: TFSViewForm
         OnFreeNode = FilesystemListFreeNode
         OnGetText = FilesystemListGetText
         OnGetNodeDataSize = FilesystemListGetNodeDataSize
-        ExplicitWidth = 598
-        ExplicitHeight = 114
+        ExplicitHeight = 125
         Columns = <
           item
             MinWidth = 200
@@ -144,8 +138,6 @@ inherited FSViewForm: TFSViewForm
       UseDockManager = True
       TabOrder = 1
       Borders = False
-      ExplicitTop = 424
-      ExplicitWidth = 411
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 264
@@ -157,7 +149,6 @@ inherited FSViewForm: TFSViewForm
         TabOrder = 0
         Images = ResourcesForm.Images16x16
         ImageIndex = 1118
-        ExplicitLeft = 375
       end
       object ButtonCancel: TSpTBXButton
         AlignWithMargins = True
@@ -170,13 +161,12 @@ inherited FSViewForm: TFSViewForm
         TabOrder = 1
         Images = ResourcesForm.Images16x16
         ImageIndex = 143
-        ExplicitLeft = 495
       end
     end
   end
   object Actions: TActionList
     Images = ResourcesForm.Images16x16
-    Left = 56
+    Left = 88
     Top = 64
     object Add: TAction
       Caption = 'Add'
@@ -215,7 +205,7 @@ inherited FSViewForm: TFSViewForm
     end
   end
   object FormStorage: TJvFormStorage
-    AppStorage = RFAViewForm.AppStorage
+    AppStorage = TemporaryAppStorage
     AppStoragePath = 'Filesystems\'
     Options = []
     BeforeSavePlacement = FormStorageBeforeSavePlacement
@@ -298,5 +288,13 @@ inherited FSViewForm: TFSViewForm
     DataSet = Dataset
     Left = 88
     Top = 96
+  end
+  object TemporaryAppStorage: TJvAppRegistryStorage
+    StorageOptions.BooleanStringTrueValues = 'TRUE, YES, Y'
+    StorageOptions.BooleanStringFalseValues = 'FALSE, NO, N'
+    Root = 'Software\Battlefield 1942\BGA'
+    SubStorages = <>
+    Left = 56
+    Top = 64
   end
 end
