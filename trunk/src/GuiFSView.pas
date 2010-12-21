@@ -24,13 +24,14 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, GuiRFACommon, ActnList, SpTBXControls, StdCtrls, SpTBXEditors, SpTBXItem, VirtualTrees,
+  Dialogs, GuiFormCommon, ActnList, SpTBXControls, StdCtrls, SpTBXEditors, SpTBXItem, VirtualTrees,
   ExtCtrls, TB2Item, TB2Dock, TB2Toolbar, FSLib;
 
 type
 
 
-  TFSViewForm = class(TRFACommonForm)
+  TFSViewForm = class(TFormCommon)
+    Actions: TActionList;
     Panel2: TPanel;
     SpTBXButton2: TSpTBXButton;
     Settings: TAction;

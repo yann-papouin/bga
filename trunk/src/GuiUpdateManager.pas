@@ -26,7 +26,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ActnList, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdHTTP, xmldom, XMLIntf, msxmldom, XMLDoc, StdCtrls, Generics.Collections,
-  SpTBXItem, SpTBXControls, ExtCtrls, pngimage, JvComponentBase, JvThread;
+  SpTBXItem, SpTBXControls, ExtCtrls, pngimage, JvComponentBase, JvThread, JvExControls, JvGradient;
 
 type
 
@@ -55,12 +55,10 @@ type
   TUpdateManagerForm = class(TForm)
     Actions: TActionList;
     Check: TAction;
-    Shape1: TShape;
     SpTBXLabel1: TLabel;
     Shape2: TShape;
     VersionLink: TSpTBXLabel;
     VersionDateTime: TSpTBXLabel;
-    Shape3: TShape;
     Label1: TLabel;
     SpTBXButton1: TSpTBXButton;
     CloseForm: TAction;
@@ -68,6 +66,9 @@ type
     SpTBXLabel2: TSpTBXLabel;
     CheckThread: TJvThread;
     wget: TIdHTTP;
+    Shape3: TShape;
+    Shape4: TShape;
+    JvGradient1: TJvGradient;
     procedure CheckExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);

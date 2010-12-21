@@ -3,72 +3,13 @@ inherited FSViewForm: TFSViewForm
   ClientHeight = 442
   ClientWidth = 622
   Position = poScreenCenter
-  ExplicitWidth = 638
-  ExplicitHeight = 480
+  ExplicitWidth = 630
+  ExplicitHeight = 469
   PixelsPerInch = 96
   TextHeight = 13
-  inherited Container: TSpTBXPanel
-    Top = 58
-    Width = 622
-    Height = 384
-    ExplicitTop = 58
-    ExplicitWidth = 622
-    ExplicitHeight = 384
-    inherited RFAList: TVirtualStringTree
-      Width = 622
-      Height = 349
-      TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme]
-      ExplicitWidth = 622
-      ExplicitHeight = 349
-      Columns = <
-        item
-          MinWidth = 300
-          Position = 0
-          Width = 350
-          WideText = 'Filename'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 1
-          Width = 90
-          WideText = 'Size'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 2
-          Width = 90
-          WideText = 'Compressed'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 3
-          Width = 73
-          WideText = 'Ratio'
-        end
-        item
-          Alignment = taRightJustify
-          Position = 4
-          Width = 15
-          WideText = 'Offset'
-        end>
-    end
-    inherited SearchBar: TSpTBXPanel
-      Top = 349
-      Width = 622
-      ExplicitTop = 349
-      ExplicitWidth = 622
-      inherited SearchEdit: TSpTBXEdit
-        Width = 187
-      end
-      inherited SearchProgressBar: TSpTBXProgressBar
-        Left = 273
-        ExplicitLeft = 273
-      end
-    end
-  end
-  object Panel2: TPanel [1]
+  object Panel2: TPanel
     Left = 0
-    Top = 25
+    Top = 23
     Width = 622
     Height = 33
     Align = alTop
@@ -106,11 +47,11 @@ inherited FSViewForm: TFSViewForm
       Caption = 'File system'
     end
   end
-  object TopDock: TSpTBXDock [2]
+  object TopDock: TSpTBXDock
     Left = 0
     Top = 0
     Width = 622
-    Height = 25
+    Height = 23
     object tbMenuBar: TSpTBXToolbar
       Left = 0
       Top = 0
@@ -150,7 +91,10 @@ inherited FSViewForm: TFSViewForm
       end
     end
   end
-  inherited Actions: TActionList
+  object Actions: TActionList
+    Images = ResourcesForm.Images16x16
+    Left = 8
+    Top = 64
     object Settings: TAction
       Category = 'Custom'
       Caption = 'Settings'
