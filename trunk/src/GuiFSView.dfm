@@ -3,8 +3,8 @@ inherited FSViewForm: TFSViewForm
   ClientHeight = 452
   ClientWidth = 511
   Position = poScreenCenter
-  ExplicitWidth = 519
-  ExplicitHeight = 479
+  ExplicitWidth = 527
+  ExplicitHeight = 490
   PixelsPerInch = 96
   TextHeight = 13
   object Background: TSpTBXPanel
@@ -45,7 +45,6 @@ inherited FSViewForm: TFSViewForm
         Height = 26
         AllowDrag = False
         Position = dpBottom
-        ExplicitTop = 150
         object SpTBXToolbar1: TSpTBXToolbar
           Left = 0
           Top = 0
@@ -59,7 +58,7 @@ inherited FSViewForm: TFSViewForm
           TabOrder = 0
           Caption = 'SpTBXToolbar1'
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 248
+            CustomWidth = 236
           end
           object SpTBXItem3: TSpTBXItem
             Action = Add
@@ -105,11 +104,11 @@ inherited FSViewForm: TFSViewForm
         TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
         TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines, toUseExplorerTheme]
         TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect, toMultiSelect, toRightClickSelect]
+        OnDblClick = FilesystemListDblClick
         OnDrawText = FilesystemListDrawText
         OnFreeNode = FilesystemListFreeNode
         OnGetText = FilesystemListGetText
         OnGetNodeDataSize = FilesystemListGetNodeDataSize
-        ExplicitHeight = 125
         Columns = <
           item
             MinWidth = 200
@@ -163,6 +162,22 @@ inherited FSViewForm: TFSViewForm
         ImageIndex = 143
       end
     end
+    object DBGrid1: TDBGrid
+      AlignWithMargins = True
+      Left = 8
+      Top = 254
+      Width = 495
+      Height = 157
+      Align = alClient
+      DataSource = DataSource
+      DrawingStyle = gdsGradient
+      TabOrder = 2
+      TitleFont.Charset = DEFAULT_CHARSET
+      TitleFont.Color = clWindowText
+      TitleFont.Height = -11
+      TitleFont.Name = 'Tahoma'
+      TitleFont.Style = []
+    end
   end
   object Actions: TActionList
     Images = ResourcesForm.Images16x16
@@ -214,6 +229,19 @@ inherited FSViewForm: TFSViewForm
     Left = 24
     Top = 64
   end
+  object TemporaryAppStorage: TJvAppRegistryStorage
+    StorageOptions.BooleanStringTrueValues = 'TRUE, YES, Y'
+    StorageOptions.BooleanStringFalseValues = 'FALSE, NO, N'
+    Root = 'Software\Battlefield 1942\BGA'
+    SubStorages = <>
+    Left = 56
+    Top = 64
+  end
+  object DataSource: TDataSource
+    DataSet = Dataset
+    Left = 88
+    Top = 96
+  end
   object Database: TSqlitePassDatabase
     DatabaseType = dbtUnknown
     DatatypeOptions.BooleanStorage = asInteger
@@ -221,7 +249,7 @@ inherited FSViewForm: TFSViewForm
     DatatypeOptions.DateStorage = asInteger
     DatatypeOptions.DateTimeFormat = 'YYYY-MM-DD hh:mm:ss.zzz'
     DatatypeOptions.DateTimeStorage = dtsDateTime
-    DatatypeOptions.DecimalSeparator = ','
+    DatatypeOptions.DecimalSeparator = '.'
     DatatypeOptions.DefaultFieldType = ftUnknown
     DatatypeOptions.DetectionMode = dmTypeName
     DatatypeOptions.LoadOptions = [loDefaultProperties, loCustomProperties, loTranslationRules, loCustomFieldDefs]
@@ -253,6 +281,9 @@ inherited FSViewForm: TFSViewForm
     Options.TemporaryStorage = tsDefault
     QueryTimeout = 0
     ShowSystemObjects = False
+    SQLiteLibrary = 
+      'C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\sql' +
+      'ite3.dll'
     VersionInfo.Component = '0.55'
     VersionInfo.Schema = -1
     VersionInfo.Package = '0.55'
@@ -283,18 +314,5 @@ inherited FSViewForm: TFSViewForm
     Left = 56
     Top = 96
     pParams = ()
-  end
-  object DataSource: TDataSource
-    DataSet = Dataset
-    Left = 88
-    Top = 96
-  end
-  object TemporaryAppStorage: TJvAppRegistryStorage
-    StorageOptions.BooleanStringTrueValues = 'TRUE, YES, Y'
-    StorageOptions.BooleanStringFalseValues = 'FALSE, NO, N'
-    Root = 'Software\Battlefield 1942\BGA'
-    SubStorages = <>
-    Left = 56
-    Top = 64
   end
 end

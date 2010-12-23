@@ -1,6 +1,7 @@
 program ExFilesystemViewer;
 
 uses
+  ExceptionLog,
   Forms,
   GuiFSSettings in 'GuiFSSettings.pas' {FSSettingsForm},
   GuiFSView in 'GuiFSView.pas' {FSViewForm},

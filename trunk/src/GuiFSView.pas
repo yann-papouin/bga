@@ -61,10 +61,11 @@ type
     ButtonCancel: TSpTBXButton;
     Ok: TAction;
     SpTBXItem1: TSpTBXItem;
+    TemporaryAppStorage: TJvAppRegistryStorage;
+    DataSource: TDataSource;
+    DBGrid1: TDBGrid;
     Database: TSqlitePassDatabase;
     Dataset: TSqlitePassDataset;
-    DataSource: TDataSource;
-    TemporaryAppStorage: TJvAppRegistryStorage;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -80,6 +81,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure RemoveExecute(Sender: TObject);
     procedure EditExecute(Sender: TObject);
+    procedure FilesystemListDblClick(Sender: TObject);
   private
     procedure ApplySettingsData(Data: pFilesystemData);
     { Déclarations privées }
@@ -99,7 +101,7 @@ implementation
 {$R *.dfm}
 
 uses
-  GuiFSSettings, Resources,  IOUtils, Types, StringFunction;
+  GuiFSSettings, Resources,  IOUtils, Types, StringFunction, TypInfo ;
 
 
 procedure TFSViewForm.FormCreate(Sender: TObject);
@@ -136,13 +138,35 @@ begin
   end;
 end;
 
+(*
+  procedure TForm1.BtCreateDatabaseClick(Sender: TObject);
+  begin
+  if Not FileExists('NewDb.db3')
+     then SqlitePassDatabase1.CreateDatabase('NewDb.db3');
+
+  SqlitePassDatabase1.Close;
+  SqlitePassDatabase1.Database := 'NewDb.db3';
+  SqlitePassDatabase1.Open;
+  SqlitePassDatabase1.TableDefs.CreateTable(
+  'CREATE TABLE [SampleTable] ( [AutoIncField] AUTOINC, [BinIntField] BIGINT,' +
+  '[BinaryField] BINARY, [BlobField] BLOB, [BooleanField] BOOLEAN, [CharField] CHAR,' +
+  '[ClobField] CLOB, [CurrencyField] CURRENCY, [DateField] DATE, [DateTextField] DATE,' +
+  '[DateTimeField] DATETIME, [DecField] DEC, [DecimalField] DECIMAL, [DoubleField] DOUBLE,' +
+  '[DoublePrecisionField] DOUBLE PRECISION, [FloatField] FLOAT, [GaphicField] GRAPHIC,'+
+  '[GuidField] GUID, [IntField] INT, [Int64Field] INT64);');
+  SqlitePassDataset1.DatasetName := 'SampleTable';
+  SqlitePassDataset1.Open;
+  end;
+*)
+
 procedure TFSViewForm.UpdateExecute(Sender: TObject);
 var
   Node: PVirtualNode;
   Data: pFilesystemData;
+  i :Integer;
 begin
   // Reset components to empty vars
-  Dataset.Active := false;
+  //Dataset.Active := false;
   Database.Connected := false;
   Database.Database := EmptyStr;
 
@@ -152,21 +176,44 @@ begin
   begin
     Data := FilesystemList.GetNodeData(Node);
     Database.Database := IncludeTrailingBackslash(Data.Path) + Data.Name;
+    FSSettingsForm.ReadModsInfos(IncludeTrailingBackslash(Data.Path) +'Mods');
   end;
 
   // Open database if settings are correct
   if FileExists(Database.Database) then
   begin
-    Database.SQLiteLibrary := 'C:\Users\Yann\Documents\RAD Studio\Libs\SQLitePass_0.55\sqlite3.dll';
-    Database.Open;
+    if Database.SQLiteLibrary = EmptyStr then
+      Database.SQLiteLibrary := 'C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\sqlite3.dll';
+
+    Database.Connected := true;
     if Database.Connected then
     begin
-      Dataset.Active := true;
-      Dataset.SQL.Text := 'INSERT INTO ARCHIVE VALUES(NULL, "Name", "Path", "md5", NULL)';
-      //Dataset.SQL.Text := 'SELECT * FROM ARCHIVES';
-      Dataset.ExecSQL;
-      Dataset.Active := false;
-      Database.Close;
+      //Database.Engine.ExecSQL('INSERT INTO "ARCHIVE" VALUES(NULL, "Name", "Path", "md5", NULL)');
+
+      Dataset.Close;
+      Dataset.Params.Clear;
+      Dataset.ParamCheck := True;
+
+      //Dataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE path=:PathAsWidestring;';
+      //Dataset.Params.ParamByName('PathAsWidestring').Value := '1';
+
+      Dataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE path=:PathAsString;';
+      Dataset.Params.ParamByName('PathAsString').Value := ('path');
+
+      //Dataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE id=:IdAsInteger;';
+      //Dataset.Params.ParamByName('IdAsInteger').Value := ('1');
+
+     (*
+      for i := 0 to Dataset.Params.Count - 1 do
+      begin
+        ShowMessageFmt('Type returned : %s',[GetEnumName(TypeInfo(TFieldType), Ord(Dataset.Params.Items[i].DataType))]);
+      end;
+      *)
+
+
+      Dataset.Open;
+
+
     end;
   end;
 end;
@@ -221,6 +268,11 @@ procedure TFSViewForm.FilesystemChoiceChange(Sender: TObject);
 begin
   inherited;
   //Settings.Enabled := FileExists(FilesystemChoice.Text);
+end;
+
+procedure TFSViewForm.FilesystemListDblClick(Sender: TObject);
+begin
+  Edit.Execute;
 end;
 
 procedure TFSViewForm.FilesystemListDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; const Text: string; const CellRect: TRect; var DefaultDraw: Boolean);
