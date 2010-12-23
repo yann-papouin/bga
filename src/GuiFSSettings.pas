@@ -64,6 +64,7 @@ type
   public
     { Déclarations publiques }
     OpenMode : TOpenMode;
+    function ReadModsInfos(ModPath : string) : boolean;
   end;
 
 var
@@ -99,6 +100,7 @@ begin
     result := true;
 end;
 
+
 procedure TFSSettingsForm.FormCreate(Sender: TObject);
 begin
   ModEntries := TModEntryList.Create;
@@ -115,21 +117,18 @@ begin
 end;
 
 
-procedure TFSSettingsForm.BattlefieldDirChange(Sender: TObject);
+function TFSSettingsForm.ReadModsInfos(ModPath: string): boolean;
 var
-  ModDir, InitFile : string;
+  InitFile : string;
   Dirs : TStringDynArray;
   i : integer;
   ModEntry : TBattlefieldModEntry;
 begin
   ModEntries.Clear;
-  Mods.Clear;
-  ModPath.Clear;
-  ModDir := IncludeTrailingBackslash(BattlefieldDir.Text) +'Mods';
-  if DirectoryExists(ModDir) then
+  if DirectoryExists(ModPath) then
   begin
-    BattlefieldDir.ParentFont := true;
-    Dirs := TDirectory.GetDirectories(IncludeTrailingBackslash(ModDir));
+    Result := true;
+    Dirs := TDirectory.GetDirectories(IncludeTrailingBackslash(ModPath));
 
     for i := 0 to Length(Dirs) - 1 do
     begin
@@ -138,14 +137,35 @@ begin
       begin
         ModEntry := TBattlefieldModEntry.Create(nil);
         ModEntry.LoadFromConFile(InitFile);
-        Mods.AddItem(ModEntry.GameName, ModEntry);
         ModEntries.Add(ModEntry);
       end;
+    end;
+  end
+   else
+     Result := False;
+end;
+
+procedure TFSSettingsForm.BattlefieldDirChange(Sender: TObject);
+var
+  ModDir : string;
+  i :Integer;
+begin
+  Mods.Clear;
+  ModPath.Clear;
+  ModDir := IncludeTrailingBackslash(BattlefieldDir.Text) +'Mods';
+  if ReadModsInfos(ModDir) then
+  begin
+    BattlefieldDir.ParentFont := true;
+    for i := 0 to ModEntries.Count - 1 do
+    begin
+      Mods.AddItem(ModEntries[i].GameName, ModEntries[i]);
     end;
   end
     else
   BattlefieldDir.Font.Color := clRed;
 end;
+
+
 
 
 procedure TFSSettingsForm.ModsClick(Sender: TObject);

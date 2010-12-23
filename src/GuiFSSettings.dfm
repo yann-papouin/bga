@@ -44,8 +44,6 @@ object FSSettingsForm: TFSSettingsForm
     EditButton.Height = 17
     EditButton.Caption = '...'
     EditButton.Align = alRight
-    EditButton.ExplicitLeft = 394
-    ExplicitWidth = 417
   end
   object FilesystemName: TSpTBXEdit
     Left = 8
@@ -54,7 +52,6 @@ object FSSettingsForm: TFSSettingsForm
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 2
-    ExplicitWidth = 417
   end
   object SpTBXLabel2: TSpTBXLabel
     Left = 8
@@ -82,8 +79,6 @@ object FSSettingsForm: TFSSettingsForm
     Padding.Right = 5
     Padding.Bottom = 5
     TabOrder = 4
-    ExplicitTop = 505
-    ExplicitWidth = 433
     object ButtonOk: TSpTBXButton
       AlignWithMargins = True
       Left = 419
@@ -95,7 +90,6 @@ object FSSettingsForm: TFSSettingsForm
       TabOrder = 0
       Images = ResourcesForm.Images16x16
       ImageIndex = 1118
-      ExplicitLeft = 191
     end
     object ButtonCancel: TSpTBXButton
       AlignWithMargins = True
@@ -108,7 +102,6 @@ object FSSettingsForm: TFSSettingsForm
       TabOrder = 1
       Images = ResourcesForm.Images16x16
       ImageIndex = 143
-      ExplicitLeft = 311
     end
   end
   object GridPanel1: TGridPanel
@@ -189,8 +182,6 @@ object FSSettingsForm: TFSSettingsForm
       ItemHeight = 20
       TabOrder = 2
       OnClick = ModsClick
-      ExplicitTop = 36
-      ExplicitHeight = 204
     end
     object ModPath: TSpTBXListBox
       AlignWithMargins = True
@@ -202,7 +193,6 @@ object FSSettingsForm: TFSSettingsForm
       IntegralHeight = True
       ItemHeight = 20
       TabOrder = 3
-      ExplicitHeight = 204
     end
   end
   object Actions: TActionList
