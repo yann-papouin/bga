@@ -1,0 +1,156 @@
+/* VER210
+  Généré par le compilateur CodeGear Delphi Pascal
+  car -GD ou --drc a été fourni au compilateur.
+
+  Ce fichier contient des ressources générées par le compilateur qui
+  ont été liées à l'exécutable.
+  Si ce fichier est vide, aucune ressource générée par le
+  compilateur n'est liée à l'exécutable produit.
+*/
+
+#define SqlitePassErrorLang_Msg3900 65456
+#define SqlitePassErrorLang_Msg3910 65457
+#define SqlitePassErrorLang_Msg3950 65458
+#define SqlitePassErrorLang_Msg3980 65459
+#define SqlitePassErrorLang_Msg4000 65460
+#define SqlitePassErrorLang_Msg2040 65472
+#define SqlitePassErrorLang_Msg2045 65473
+#define SqlitePassErrorLang_Msg2047 65474
+#define SqlitePassErrorLang_Msg2049 65475
+#define SqlitePassErrorLang_Msg2070 65476
+#define SqlitePassErrorLang_Msg2100 65477
+#define SqlitePassErrorLang_Msg3100 65478
+#define SqlitePassErrorLang_Msg3200 65479
+#define SqlitePassErrorLang_Msg3210 65480
+#define SqlitePassErrorLang_Msg3220 65481
+#define SqlitePassErrorLang_Msg3300 65482
+#define SqlitePassErrorLang_Msg3400 65483
+#define SqlitePassErrorLang_Msg3500 65484
+#define SqlitePassErrorLang_Msg3600 65485
+#define SqlitePassErrorLang_Msg3700 65486
+#define SqlitePassErrorLang_Msg3800 65487
+#define SqlitePassErrorLang_Msg2018 65488
+#define SqlitePassErrorLang_Msg1040 65489
+#define SqlitePassErrorLang_Msg2019 65490
+#define SqlitePassErrorLang_Msg2020 65491
+#define SqlitePassErrorLang_Msg2021 65492
+#define SqlitePassErrorLang_Msg2022 65493
+#define SqlitePassErrorLang_Msg2024 65494
+#define SqlitePassErrorLang_Msg2025 65495
+#define SqlitePassErrorLang_Msg2026 65496
+#define SqlitePassErrorLang_Msg2027 65497
+#define SqlitePassErrorLang_Msg2028 65498
+#define SqlitePassErrorLang_Msg2029 65499
+#define SqlitePassErrorLang_Msg2030 65500
+#define SqlitePassErrorLang_Msg2031 65501
+#define SqlitePassErrorLang_Msg2032 65502
+#define SqlitePassErrorLang_Msg2033 65503
+#define SqlitePassErrorLang_Msg1041 65504
+#define SqlitePassErrorLang_Msg1042 65505
+#define SqlitePassErrorLang_Msg1044 65506
+#define SqlitePassErrorLang_Msg1046 65507
+#define SqlitePassErrorLang_Msg1800 65508
+#define SqlitePassErrorLang_Msg3010 65509
+#define SqlitePassErrorLang_Msg3011 65510
+#define SqlitePassErrorLang_Msg3012 65511
+#define SqlitePassErrorLang_Msg3013 65512
+#define SqlitePassErrorLang_Msg3014 65513
+#define SqlitePassErrorLang_Msg3016 65514
+#define SqlitePassErrorLang_Msg2002 65515
+#define SqlitePassErrorLang_Msg2003 65516
+#define SqlitePassErrorLang_Msg2011 65517
+#define SqlitePassErrorLang_Msg2012 65518
+#define SqlitePassErrorLang_Msg2015 65519
+#define SqlitePassErrorLang_CRLF 65520
+#define SqlitePassErrorLang_Msg1000 65521
+#define SqlitePassErrorLang_Msg1001 65522
+#define SqlitePassErrorLang_Msg1002 65523
+#define SqlitePassErrorLang_Msg1003 65524
+#define SqlitePassErrorLang_Msg1100 65525
+#define SqlitePassErrorLang_SqlitePassListIndexError 65526
+#define SqlitePassErrorLang_SqlitePassListCapacityError 65527
+#define SqlitePassErrorLang_SqlitePassListCountError 65528
+#define SqlitePassErrorLang_Msg3000 65529
+#define SqlitePassErrorLang_Msg3001 65530
+#define SqlitePassErrorLang_Msg3002 65531
+#define SqlitePassErrorLang_Msg1005 65532
+#define SqlitePassErrorLang_Msg1007 65533
+#define SqlitePassErrorLang_Msg1010 65534
+#define SqlitePassErrorLang_Msg1038 65535
+STRINGTABLE
+BEGIN
+	SqlitePassErrorLang_Msg3900,	"TSqlitePassSelectStmt.BuildSchema : Table or field not found "
+	SqlitePassErrorLang_Msg3910,	"TSqlitePassSelectStmt.FieldDefs.FieldByName : Requested FieldDefByName not found"
+	SqlitePassErrorLang_Msg3950,	"TSqlitePassSelectStmts.SQLStmtByName : Requested SQLStmt not found"
+	SqlitePassErrorLang_Msg3980,	"TSqlitePassTranslator.GetDatabaseTableFieldDefs :\r\nUnable to retrieve fields definitions for table %s ."
+	SqlitePassErrorLang_Msg4000,	"TSqlitePassTranslator_Kexi.GetDatabaseTableFieldDefs : Error while opening system dataset : %s"
+	SqlitePassErrorLang_Msg2040,	"TSqlitePassDataset.ParseFilterText : Syntax error found while parsing filter text."
+	SqlitePassErrorLang_Msg2045,	"TSqlitePassDataset.SetFDatabase : Cannot set Database while Dataset is active."
+	SqlitePassErrorLang_Msg2047,	"TSqlitePassDataset.SetFLookupDisplayedRecordsOnly : Cannot set this property while Dataset is active."
+	SqlitePassErrorLang_Msg2049,	"TSqlitePassDataset.SetFCalcDisplayedRecordsOnly : Cannot set this property while Dataset is active."
+	SqlitePassErrorLang_Msg2070,	"TSqlitePassDatasets.DatasetByName : Dataset %s not found."
+	SqlitePassErrorLang_Msg2100,	"TSqlitePassFieldFilters.FilterByFieldName : Requested filter not found"
+	SqlitePassErrorLang_Msg3100,	"TSqlitePassTableDefs.TableByName : Requested table not found"
+	SqlitePassErrorLang_Msg3200,	"TSqlitePassIndexDefs.IndexByName : Requested index not found"
+	SqlitePassErrorLang_Msg3210,	"TSqlitePassIndexColumns.ColumnByName : Requested column not found"
+	SqlitePassErrorLang_Msg3220,	"TSqlitePassIndex.SetFIndexName : %s is not a valid index name. First character must be like [A..Z, a..z, _ ] and others like [A..Z, a..z, 0..9, _ ]"
+	SqlitePassErrorLang_Msg3300,	"TSqlitePassQueryDefs.QueryByName : Requested query not found"
+	SqlitePassErrorLang_Msg3400,	"TSqlitePassViews.ViewByName : Requested view not found"
+	SqlitePassErrorLang_Msg3500,	"TSqlitePassTriggers.TriggerByName : Requested Trigger not found"
+	SqlitePassErrorLang_Msg3600,	"TSqlitePassFieldDefs.FieldByName : Requested FieldDef not found"
+	SqlitePassErrorLang_Msg3700,	"TSqlitePassTableDefs.TableByName : Requested TableDef not found"
+	SqlitePassErrorLang_Msg3800,	"TSqlitePassStmtSection.SectionByName : Requested Section not found"
+	SqlitePassErrorLang_Msg2018,	"TSqlitePassDataset.Open : Missing Database Property"
+	SqlitePassErrorLang_Msg1040,	"TSqlitePassDataset.GetRecord, No record found, dataset is empty."
+	SqlitePassErrorLang_Msg2019,	"TSqlitePassDataset.Open : Missing DatasetName, or SQL is empty."
+	SqlitePassErrorLang_Msg2020,	"TSqlitePassDataset.Open : Unable to open Dataset because the Database is not connected"
+	SqlitePassErrorLang_Msg2021,	"TSqlitePassDataset.Open : Unable to open Dataset because the Database is not connected. Check the components create order of your form. The database must be created before the datasets"
+	SqlitePassErrorLang_Msg2022,	"TSqlitePassDataset.Post : Error while posting record. The PrimaryKey value is already present in the dataset or an internal constraint prevents data change..."
+	SqlitePassErrorLang_Msg2024,	"TSqlitePassDataset.Delete : Error while deleting record."
+	SqlitePassErrorLang_Msg2025,	"TSqlitePassDataset.InitFieldDefs : Columns count from parsed SQL statement doesn't match SQLite engine columns count."
+	SqlitePassErrorLang_Msg2026,	"TSqlitePassDataset.SetMasterDataSource : Datasource circular reference not supported"
+	SqlitePassErrorLang_Msg2027,	"TSqlitePassDataset.InitFieldDefs : Cannot retrieve FieldDefs because dataset is closed."
+	SqlitePassErrorLang_Msg2028,	"TSqlitePassDataset.SetFDatasetName : This will clear all defined fields. Do ou want to continue ?"
+	SqlitePassErrorLang_Msg2029,	"TSqlitePassDataset.InternalOpen : Cannot Open Dataset."
+	SqlitePassErrorLang_Msg2030,	"TSqlitePassDataset.SetFLookUpCache : Cannot set LookUpCache while Dataset is active."
+	SqlitePassErrorLang_Msg2031,	"TSqlitePassDataset : Cannot set % while Dataset is active."
+	SqlitePassErrorLang_Msg2032,	"TSqlitePassDataset.SetDataField : Cannot set data. This field is readonly."
+	SqlitePassErrorLang_Msg2033,	"TSqlitePassDataset.SetFWriteMode : Cannot set WriteMode while Dataset is active."
+	SqlitePassErrorLang_Msg1041,	"TSqlitePassDatabase.AttachDatabase : Database type mismatch."
+	SqlitePassErrorLang_Msg1042,	"TSqlitePassDatabase.SetFDatabaseType : Do you want to replace your DatatypeOptions by the default ones for this database type ? "
+	SqlitePassErrorLang_Msg1044,	"TSqlitePassDatabase.DataTypeOptions.LoadFromDatabase : Error while loading data from database. The \"SqlitePass__DbSettings\" table is corrupted or was created using an old version of this component.  Do you want to remove the \"SqlitePass__DbSettings\" from your database ? (A new table will be created on database closing)."
+	SqlitePassErrorLang_Msg1046,	"TSqlitePassDatabase.DeleteDatabase : Unable to delete the file %s ."
+	SqlitePassErrorLang_Msg1800,	"TSqlitePassDatabasesAttached.DatabaseByName : Database %s not found."
+	SqlitePassErrorLang_Msg3010,	"TSqlitePassEngine.BindParam : invalid format for blob data."
+	SqlitePassErrorLang_Msg3011,	"TSqlitePassEngine.BindValue : Unknown field type : %s"
+	SqlitePassErrorLang_Msg3012,	"TSqlitePassEngine.CreateDatabase : the database was not created. The file %s already exists"
+	SqlitePassErrorLang_Msg3013,	"Unable to execute SQL query : %s%s"
+	SqlitePassErrorLang_Msg3014,	"Database engine is not available %s"
+	SqlitePassErrorLang_Msg3016,	"Error while posting the record."
+	SqlitePassErrorLang_Msg2002,	"TSqlitePassDataset.ExecSQL : Cannot execute SQL query while Database is not Assigned or Connected."
+	SqlitePassErrorLang_Msg2003,	"TSqlitePassDataset.ExecuteSQL : Cannot execute SQL query while Database is not Assigned or Connected."
+	SqlitePassErrorLang_Msg2011,	"TSqlitePassDataset.SetFDatabase : Cannot set Database while Dataset is active."
+	SqlitePassErrorLang_Msg2012,	"TSqlitePassDataset.SetFDatasetName : Cannot set DatasetName while Dataset is active."
+	SqlitePassErrorLang_Msg2015,	"TSqlitePassDataset.SetFSQL : Cannot set SQL while Dataset is active."
+	SqlitePassErrorLang_CRLF,	"\r\n"
+	SqlitePassErrorLang_Msg1000,	"Error"
+	SqlitePassErrorLang_Msg1001,	"Unknown"
+	SqlitePassErrorLang_Msg1002,	"No Error"
+	SqlitePassErrorLang_Msg1003,	"A %s component has raised an exception."
+	SqlitePassErrorLang_Msg1100,	"Select the Ellipsis button"
+	SqlitePassErrorLang_SqlitePassListIndexError,	"Error while accessing list item %s"
+	SqlitePassErrorLang_SqlitePassListCapacityError,	"List capacity exceeded"
+	SqlitePassErrorLang_SqlitePassListCountError,	"List count error"
+	SqlitePassErrorLang_Msg3000,	"  Function %s "
+	SqlitePassErrorLang_Msg3001,	"file %s not found in path"
+	SqlitePassErrorLang_Msg3002,	"The following functions : %s%sare missing in the currently installed SQLite library : %s.%sPlease update the installed library version."
+	SqlitePassErrorLang_Msg1005,	"TSqlitePassDatabase.Open : Database property is not defined."
+	SqlitePassErrorLang_Msg1007,	"TSqlitePassDatabase.Open : Unable to open the database."
+	SqlitePassErrorLang_Msg1010,	"%s : Cannot set the %s property while Database is connected."
+	SqlitePassErrorLang_Msg1038,	"Cannot find Database :"
+END
+
+/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Sources\SqlitePassErrorLogDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Sources\Debug\SqlitePassDebug.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Runtime.res */
+/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Runtime.drf */

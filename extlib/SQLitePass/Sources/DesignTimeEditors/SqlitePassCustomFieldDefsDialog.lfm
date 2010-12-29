@@ -1,0 +1,286 @@
+object SqlitePassCustomFieldDefsDlg: TSqlitePassCustomFieldDefsDlg
+  Left = 120
+  Height = 364
+  Top = 292
+  Width = 598
+  BorderIcons = []
+  BorderStyle = bsDialog
+  Caption = 'Custom FieldDefs Editor'
+  ClientHeight = 364
+  ClientWidth = 598
+  Font.CharSet = ANSI_CHARSET
+  Font.Height = -11
+  Font.Name = 'Arial'
+  Position = poScreenCenter
+  LCLVersion = '0.9.28.3'
+  object PanelBottom: TPanel
+    Left = 0
+    Height = 35
+    Top = 329
+    Width = 598
+    Align = alBottom
+    BevelInner = bvLowered
+    BevelOuter = bvNone
+    ClientHeight = 35
+    ClientWidth = 598
+    TabOrder = 0
+    object BtOk: TButton
+      Left = 510
+      Height = 25
+      Top = 6
+      Width = 75
+      Caption = '&Ok'
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ModalResult = 1
+      OnClick = BtOkClick
+      ParentFont = False
+      TabOrder = 0
+    end
+    object BtnSaveToDatabase: TButton
+      Left = 129
+      Height = 25
+      Top = 5
+      Width = 110
+      Caption = '&Save to Database'
+      OnClick = BtnSaveToDatabaseClick
+      TabOrder = 1
+    end
+    object BtnLoadFromDatabase: TButton
+      Left = 13
+      Height = 25
+      Top = 5
+      Width = 110
+      Caption = '&Load from Database'
+      OnClick = BtnLoadFromDatabaseClick
+      TabOrder = 2
+    end
+    object BtnCancel: TButton
+      Left = 424
+      Height = 25
+      Top = 6
+      Width = 75
+      Cancel = True
+      Caption = '&Cancel'
+      Font.CharSet = ANSI_CHARSET
+      Font.Height = -11
+      Font.Name = 'Arial'
+      ModalResult = 2
+      ParentFont = False
+      TabOrder = 3
+    end
+    object BtClearAll: TButton
+      Left = 247
+      Height = 25
+      Top = 5
+      Width = 110
+      Caption = '&Clear All'
+      OnClick = BtClearAllClick
+      TabOrder = 4
+    end
+  end
+  object PanelDatatypes: TPanel
+    Left = 9
+    Height = 313
+    Top = 8
+    Width = 576
+    ClientHeight = 313
+    ClientWidth = 576
+    TabOrder = 1
+    object PanelCtrlGridHeader: TPanel
+      Left = 1
+      Height = 72
+      Top = 1
+      Width = 574
+      Align = alTop
+      BevelOuter = bvNone
+      ClientHeight = 72
+      ClientWidth = 574
+      TabOrder = 0
+      object Bevel5: TBevel
+        Left = 97
+        Height = 9
+        Top = 24
+        Width = 443
+        Shape = bsTopLine
+      end
+      object Shape5: TShape
+        Left = 8
+        Height = 22
+        Top = 14
+        Width = 153
+        Brush.Color = 16774380
+        Pen.Color = clSilver
+        Pen.Width = 2
+        Shape = stRoundRect
+      end
+      object Label6: TLabel
+        Left = 16
+        Height = 15
+        Top = 18
+        Width = 136
+        Caption = 'Custom Fields Definition'
+        Font.CharSet = ANSI_CHARSET
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentColor = False
+        ParentFont = False
+      end
+      object StaticText1: TStaticText
+        Left = 171
+        Height = 18
+        Top = 47
+        Width = 137
+        Alignment = taCenter
+        BorderStyle = sbsSunken
+        Caption = 'Field Name'
+        TabOrder = 0
+      end
+      object StaticText2: TStaticText
+        Left = 310
+        Height = 18
+        Top = 47
+        Width = 130
+        Alignment = taCenter
+        BorderStyle = sbsSunken
+        Caption = 'Data Type'
+        TabOrder = 1
+      end
+      object StaticText3: TStaticText
+        Left = 443
+        Height = 18
+        Top = 47
+        Width = 40
+        Alignment = taCenter
+        BorderStyle = sbsSunken
+        Caption = 'Size'
+        TabOrder = 2
+      end
+      object StaticText5: TStaticText
+        Left = 485
+        Height = 18
+        Top = 47
+        Width = 51
+        Alignment = taCenter
+        BorderStyle = sbsSunken
+        Caption = 'Precision'
+        TabOrder = 3
+      end
+      object StaticText6: TStaticText
+        Left = 673
+        Height = 18
+        Top = 143
+        Width = 99
+        Alignment = taCenter
+        BorderStyle = sbsSunken
+        Caption = 'Collating Order'
+        TabOrder = 4
+      end
+      object StaticText4: TStaticText
+        Left = 32
+        Height = 18
+        Top = 47
+        Width = 137
+        Alignment = taCenter
+        BorderStyle = sbsSunken
+        Caption = 'Table Name'
+        TabOrder = 5
+      end
+    end
+    object PanelCtrlGrid1: TPanel
+      Left = 1
+      Height = 215
+      Top = 73
+      Width = 574
+      Align = alClient
+      BevelOuter = bvNone
+      ClientHeight = 215
+      ClientWidth = 574
+      TabOrder = 1
+      object PanelFieldDef: TPanel
+        Left = 0
+        Height = 26
+        Top = 0
+        Width = 574
+        Align = alTop
+        BevelOuter = bvNone
+        ClientHeight = 26
+        ClientWidth = 574
+        Color = 14869218
+        ParentColor = False
+        TabOrder = 0
+        object CbTableName: TComboBox
+          Left = 31
+          Height = 22
+          Top = 2
+          Width = 138
+          ItemHeight = 14
+          OnChange = CbTableNameChange
+          OnEnter = CbTableNameEnter
+          OnKeyDown = CbTableNameKeyDown
+          Sorted = True
+          Style = csDropDownList
+          TabOrder = 0
+        end
+        object CbFieldName: TComboBox
+          Left = 170
+          Height = 22
+          Top = 2
+          Width = 138
+          ItemHeight = 14
+          OnEnter = CbTableNameEnter
+          OnKeyDown = CbTableNameKeyDown
+          Sorted = True
+          Style = csDropDownList
+          TabOrder = 1
+        end
+        object CbDataType: TComboBox
+          Left = 309
+          Height = 22
+          Top = 2
+          Width = 132
+          ItemHeight = 14
+          OnEnter = CbTableNameEnter
+          OnKeyDown = CbTableNameKeyDown
+          Sorted = True
+          Style = csDropDownList
+          TabOrder = 2
+        end
+        object EditSize: TEdit
+          Left = 442
+          Height = 22
+          Top = 2
+          Width = 40
+          OnEnter = CbTableNameEnter
+          OnKeyDown = CbTableNameKeyDown
+          OnKeyPress = EditSizeKeyPress
+          TabOrder = 4
+        end
+        object EditPrecision: TEdit
+          Left = 484
+          Height = 22
+          Top = 2
+          Width = 52
+          OnEnter = CbTableNameEnter
+          OnKeyDown = CbTableNameKeyDown
+          OnKeyPress = EditSizeKeyPress
+          TabOrder = 3
+        end
+      end
+    end
+    object PanelCtrlGridNav: TPanel
+      Left = 1
+      Height = 24
+      Top = 288
+      Width = 574
+      Align = alBottom
+      BevelOuter = bvLowered
+      Color = cl3DLight
+      ParentColor = False
+      TabOrder = 2
+    end
+  end
+end
