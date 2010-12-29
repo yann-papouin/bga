@@ -1,0 +1,97 @@
+LazarusResources.Add('TSqlitePassCreateNewDatabaseDlg','FORMDATA',[
+  'TPF0'#31'TSqlitePassCreateNewDatabaseDlg'#30'SqlitePassCreateNewDatabaseDlg'
+  +#4'Left'#3#4#1#6'Height'#3'E'#1#3'Top'#3#167#0#5'Width'#3#188#1#11'BorderIco'
+  +'ns'#11#0#11'BorderStyle'#7#8'bsDialog'#7'Caption'#6#21'Create a new databas'
+  +'e'#12'ClientHeight'#3'E'#1#11'ClientWidth'#3#188#1#12'Font.CharSet'#7#12'AN'
+  +'SI_CHARSET'#11'Font.Height'#2#245#9'Font.Name'#6#5'Arial'#8'Position'#7#14
+  +'poScreenCenter'#10'LCLVersion'#6#8'0.9.28.3'#0#6'TShape'#6'Shape6'#4'Left'#2
+  +#16#6'Height'#3#137#0#3'Top'#2#20#5'Width'#3#156#1#11'Brush.Color'#4#238#238
+  +#238#0#9'Pen.Color'#7#8'clSilver'#5'Shape'#7#11'stRoundRect'#0#0#6'TShape'#6
+  +'Shape3'#4'Left'#2#17#6'Height'#2'Z'#3'Top'#3#182#0#5'Width'#3#156#1#11'Brus'
+  +'h.Color'#4#238#238#238#0#9'Pen.Color'#7#8'clSilver'#5'Shape'#7#11'stRoundRe'
+  +'ct'#0#0#6'TLabel'#6'Label1'#4'Left'#3#3#1#6'Height'#2#15#3'Top'#2'-'#5'Widt'
+  +'h'#2#22#7'Caption'#6#5'&Kind'#12'FocusControl'#7#8'CbDbKind'#12'Font.CharSe'
+  +'t'#7#12'ANSI_CHARSET'#10'Font.Color'#7#7'clBlack'#11'Font.Height'#2#245#9'F'
+  +'ont.Name'#6#5'Arial'#11'ParentColor'#8#10'ParentFont'#8#0#0#6'TLabel'#19'La'
+  +'belDbFileFullPath'#4'Left'#2#26#6'Height'#2#15#3'Top'#2'c'#5'Width'#2'-'#7
+  +'Caption'#6#10'&Directory'#12'FocusControl'#7#19'TEditDbFileFullPath'#12'Fon'
+  +'t.CharSet'#7#12'ANSI_CHARSET'#10'Font.Color'#7#7'clBlack'#11'Font.Height'#2
+  +#245#9'Font.Name'#6#5'Arial'#11'ParentColor'#8#10'ParentFont'#8#0#0#12'TSpee'
+  +'dButton'#14'SbGetDirectory'#4'Left'#3#128#1#6'Height'#2#22#3'Top'#2'_'#5'Wi'
+  +'dth'#2#22#5'Color'#7#9'clBtnFace'#4'Flat'#9#10'Glyph.Data'#10#250#0#0#0#246
+  +#0#0#0'BM'#246#0#0#0#0#0#0#0'v'#0#0#0'('#0#0#0#16#0#0#0#16#0#0#0#1#0#4#0#0#0
+  +#0#0#128#0#0#0#0#0#0#0#0#0#0#0#16#0#0#0#16#0#0#0#0#0#0#0#0#0#128#0#0#128#0#0
+  +#0#128#128#0#128#0#0#0#128#0#128#0#128#128#0#0#192#192#192#0#128#128#128#0#0
+  +#0#255#0#0#255#0#0#0#255#255#0#255#0#0#0#255#0#255#0#255#255#0#0#255#255#255
+  +#0#255#255#255#255#255#255#255#255#255#255#255#255#255#255#255#255#255#0#0#0
+  +#0#0#0#15#243'wwwwww'#15#243#247'wwwww'#15#243#247'wwwww'#15#243#247'wwwww'
+  +#15#243#247'wwwww'#15#243#247'wwwww'#15#243#247'wwwww'#15#243#247'wwwww'#15
+  +#243#255#255#255#255#255'w'#15#243'wwws33'#255#255'?'#255'w0'#255#255#255#255
+  +#243'33'#15#255#255#255#255#255#255#255#255#255#255#255#9'NumGlyphs'#2#0#11
+  +'Transparent'#8#7'OnClick'#7#19'SbGetDirectoryClick'#0#0#6'TLabel'#6'Label4'
+  +#4'Left'#2#26#6'Height'#2#15#3'Top'#3#207#0#5'Width'#2'-'#7'Caption'#6#9'&En'
+  +'coding'#12'FocusControl'#7#12'CbDbEncoding'#12'Font.CharSet'#7#12'ANSI_CHAR'
+  +'SET'#10'Font.Color'#7#7'clBlack'#11'Font.Height'#2#245#9'Font.Name'#6#5'Ari'
+  +'al'#11'ParentColor'#8#10'ParentFont'#8#0#0#6'TLabel'#6'Label5'#4'Left'#3#240
+  +#0#6'Height'#2#15#3'Top'#3#204#0#5'Width'#2'0'#7'Caption'#6#10'&Page size'#12
+  +'FocusControl'#7#12'CbDbPageSize'#12'Font.CharSet'#7#12'ANSI_CHARSET'#10'Fon'
+  +'t.Color'#7#7'clBlack'#11'Font.Height'#2#245#9'Font.Name'#6#5'Arial'#11'Pare'
+  +'ntColor'#8#10'ParentFont'#8#0#0#6'TLabel'#6'Label6'#4'Left'#2#26#6'Height'#2
+  +#15#3'Top'#2'-'#5'Width'#2''''#7'Caption'#6#8'&Storage'#12'FocusControl'#7#11
+  +'CbDbStorage'#12'Font.CharSet'#7#12'ANSI_CHARSET'#10'Font.Color'#7#7'clBlack'
+  +#11'Font.Height'#2#245#9'Font.Name'#6#5'Arial'#11'ParentColor'#8#10'ParentFo'
+  +'nt'#8#0#0#6'TLabel'#6'Label7'#4'Left'#2#26#6'Height'#2#15#3'Top'#3#238#0#5
+  +'Width'#2'@'#7'Caption'#6#12'&Vacuum type'#12'FocusControl'#7#14'CbDbVacuumT'
+  +'ype'#12'Font.CharSet'#7#12'ANSI_CHARSET'#10'Font.Color'#7#7'clBlack'#11'Fon'
+  +'t.Height'#2#245#9'Font.Name'#6#5'Arial'#11'ParentColor'#8#10'ParentFont'#8#0
+  +#0#6'TShape'#6'Shape1'#4'Left'#2' '#6'Height'#2#20#3'Top'#2#10#5'Width'#2'i'
+  +#11'Brush.Color'#4#236#244#255#0#9'Pen.Color'#7#8'clSilver'#9'Pen.Width'#2#2
+  +#0#0#6'TLabel'#6'Label2'#4'Left'#2'0'#6'Height'#2#15#3'Top'#2#12#5'Width'#2
+  +'K'#7'Caption'#6#15'Main Properties'#11'ParentColor'#8#0#0#6'TLabel'#6'Label'
+  +'3'#4'Left'#2'1'#6'Height'#2#15#3'Top'#3#174#0#5'Width'#2'K'#7'Caption'#6#15
+  +'Main Properties'#11'ParentColor'#8#0#0#6'TShape'#6'Shape2'#4'Left'#2'!'#6'H'
+  +'eight'#2#20#3'Top'#3#171#0#5'Width'#2'i'#11'Brush.Color'#4#236#244#255#0#9
+  +'Pen.Color'#7#8'clSilver'#9'Pen.Width'#2#2#0#0#6'TLabel'#6'Label8'#4'Left'#2
+  +'>'#6'Height'#2#15#3'Top'#3#173#0#5'Width'#2'&'#7'Caption'#6#7'Options'#11'P'
+  +'arentColor'#8#0#0#6'TLabel'#6'Label9'#4'Left'#2#26#6'Height'#2#15#3'Top'#2
+  +'I'#5'Width'#2'+'#7'Caption'#6#9'&Filename'#12'FocusControl'#7#15'TEditDbFil'
+  +'eName'#12'Font.CharSet'#7#12'ANSI_CHARSET'#10'Font.Color'#7#7'clBlack'#11'F'
+  +'ont.Height'#2#245#9'Font.Name'#6#5'Arial'#11'ParentColor'#8#10'ParentFont'#8
+  +#0#0#6'TPanel'#12'PanelButtons'#4'Left'#2#0#6'Height'#2')'#3'Top'#3#28#1#5'W'
+  +'idth'#3#188#1#5'Align'#7#8'alBottom'#12'ClientHeight'#2')'#11'ClientWidth'#3
+  +#188#1#8'TabOrder'#2#0#0#7'TButton'#8'ButtonOk'#4'Left'#3#4#1#6'Height'#2#25
+  +#3'Top'#2#8#5'Width'#2'K'#7'Caption'#6#3'&Ok'#11'ModalResult'#2#1#7'OnClick'
+  +#7#13'ButtonOkClick'#8'TabOrder'#2#0#0#0#7'TButton'#12'ButtonCancel'#4'Left'
+  +#3'\'#1#6'Height'#2#25#3'Top'#2#8#5'Width'#2'K'#7'Caption'#6#7'&Cancel'#11'M'
+  ,'odalResult'#2#2#7'OnClick'#7#17'ButtonCancelClick'#8'TabOrder'#2#1#0#0#0#9
+  +'TCheckBox'#14'CbCheckFileExt'#4'Left'#2'c'#6'Height'#2#19#3'Top'#2'{'#5'Wid'
+  +'th'#2'x'#7'Caption'#6#22'Check &file extension '#7'Checked'#9#5'Color'#4#238
+  +#238#238#0#7'OnClick'#7#19'CbCheckFileExtClick'#11'ParentColor'#8#5'State'#7
+  +#9'cbChecked'#8'TabOrder'#2#5#0#0#5'TEdit'#19'TEditDbFileFullPath'#4'Left'#2
+  +'c'#6'Height'#2#22#3'Top'#2'_'#5'Width'#3#24#1#8'OnChange'#7#25'TEditDbFileF'
+  +'ullPathChange'#8'TabOrder'#2#4#0#0#9'TComboBox'#12'CbDbEncoding'#4'Left'#2
+  +'c'#6'Height'#2#22#3'Top'#3#203#0#5'Width'#3#130#0#10'ItemHeight'#2#14#13'It'
+  +'ems.Strings'#1#6#5'UTF-8'#6#6'UTF-16'#6#24'UTF-16le (little-endian)'#6#21'U'
+  +'TF-16be (big-endian)'#0#5'Style'#7#14'csDropDownList'#8'TabOrder'#2#6#0#0#9
+  +'TComboBox'#12'CbDbPageSize'#4'Left'#3'"'#1#6'Height'#2#22#3'Top'#3#200#0#5
+  +'Width'#2'x'#10'ItemHeight'#2#14#13'Items.Strings'#1#6#3'512'#6#4'1024'#6#4
+  +'2048'#6#4'4096'#6#4'8192'#6#5'16384'#6#5'32768'#0#5'Style'#7#14'csDropDownL'
+  +'ist'#8'TabOrder'#2#7#0#0#9'TComboBox'#8'CbDbKind'#4'Left'#3'!'#1#6'Height'#2
+  +#22#3'Top'#2'*'#5'Width'#2'x'#10'ItemHeight'#2#14#13'Items.Strings'#1#6#6'Cu'
+  +'stom'#6#15'Kexi for SQLite'#6#20'SQLite Administrator'#6#13'SQLite Expert'#6
+  +#10'SQLite4FPC'#6#10'SQLitePass'#0#8'OnChange'#7#14'CbDbKindChange'#5'Style'
+  +#7#14'csDropDownList'#8'TabOrder'#2#2#0#0#9'TComboBox'#11'CbDbStorage'#4'Lef'
+  +'t'#2'c'#6'Height'#2#22#3'Top'#2'*'#5'Width'#3#130#0#10'ItemHeight'#2#14#13
+  +'Items.Strings'#1#6#19'On disk (permanent)'#6#19'On disk (Temporary)'#6#21'I'
+  +'n memory (Temporary)'#0#7'OnClick'#7#16'CbDbStorageClick'#5'Style'#7#14'csD'
+  +'ropDownList'#8'TabOrder'#2#1#0#0#9'TComboBox'#14'CbDbVacuumType'#4'Left'#2
+  +'c'#6'Height'#2#22#3'Top'#3#232#0#5'Width'#3#130#0#10'ItemHeight'#2#14#13'It'
+  +'ems.Strings'#1#6#13'None (Manual)'#6#16'Full (Automatic)'#6#23'Incremental '
+  +'(Automatic)'#0#5'Style'#7#14'csDropDownList'#8'TabOrder'#2#8#0#0#9'TCheckBo'
+  +'x'#18'CbLegacyFileFormat'#4'Left'#3'#'#1#6'Height'#2#19#3'Top'#3#234#0#5'Wi'
+  +'dth'#2'k'#7'Caption'#6#19'&Legacy file format'#7'Checked'#9#5'Color'#4#238
+  +#238#238#0#11'ParentColor'#8#5'State'#7#9'cbChecked'#8'TabOrder'#2#9#0#0#5'T'
+  +'Edit'#15'TEditDbFileName'#4'Left'#2'c'#6'Height'#2#22#3'Top'#2'E'#5'Width'#3
+  +'5'#1#8'OnChange'#7#25'TEditDbFileFullPathChange'#6'OnExit'#7#19'TEditDbFile'
+  +'NameExit'#8'TabOrder'#2#3#0#0#0
+]);

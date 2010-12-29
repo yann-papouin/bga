@@ -1,0 +1,20 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<DCC_MapFile>0</DCC_MapFile>
+			<DCC_DebugDCUs>false</DCC_DebugDCUs>
+			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+			<DCC_ImportedDataReferences>false</DCC_ImportedDataReferences>
+			<DCC_DebugInfoInExe>false</DCC_DebugInfoInExe>
+			<DCC_DebugInformation>false</DCC_DebugInformation>
+		</PropertyGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
+			<Borland.ProjectType>OptionSet</Borland.ProjectType>
+			<BorlandProject>
+				<Delphi.Personality/>
+			</BorlandProject>
+			<ProjectFileVersion>12</ProjectFileVersion>
+		</ProjectExtensions>
+	</Project>
