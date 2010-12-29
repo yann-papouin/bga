@@ -64,8 +64,8 @@ begin
   SqlitePassDataset1.Params.Clear;
   SqlitePassDataset1.ParamCheck := True;
 
-  SqlitePassDataset1.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE path=:PathAsString;';
-  SqlitePassDataset1.Params.ParamByName('PathAsString').Value := ('path');
+  SqlitePassDataset1.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE path LIKE :PathAsString;';
+  SqlitePassDataset1.Params.ParamByName('PathAsString').Value := 'Bonjour';
   SqlitePassDataset1.Open;
 end;
 
@@ -75,8 +75,8 @@ begin
   SqlitePassDataset1.Params.Clear;
   SqlitePassDataset1.ParamCheck := True;
 
-  SqlitePassDataset1.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE path=:PathAsWidestring;';
-  SqlitePassDataset1.Params.ParamByName('PathAsWidestring').Value := '1';
+  SqlitePassDataset1.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE path LIKE :PathAsWidestring;';
+  SqlitePassDataset1.Params.ParamByName('PathAsWidestring').Value := 'bonjour';
   SqlitePassDataset1.Open;
 end;
 

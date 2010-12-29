@@ -8,157 +8,157 @@
   compilateur n'est liée à l'exécutable produit.
 */
 
-#define VDBConsts_SRefreshRecord 65040
-#define VDBConsts_SDeleteRecordQuestion 65041
-#define VDBConsts_SDeleteMultipleRecordsQuestion 65042
-#define VDBConsts_SDataSourceFixed 65043
-#define VDBConsts_SPropDefByLookup 65044
-#define VDBConsts_STooManyColumns 65045
-#define VDBConsts_SRemoteLogin 65046
-#define JvResources_RsClInfoText 65056
-#define JvResources_RsClInfoBk 65057
-#define JvResources_RsGradientActiveCaption 65058
-#define JvResources_RsGradientInactiveCaption 65059
-#define JvResources_RsHotLight 65060
-#define JvResources_RsMenuBar 65061
-#define JvResources_RsMenuHighlight 65062
-#define VDBConsts_SFirstRecord 65063
-#define VDBConsts_SPriorRecord 65064
-#define VDBConsts_SNextRecord 65065
-#define VDBConsts_SLastRecord 65066
-#define VDBConsts_SInsertRecord 65067
-#define VDBConsts_SDeleteRecord 65068
-#define VDBConsts_SEditRecord 65069
-#define VDBConsts_SPostEdit 65070
-#define VDBConsts_SCancelEdit 65071
-#define JvResources_RsClMenuText 65072
-#define JvResources_RsClWindowText 65073
-#define JvResources_RsClCaptionText 65074
-#define JvResources_RsClActiveBorder 65075
-#define JvResources_RsClInactiveBorder 65076
-#define JvResources_RsClAppWorkSpace 65077
-#define JvResources_RsClHighlight 65078
-#define JvResources_RsClHighlightText 65079
-#define JvResources_RsClBtnFace 65080
-#define JvResources_RsClBtnShadow 65081
-#define JvResources_RsClGrayText 65082
-#define JvResources_RsClBtnText 65083
-#define JvResources_RsClInactiveCaptionText 65084
-#define JvResources_RsClBtnHighlight 65085
-#define JvResources_RsCl3DDkShadow 65086
-#define JvResources_RsCl3DLight 65087
-#define JvResources_RsClPlum 65088
-#define JvResources_RsClGray25 65089
-#define JvResources_RsClRose 65090
-#define JvResources_RsClTan 65091
-#define JvResources_RsClLightYellow 65092
-#define JvResources_RsClLightGreen 65093
-#define JvResources_RsClLightTurquoise 65094
-#define JvResources_RsClPaleBlue 65095
-#define JvResources_RsClLavender 65096
-#define JvResources_RsClScrollBar 65097
-#define JvResources_RsClBackground 65098
-#define JvResources_RsClActiveCaption 65099
-#define JvResources_RsClInactiveCaption 65100
-#define JvResources_RsClMenu 65101
-#define JvResources_RsClWindow 65102
-#define JvResources_RsClWindowFrame 65103
-#define JvResources_RsClIndigo 65104
-#define JvResources_RsClGray80 65105
-#define JvResources_RsClDarkRed 65106
-#define JvResources_RsClOrange 65107
-#define JvResources_RsClDarkYellow 65108
-#define JvResources_RsClBlueGray 65109
-#define JvResources_RsClGray50 65110
-#define JvResources_RsClLightOrange 65111
-#define JvResources_RsClSeaGreen 65112
-#define JvResources_RsClLightBlue 65113
-#define JvResources_RsClViolet 65114
-#define JvResources_RsClGray40 65115
-#define JvResources_RsClPink 65116
-#define JvResources_RsClGold 65117
-#define JvResources_RsClBrightGreen 65118
-#define JvResources_RsClTurquoise 65119
-#define JvResources_RsClRed 65120
-#define JvResources_RsClLime 65121
-#define JvResources_RsClYellow 65122
-#define JvResources_RsClBlue 65123
-#define JvResources_RsClFuchsia 65124
-#define JvResources_RsClAqua 65125
-#define JvResources_RsClWhite 65126
-#define JvResources_RsClMoneyGreen 65127
-#define JvResources_RsClSkyBlue 65128
-#define JvResources_RsClCream 65129
-#define JvResources_RsClMedGray 65130
-#define JvResources_RsClBrown 65131
-#define JvResources_RsClOliveGreen 65132
-#define JvResources_RsClDarkGreen 65133
-#define JvResources_RsClDarkTeal 65134
-#define JvResources_RsClDarkBlue 65135
-#define SqlitePassErrorLang_Msg3500 65136
-#define SqlitePassErrorLang_Msg3600 65137
-#define SqlitePassErrorLang_Msg3700 65138
-#define SqlitePassErrorLang_Msg3910 65139
-#define SqlitePassErrorLang_Msg3950 65140
-#define SqlitePassErrorLang_Msg3980 65141
-#define SqlitePassErrorLang_Msg4000 65142
-#define JvResources_RsClBlack 65143
-#define JvResources_RsClMaroon 65144
-#define JvResources_RsClGreen 65145
-#define JvResources_RsClOlive 65146
-#define JvResources_RsClNavy 65147
-#define JvResources_RsClPurple 65148
-#define JvResources_RsClTeal 65149
-#define JvResources_RsClGray 65150
-#define JvResources_RsClSilver 65151
-#define SqlitePassErrorLang_Msg2025 65152
-#define SqlitePassErrorLang_Msg2026 65153
-#define SqlitePassErrorLang_Msg2028 65154
-#define SqlitePassErrorLang_Msg2029 65155
-#define SqlitePassErrorLang_Msg2030 65156
-#define SqlitePassErrorLang_Msg2032 65157
-#define SqlitePassErrorLang_Msg2033 65158
-#define SqlitePassErrorLang_Msg2040 65159
-#define SqlitePassErrorLang_Msg2047 65160
-#define SqlitePassErrorLang_Msg2049 65161
-#define SqlitePassErrorLang_Msg2070 65162
-#define SqlitePassErrorLang_Msg2100 65163
-#define SqlitePassErrorLang_Msg3200 65164
-#define SqlitePassErrorLang_Msg3220 65165
-#define SqlitePassErrorLang_Msg3300 65166
-#define SqlitePassErrorLang_Msg3400 65167
-#define SqlitePassErrorLang_Msg1044 65168
-#define SqlitePassErrorLang_Msg1046 65169
-#define SqlitePassErrorLang_Msg1800 65170
-#define SqlitePassErrorLang_Msg3013 65171
-#define SqlitePassErrorLang_Msg3014 65172
-#define SqlitePassErrorLang_Msg3016 65173
-#define SqlitePassErrorLang_Msg2011 65174
-#define SqlitePassErrorLang_Msg2012 65175
-#define SqlitePassErrorLang_Msg2015 65176
-#define SqlitePassErrorLang_Msg2018 65177
-#define SqlitePassErrorLang_Msg1040 65178
-#define SqlitePassErrorLang_Msg2019 65179
-#define SqlitePassErrorLang_Msg2020 65180
-#define SqlitePassErrorLang_Msg2021 65181
-#define SqlitePassErrorLang_Msg2022 65182
-#define SqlitePassErrorLang_Msg2024 65183
+#define SqlitePassErrorLang_Msg3500 65040
+#define SqlitePassErrorLang_Msg3600 65041
+#define SqlitePassErrorLang_Msg3700 65042
+#define SqlitePassErrorLang_Msg3910 65043
+#define SqlitePassErrorLang_Msg3950 65044
+#define SqlitePassErrorLang_Msg3980 65045
+#define SqlitePassErrorLang_Msg4000 65046
+#define SqlitePassErrorLang_Msg2025 65056
+#define SqlitePassErrorLang_Msg2026 65057
+#define SqlitePassErrorLang_Msg2028 65058
+#define SqlitePassErrorLang_Msg2029 65059
+#define SqlitePassErrorLang_Msg2030 65060
+#define SqlitePassErrorLang_Msg2032 65061
+#define SqlitePassErrorLang_Msg2033 65062
+#define SqlitePassErrorLang_Msg2040 65063
+#define SqlitePassErrorLang_Msg2047 65064
+#define SqlitePassErrorLang_Msg2049 65065
+#define SqlitePassErrorLang_Msg2070 65066
+#define SqlitePassErrorLang_Msg2100 65067
+#define SqlitePassErrorLang_Msg3200 65068
+#define SqlitePassErrorLang_Msg3220 65069
+#define SqlitePassErrorLang_Msg3300 65070
+#define SqlitePassErrorLang_Msg3400 65071
+#define SqlitePassErrorLang_Msg1044 65072
+#define SqlitePassErrorLang_Msg1046 65073
+#define SqlitePassErrorLang_Msg1800 65074
+#define SqlitePassErrorLang_Msg3013 65075
+#define SqlitePassErrorLang_Msg3014 65076
+#define SqlitePassErrorLang_Msg3016 65077
+#define SqlitePassErrorLang_Msg2011 65078
+#define SqlitePassErrorLang_Msg2012 65079
+#define SqlitePassErrorLang_Msg2015 65080
+#define SqlitePassErrorLang_Msg2018 65081
+#define SqlitePassErrorLang_Msg1040 65082
+#define SqlitePassErrorLang_Msg2019 65083
+#define SqlitePassErrorLang_Msg2020 65084
+#define SqlitePassErrorLang_Msg2021 65085
+#define SqlitePassErrorLang_Msg2022 65086
+#define SqlitePassErrorLang_Msg2024 65087
+#define JvResources_RsHotLight 65088
+#define JvResources_RsMenuBar 65089
+#define JvResources_RsMenuHighlight 65090
+#define SqlitePassErrorLang_CRLF 65091
+#define SqlitePassErrorLang_Msg1003 65092
+#define SqlitePassErrorLang_SqlitePassListIndexError 65093
+#define SqlitePassErrorLang_SqlitePassListCapacityError 65094
+#define SqlitePassErrorLang_SqlitePassListCountError 65095
+#define SqlitePassErrorLang_Msg3000 65096
+#define SqlitePassErrorLang_Msg3001 65097
+#define SqlitePassErrorLang_Msg3002 65098
+#define SqlitePassErrorLang_Msg1005 65099
+#define SqlitePassErrorLang_Msg1007 65100
+#define SqlitePassErrorLang_Msg1010 65101
+#define SqlitePassErrorLang_Msg1038 65102
+#define SqlitePassErrorLang_Msg1041 65103
+#define JvResources_RsClInactiveBorder 65104
+#define JvResources_RsClAppWorkSpace 65105
+#define JvResources_RsClHighlight 65106
+#define JvResources_RsClHighlightText 65107
+#define JvResources_RsClBtnFace 65108
+#define JvResources_RsClBtnShadow 65109
+#define JvResources_RsClGrayText 65110
+#define JvResources_RsClBtnText 65111
+#define JvResources_RsClInactiveCaptionText 65112
+#define JvResources_RsClBtnHighlight 65113
+#define JvResources_RsCl3DDkShadow 65114
+#define JvResources_RsCl3DLight 65115
+#define JvResources_RsClInfoText 65116
+#define JvResources_RsClInfoBk 65117
+#define JvResources_RsGradientActiveCaption 65118
+#define JvResources_RsGradientInactiveCaption 65119
+#define JvResources_RsClLightYellow 65120
+#define JvResources_RsClLightGreen 65121
+#define JvResources_RsClLightTurquoise 65122
+#define JvResources_RsClPaleBlue 65123
+#define JvResources_RsClLavender 65124
+#define JvResources_RsClScrollBar 65125
+#define JvResources_RsClBackground 65126
+#define JvResources_RsClActiveCaption 65127
+#define JvResources_RsClInactiveCaption 65128
+#define JvResources_RsClMenu 65129
+#define JvResources_RsClWindow 65130
+#define JvResources_RsClWindowFrame 65131
+#define JvResources_RsClMenuText 65132
+#define JvResources_RsClWindowText 65133
+#define JvResources_RsClCaptionText 65134
+#define JvResources_RsClActiveBorder 65135
+#define JvResources_RsClDarkYellow 65136
+#define JvResources_RsClBlueGray 65137
+#define JvResources_RsClGray50 65138
+#define JvResources_RsClLightOrange 65139
+#define JvResources_RsClSeaGreen 65140
+#define JvResources_RsClLightBlue 65141
+#define JvResources_RsClViolet 65142
+#define JvResources_RsClGray40 65143
+#define JvResources_RsClPink 65144
+#define JvResources_RsClGold 65145
+#define JvResources_RsClBrightGreen 65146
+#define JvResources_RsClTurquoise 65147
+#define JvResources_RsClPlum 65148
+#define JvResources_RsClGray25 65149
+#define JvResources_RsClRose 65150
+#define JvResources_RsClTan 65151
+#define JvResources_RsClFuchsia 65152
+#define JvResources_RsClAqua 65153
+#define JvResources_RsClWhite 65154
+#define JvResources_RsClMoneyGreen 65155
+#define JvResources_RsClSkyBlue 65156
+#define JvResources_RsClCream 65157
+#define JvResources_RsClMedGray 65158
+#define JvResources_RsClBrown 65159
+#define JvResources_RsClOliveGreen 65160
+#define JvResources_RsClDarkGreen 65161
+#define JvResources_RsClDarkTeal 65162
+#define JvResources_RsClDarkBlue 65163
+#define JvResources_RsClIndigo 65164
+#define JvResources_RsClGray80 65165
+#define JvResources_RsClDarkRed 65166
+#define JvResources_RsClOrange 65167
+#define VDBConsts_SPropDefByLookup 65168
+#define VDBConsts_STooManyColumns 65169
+#define VDBConsts_SRemoteLogin 65170
+#define JvResources_RsClBlack 65171
+#define JvResources_RsClMaroon 65172
+#define JvResources_RsClGreen 65173
+#define JvResources_RsClOlive 65174
+#define JvResources_RsClNavy 65175
+#define JvResources_RsClPurple 65176
+#define JvResources_RsClTeal 65177
+#define JvResources_RsClGray 65178
+#define JvResources_RsClSilver 65179
+#define JvResources_RsClRed 65180
+#define JvResources_RsClLime 65181
+#define JvResources_RsClYellow 65182
+#define JvResources_RsClBlue 65183
 #define ComConst_SNoMethod 65184
 #define ComConst_SVarNotObject 65185
 #define ComConst_STooManyParams 65186
-#define SqlitePassErrorLang_CRLF 65187
-#define SqlitePassErrorLang_Msg1003 65188
-#define SqlitePassErrorLang_SqlitePassListIndexError 65189
-#define SqlitePassErrorLang_SqlitePassListCapacityError 65190
-#define SqlitePassErrorLang_SqlitePassListCountError 65191
-#define SqlitePassErrorLang_Msg3000 65192
-#define SqlitePassErrorLang_Msg3001 65193
-#define SqlitePassErrorLang_Msg3002 65194
-#define SqlitePassErrorLang_Msg1005 65195
-#define SqlitePassErrorLang_Msg1007 65196
-#define SqlitePassErrorLang_Msg1010 65197
-#define SqlitePassErrorLang_Msg1038 65198
-#define SqlitePassErrorLang_Msg1041 65199
+#define VDBConsts_SFirstRecord 65187
+#define VDBConsts_SPriorRecord 65188
+#define VDBConsts_SNextRecord 65189
+#define VDBConsts_SLastRecord 65190
+#define VDBConsts_SInsertRecord 65191
+#define VDBConsts_SDeleteRecord 65192
+#define VDBConsts_SEditRecord 65193
+#define VDBConsts_SPostEdit 65194
+#define VDBConsts_SCancelEdit 65195
+#define VDBConsts_SRefreshRecord 65196
+#define VDBConsts_SDeleteRecordQuestion 65197
+#define VDBConsts_SDeleteMultipleRecordsQuestion 65198
+#define VDBConsts_SDataSourceFixed 65199
 #define DBConsts_STextFalse 65200
 #define DBConsts_STextTrue 65201
 #define DBConsts_SParameterNotFound 65202
@@ -497,93 +497,6 @@
 #define SysConst_SZeroDivide 65535
 STRINGTABLE
 BEGIN
-	VDBConsts_SRefreshRecord,	"Actualiser les données"
-	VDBConsts_SDeleteRecordQuestion,	"Supprimer l'enregistrement ?"
-	VDBConsts_SDeleteMultipleRecordsQuestion,	"Supprimer tous les enregistrements sélectionnés ?"
-	VDBConsts_SDataSourceFixed,	"Opération non autorisée dans un DBCtrlGrid"
-	VDBConsts_SPropDefByLookup,	"Propriété déjà définie dans un DBCtrlGrid"
-	VDBConsts_STooManyColumns,	"La grille nécessitait d'afficher plus de 256 colonnes"
-	VDBConsts_SRemoteLogin,	"Connexion distante"
-	JvResources_RsClInfoText,	"Tooltip text"
-	JvResources_RsClInfoBk,	"Tooltip background"
-	JvResources_RsGradientActiveCaption,	"Gradient Active Caption"
-	JvResources_RsGradientInactiveCaption,	"Gradient Inactive Caption"
-	JvResources_RsHotLight,	"Hot Light"
-	JvResources_RsMenuBar,	"Menu Bar"
-	JvResources_RsMenuHighlight,	"Menu Highlight"
-	VDBConsts_SFirstRecord,	"Premier enregistrement"
-	VDBConsts_SPriorRecord,	"Enregistrement précédent"
-	VDBConsts_SNextRecord,	"Enregistrement suivant"
-	VDBConsts_SLastRecord,	"Dernier enregistrement"
-	VDBConsts_SInsertRecord,	"Insérer enregistrement"
-	VDBConsts_SDeleteRecord,	"Supprimer l'enregistrement"
-	VDBConsts_SEditRecord,	"Modifier l'enregistrement"
-	VDBConsts_SPostEdit,	"Valider modifications"
-	VDBConsts_SCancelEdit,	"Annuler les modifications"
-	JvResources_RsClMenuText,	"Menu text"
-	JvResources_RsClWindowText,	"Window text"
-	JvResources_RsClCaptionText,	"Active window title bar text"
-	JvResources_RsClActiveBorder,	"Active window border"
-	JvResources_RsClInactiveBorder,	"Inactive window border"
-	JvResources_RsClAppWorkSpace,	"Application workspace"
-	JvResources_RsClHighlight,	"Selection background"
-	JvResources_RsClHighlightText,	"Selection text"
-	JvResources_RsClBtnFace,	"Button face"
-	JvResources_RsClBtnShadow,	"Button shadow"
-	JvResources_RsClGrayText,	"Dimmed text"
-	JvResources_RsClBtnText,	"Button text"
-	JvResources_RsClInactiveCaptionText,	"Inactive window title bar text"
-	JvResources_RsClBtnHighlight,	"Button highlight"
-	JvResources_RsCl3DDkShadow,	"Dark shadow 3D elements"
-	JvResources_RsCl3DLight,	"Highlight 3D elements"
-	JvResources_RsClPlum,	"Plum"
-	JvResources_RsClGray25,	"Gray 25%"
-	JvResources_RsClRose,	"Rose"
-	JvResources_RsClTan,	"Tan"
-	JvResources_RsClLightYellow,	"Light Yellow"
-	JvResources_RsClLightGreen,	"Light Green"
-	JvResources_RsClLightTurquoise,	"Light Turquoise"
-	JvResources_RsClPaleBlue,	"Pale Blue"
-	JvResources_RsClLavender,	"Lavender"
-	JvResources_RsClScrollBar,	"Scrollbar"
-	JvResources_RsClBackground,	"Desktop background"
-	JvResources_RsClActiveCaption,	"Active window title bar"
-	JvResources_RsClInactiveCaption,	"Inactive window title bar"
-	JvResources_RsClMenu,	"Menu background"
-	JvResources_RsClWindow,	"Window background"
-	JvResources_RsClWindowFrame,	"Window frame"
-	JvResources_RsClIndigo,	"Indigo"
-	JvResources_RsClGray80,	"Gray 80%"
-	JvResources_RsClDarkRed,	"Dark Red"
-	JvResources_RsClOrange,	"Orange"
-	JvResources_RsClDarkYellow,	"Dark Yellow"
-	JvResources_RsClBlueGray,	"Blue Gray"
-	JvResources_RsClGray50,	"Gray 50%"
-	JvResources_RsClLightOrange,	"Light Orange"
-	JvResources_RsClSeaGreen,	"Sea Green"
-	JvResources_RsClLightBlue,	"Light Blue"
-	JvResources_RsClViolet,	"Violet"
-	JvResources_RsClGray40,	"Gray 40%"
-	JvResources_RsClPink,	"Pink"
-	JvResources_RsClGold,	"Gold"
-	JvResources_RsClBrightGreen,	"Bright Green"
-	JvResources_RsClTurquoise,	"Turquoise"
-	JvResources_RsClRed,	"Red"
-	JvResources_RsClLime,	"Lime"
-	JvResources_RsClYellow,	"Yellow"
-	JvResources_RsClBlue,	"Blue"
-	JvResources_RsClFuchsia,	"Fuchsia"
-	JvResources_RsClAqua,	"Aqua"
-	JvResources_RsClWhite,	"White"
-	JvResources_RsClMoneyGreen,	"Money green"
-	JvResources_RsClSkyBlue,	"Sky blue"
-	JvResources_RsClCream,	"Cream"
-	JvResources_RsClMedGray,	"Medium gray"
-	JvResources_RsClBrown,	"Brown"
-	JvResources_RsClOliveGreen,	"Olive Green"
-	JvResources_RsClDarkGreen,	"Dark Green"
-	JvResources_RsClDarkTeal,	"Dark Teal"
-	JvResources_RsClDarkBlue,	"Dark Blue"
 	SqlitePassErrorLang_Msg3500,	"TSqlitePassTriggers.TriggerByName : Requested Trigger not found"
 	SqlitePassErrorLang_Msg3600,	"TSqlitePassFieldDefs.FieldByName : Requested FieldDef not found"
 	SqlitePassErrorLang_Msg3700,	"TSqlitePassTableDefs.TableByName : Requested TableDef not found"
@@ -591,15 +504,6 @@ BEGIN
 	SqlitePassErrorLang_Msg3950,	"TSqlitePassSelectStmts.SQLStmtByName : Requested SQLStmt not found"
 	SqlitePassErrorLang_Msg3980,	"TSqlitePassTranslator.GetDatabaseTableFieldDefs :\r\nUnable to retrieve fields definitions for table %s ."
 	SqlitePassErrorLang_Msg4000,	"TSqlitePassTranslator_Kexi.GetDatabaseTableFieldDefs : Error while opening system dataset : %s"
-	JvResources_RsClBlack,	"Black"
-	JvResources_RsClMaroon,	"Maroon"
-	JvResources_RsClGreen,	"Green"
-	JvResources_RsClOlive,	"Olive green"
-	JvResources_RsClNavy,	"Navy blue"
-	JvResources_RsClPurple,	"Purple"
-	JvResources_RsClTeal,	"Teal"
-	JvResources_RsClGray,	"Gray"
-	JvResources_RsClSilver,	"Silver"
 	SqlitePassErrorLang_Msg2025,	"TSqlitePassDataset.InitFieldDefs : Columns count from parsed SQL statement doesn't match SQLite engine columns count."
 	SqlitePassErrorLang_Msg2026,	"TSqlitePassDataset.SetMasterDataSource : Datasource circular reference not supported"
 	SqlitePassErrorLang_Msg2028,	"TSqlitePassDataset.SetFDatasetName : This will clear all defined fields. Do ou want to continue ?"
@@ -632,9 +536,9 @@ BEGIN
 	SqlitePassErrorLang_Msg2021,	"TSqlitePassDataset.Open : Unable to open Dataset because the Database is not connected. Check the components create order of your form. The database must be created before the datasets"
 	SqlitePassErrorLang_Msg2022,	"TSqlitePassDataset.Post : Error while posting record. The PrimaryKey value is already present in the dataset or an internal constraint prevents data change..."
 	SqlitePassErrorLang_Msg2024,	"TSqlitePassDataset.Delete : Error while deleting record."
-	ComConst_SNoMethod,	"Méthode '%s' non supportée par l'objet Automation"
-	ComConst_SVarNotObject,	"Le variant ne référence pas un objet Automation"
-	ComConst_STooManyParams,	"Les méthodes Dispatch ne gèrent pas plus de 64 paramètres"
+	JvResources_RsHotLight,	"Hot Light"
+	JvResources_RsMenuBar,	"Menu Bar"
+	JvResources_RsMenuHighlight,	"Menu Highlight"
 	SqlitePassErrorLang_CRLF,	"\r\n"
 	SqlitePassErrorLang_Msg1003,	"A %s component has raised an exception."
 	SqlitePassErrorLang_SqlitePassListIndexError,	"Error while accessing list item %s"
@@ -648,6 +552,102 @@ BEGIN
 	SqlitePassErrorLang_Msg1010,	"%s : Cannot set the %s property while Database is connected."
 	SqlitePassErrorLang_Msg1038,	"Cannot find Database :"
 	SqlitePassErrorLang_Msg1041,	"TSqlitePassDatabase.AttachDatabase : Database type mismatch."
+	JvResources_RsClInactiveBorder,	"Inactive window border"
+	JvResources_RsClAppWorkSpace,	"Application workspace"
+	JvResources_RsClHighlight,	"Selection background"
+	JvResources_RsClHighlightText,	"Selection text"
+	JvResources_RsClBtnFace,	"Button face"
+	JvResources_RsClBtnShadow,	"Button shadow"
+	JvResources_RsClGrayText,	"Dimmed text"
+	JvResources_RsClBtnText,	"Button text"
+	JvResources_RsClInactiveCaptionText,	"Inactive window title bar text"
+	JvResources_RsClBtnHighlight,	"Button highlight"
+	JvResources_RsCl3DDkShadow,	"Dark shadow 3D elements"
+	JvResources_RsCl3DLight,	"Highlight 3D elements"
+	JvResources_RsClInfoText,	"Tooltip text"
+	JvResources_RsClInfoBk,	"Tooltip background"
+	JvResources_RsGradientActiveCaption,	"Gradient Active Caption"
+	JvResources_RsGradientInactiveCaption,	"Gradient Inactive Caption"
+	JvResources_RsClLightYellow,	"Light Yellow"
+	JvResources_RsClLightGreen,	"Light Green"
+	JvResources_RsClLightTurquoise,	"Light Turquoise"
+	JvResources_RsClPaleBlue,	"Pale Blue"
+	JvResources_RsClLavender,	"Lavender"
+	JvResources_RsClScrollBar,	"Scrollbar"
+	JvResources_RsClBackground,	"Desktop background"
+	JvResources_RsClActiveCaption,	"Active window title bar"
+	JvResources_RsClInactiveCaption,	"Inactive window title bar"
+	JvResources_RsClMenu,	"Menu background"
+	JvResources_RsClWindow,	"Window background"
+	JvResources_RsClWindowFrame,	"Window frame"
+	JvResources_RsClMenuText,	"Menu text"
+	JvResources_RsClWindowText,	"Window text"
+	JvResources_RsClCaptionText,	"Active window title bar text"
+	JvResources_RsClActiveBorder,	"Active window border"
+	JvResources_RsClDarkYellow,	"Dark Yellow"
+	JvResources_RsClBlueGray,	"Blue Gray"
+	JvResources_RsClGray50,	"Gray 50%"
+	JvResources_RsClLightOrange,	"Light Orange"
+	JvResources_RsClSeaGreen,	"Sea Green"
+	JvResources_RsClLightBlue,	"Light Blue"
+	JvResources_RsClViolet,	"Violet"
+	JvResources_RsClGray40,	"Gray 40%"
+	JvResources_RsClPink,	"Pink"
+	JvResources_RsClGold,	"Gold"
+	JvResources_RsClBrightGreen,	"Bright Green"
+	JvResources_RsClTurquoise,	"Turquoise"
+	JvResources_RsClPlum,	"Plum"
+	JvResources_RsClGray25,	"Gray 25%"
+	JvResources_RsClRose,	"Rose"
+	JvResources_RsClTan,	"Tan"
+	JvResources_RsClFuchsia,	"Fuchsia"
+	JvResources_RsClAqua,	"Aqua"
+	JvResources_RsClWhite,	"White"
+	JvResources_RsClMoneyGreen,	"Money green"
+	JvResources_RsClSkyBlue,	"Sky blue"
+	JvResources_RsClCream,	"Cream"
+	JvResources_RsClMedGray,	"Medium gray"
+	JvResources_RsClBrown,	"Brown"
+	JvResources_RsClOliveGreen,	"Olive Green"
+	JvResources_RsClDarkGreen,	"Dark Green"
+	JvResources_RsClDarkTeal,	"Dark Teal"
+	JvResources_RsClDarkBlue,	"Dark Blue"
+	JvResources_RsClIndigo,	"Indigo"
+	JvResources_RsClGray80,	"Gray 80%"
+	JvResources_RsClDarkRed,	"Dark Red"
+	JvResources_RsClOrange,	"Orange"
+	VDBConsts_SPropDefByLookup,	"Propriété déjà définie dans un DBCtrlGrid"
+	VDBConsts_STooManyColumns,	"La grille nécessitait d'afficher plus de 256 colonnes"
+	VDBConsts_SRemoteLogin,	"Connexion distante"
+	JvResources_RsClBlack,	"Black"
+	JvResources_RsClMaroon,	"Maroon"
+	JvResources_RsClGreen,	"Green"
+	JvResources_RsClOlive,	"Olive green"
+	JvResources_RsClNavy,	"Navy blue"
+	JvResources_RsClPurple,	"Purple"
+	JvResources_RsClTeal,	"Teal"
+	JvResources_RsClGray,	"Gray"
+	JvResources_RsClSilver,	"Silver"
+	JvResources_RsClRed,	"Red"
+	JvResources_RsClLime,	"Lime"
+	JvResources_RsClYellow,	"Yellow"
+	JvResources_RsClBlue,	"Blue"
+	ComConst_SNoMethod,	"Méthode '%s' non supportée par l'objet Automation"
+	ComConst_SVarNotObject,	"Le variant ne référence pas un objet Automation"
+	ComConst_STooManyParams,	"Les méthodes Dispatch ne gèrent pas plus de 64 paramètres"
+	VDBConsts_SFirstRecord,	"Premier enregistrement"
+	VDBConsts_SPriorRecord,	"Enregistrement précédent"
+	VDBConsts_SNextRecord,	"Enregistrement suivant"
+	VDBConsts_SLastRecord,	"Dernier enregistrement"
+	VDBConsts_SInsertRecord,	"Insérer enregistrement"
+	VDBConsts_SDeleteRecord,	"Supprimer l'enregistrement"
+	VDBConsts_SEditRecord,	"Modifier l'enregistrement"
+	VDBConsts_SPostEdit,	"Valider modifications"
+	VDBConsts_SCancelEdit,	"Annuler les modifications"
+	VDBConsts_SRefreshRecord,	"Actualiser les données"
+	VDBConsts_SDeleteRecordQuestion,	"Supprimer l'enregistrement ?"
+	VDBConsts_SDeleteMultipleRecordsQuestion,	"Supprimer tous les enregistrements sélectionnés ?"
+	VDBConsts_SDataSourceFixed,	"Opération non autorisée dans un DBCtrlGrid"
 	DBConsts_STextFalse,	"Faux"
 	DBConsts_STextTrue,	"Vrai"
 	DBConsts_SParameterNotFound,	"Paramètres '%s' non trouvés"
@@ -989,13 +989,13 @@ END
 /* c:\program files (x86)\embarcadero\rad studio\7.0\lib\character.res */
 /* C:\Program Files (x86)\EurekaLog 6\Delphi14\DIALOG.RES */
 /* c:\program files (x86)\embarcadero\rad studio\7.0\lib\Controls.res */
-/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Sources\Debug\SqlitePassDebug.DFM */
 /* c:\program files (x86)\embarcadero\rad studio\7.0\lib\Buttons.res */
-/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Sources\SqlitePassErrorLogDialog.DFM */
 /* c:\program files (x86)\embarcadero\rad studio\7.0\lib\DBPWDlg.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\7.0\lib\DBLogDlg.dfm */
 /* c:\program files (x86)\embarcadero\rad studio\7.0\lib\DBCtrls.res */
 /* c:\program files (x86)\embarcadero\rad studio\7.0\lib\DBGrids.res */
-/* Unit1.dfm */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\SQLitePassTest\Project1.res */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\SQLitePassTest\Project1.drf */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\Debug\SqlitePassDebug.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\SqlitePassErrorLogDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Demo\Unit1.dfm */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Demo\Project1.res */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Demo\Project1.drf */

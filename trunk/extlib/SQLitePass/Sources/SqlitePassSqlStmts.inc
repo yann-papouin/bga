@@ -816,7 +816,7 @@ if not (aoInsert in FAvailableOperations) then Exit;
            then SqliteDbv3_bind_null(FInsertStmt, Succ(i))
            else begin
                 FieldBuffer := FTableDefs.FSQLStmt.FDataset.FRecordset.GetFieldValueBuffer(RecordBuffer, FRecordFieldIndex);
-                BindValue(FTableDefs.FSQLStmt.FDataset.FRecordset,
+                BindValue(FTableDefs.FSQLStmt.FDataset.FDatabase, FTableDefs.FSQLStmt.FDataset.FRecordset,
                           FieldBuffer,
                           FInsertStmt,
                           Succ(i));
@@ -875,7 +875,7 @@ begin
                    then SqliteDbv3_bind_null(FUpdateStmt, StmtFieldCount)
                    else begin
                         FieldBuffer := FTableDefs.FSQLStmt.FDataset.FRecordset.GetFieldValueBuffer(RecordBuffer, FRecordFieldIndex);
-                        BindValue(FTableDefs.FSQLStmt.FDataset.FRecordset,
+                        BindValue(FTableDefs.FSQLStmt.FDataset.FDatabase, FTableDefs.FSQLStmt.FDataset.FRecordset,
                                   FieldBuffer,
                                   FUpdateStmt,
                                   StmtFieldCount);
@@ -927,7 +927,8 @@ end;
 { Translates a value from internal buffer to an sqlite value.
   Then binds this value to parameter in INSERT - UPDATE - DELETE SQL statement }
 procedure BindDummyFieldValueBufferToSqliteValue
-          (Const Recordset: TSqlitePassRecordset;
+          (Const Database: TSqlitePassDatabase;
+           Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
@@ -937,14 +938,15 @@ begin
 end;
 
 procedure BindWordBoolFieldValueBufferToSqliteValue
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 var
 IntegerValue: Integer;
 begin
- With Recordset.FDataset.FDatabase do
+ With Database do
       begin
       FTranslator.WordBoolToInteger(PWordBool(FieldValueBuffer)^, IntegerValue);
       FEngine.CheckResult(SqliteDbv3_bind_int64(PreparedStmt, PreparedStmtFieldNo, IntegerValue));
@@ -955,7 +957,8 @@ end;
 {$WARNINGS OFF}
 {$ENDIF}
 procedure BindWordBoolFieldValueBufferToSqliteValueAsText
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
@@ -963,7 +966,7 @@ var
 StrValue: String;
 UTF8StrValue: UTF8AnsiString;
 begin
- With Recordset.FDataset.FDatabase do
+ With Database do
       begin
       FTranslator.WordBoolToBooleanText(PWordBool(FieldValueBuffer)^, StrValue);
       FTranslator.SystemEncodingToUTF8(StrValue, UTF8StrValue);
@@ -975,39 +978,43 @@ end;
 {$ENDIF}
 
 procedure BindIntegerFieldValueBufferToSqliteValue
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 begin
- Recordset.FDataset.FDatabase.FEngine.CheckResult(SqliteDbv3_bind_int(PreparedStmt, PreparedStmtFieldNo, PInteger(FieldValueBuffer)^));
+ Database.FEngine.CheckResult(SqliteDbv3_bind_int(PreparedStmt, PreparedStmtFieldNo, PInteger(FieldValueBuffer)^));
 end;
 
 procedure BindInt64FieldValueBufferToSqliteValue
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 begin
- Recordset.FDataset.FDatabase.FEngine.CheckResult(SqliteDbv3_bind_int64(PreparedStmt, PreparedStmtFieldNo, PInt64(FieldValueBuffer)^));
+ Database.FEngine.CheckResult(SqliteDbv3_bind_int64(PreparedStmt, PreparedStmtFieldNo, PInt64(FieldValueBuffer)^));
 end;
 
 procedure BindDoubleFieldValueBufferToSqliteValue
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 begin
- Recordset.FDataset.FDatabase.FEngine.CheckResult(SqliteDbv3_bind_double(PreparedStmt, PreparedStmtFieldNo, PDouble(FieldValueBuffer)^));
+ Database.FEngine.CheckResult(SqliteDbv3_bind_double(PreparedStmt, PreparedStmtFieldNo, PDouble(FieldValueBuffer)^));
 end;
 
 procedure BindCurrencyFieldValueBufferToSqliteValue
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 begin
- Recordset.FDataset.FDatabase.FEngine.CheckResult(SqliteDbv3_bind_Int64(PreparedStmt, PreparedStmtFieldNo, PInt64(FieldValueBuffer)^));
+ Database.FEngine.CheckResult(SqliteDbv3_bind_Int64(PreparedStmt, PreparedStmtFieldNo, PInt64(FieldValueBuffer)^));
 end;
 
 
@@ -1015,7 +1022,8 @@ end;
 {$WARNINGS OFF}
 {$ENDIF}
 procedure BindDateFieldValueBufferToSqliteValueAsText
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
@@ -1023,7 +1031,7 @@ var
 StrValue: String;
 UTF8StrValue: UTF8AnsiString;
 begin
- With Recordset.FDataset.FDatabase do
+ With Database do
       begin
       FTranslator.IntegerToDateText(PInteger(FieldValueBuffer)^, StrValue);
       FTranslator.SystemEncodingToUTF8(StrValue, UTF8StrValue);
@@ -1032,7 +1040,8 @@ begin
 end;
 
 procedure BindTimeFieldValueBufferToSqliteValueAsText
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
@@ -1040,7 +1049,7 @@ var
 StrValue: String;
 UTF8StrValue: UTF8AnsiString;
 begin
- With Recordset.FDataset.FDatabase do
+ With Database do
       begin
       FTranslator.IntegerToTimeText(PInteger(FieldValueBuffer)^, StrValue);
       FTranslator.SystemEncodingToUTF8(StrValue, UTF8StrValue);
@@ -1050,7 +1059,8 @@ end;
 
 
 procedure BindDateTimeFieldValueBufferToSqliteValueAsText
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
@@ -1058,7 +1068,7 @@ var
 StrValue: String;
 UTF8StrValue: UTF8AnsiString;
 begin
- With Recordset.FDataset.FDatabase do
+ With Database do
       begin
       FTranslator.DoubleToDateTimeText(PDouble(FieldValueBuffer)^, StrValue);
       FTranslator.SystemEncodingToUTF8(StrValue, UTF8StrValue);
@@ -1071,14 +1081,16 @@ end;
 
 
 procedure BindDateTimeFieldValueBufferToSqliteValueAsJulianDateTime
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 var
 DoubleValue: Double;
 begin
- With Recordset.FDataset.FDatabase do
+
+ With Database do
       begin
       FTranslator.DoubleToJulianDateTime(PDouble(FieldValueBuffer)^, DoubleValue);
       FEngine.CheckResult(SqliteDbv3_bind_double(PreparedStmt, PreparedStmtFieldNo, DoubleValue))
@@ -1086,14 +1098,15 @@ begin
 end;
 
 procedure BindDateTimeFieldValueBufferToSqliteValueAsUnixDateTime
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 var
 Int64Value: Int64;
 begin
- With Recordset.FDataset.FDatabase do
+ With Database do
       begin
       FTranslator.DoubleToUnixDateTime(PDouble(FieldValueBuffer)^, Int64Value);
       FEngine.CheckResult(SqliteDbv3_bind_int64(PreparedStmt, PreparedStmtFieldNo, Int64Value));
@@ -1101,14 +1114,15 @@ begin
 end;
 
 procedure BindDateTimeFieldValueBufferToSqliteValueAsMacDateTime
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 var
 Int64Value: Int64;
 begin
- With Recordset.FDataset.FDatabase do
+ With Database do
       begin
       FTranslator.DoubleToMacDateTime(PDouble(FieldValueBuffer)^, Int64Value);
       FEngine.CheckResult(SqliteDbv3_bind_int64(PreparedStmt, PreparedStmtFieldNo, Int64Value));
@@ -1117,20 +1131,26 @@ end;
 
 
 procedure BindAnsiStringFieldValueBufferToSqliteValueAsUTF8
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 var
 UTF8StrValue: UTF8AnsiString;
 begin
- UTF8StrValue := SqlitePassUtils.AnsiToUTF8(Recordset.GetFieldAsAnsiString(FieldValueBuffer));
- With Recordset.FDataset.FDatabase
+  if Assigned(Recordset) then
+   UTF8StrValue := SqlitePassUtils.AnsiToUTF8(Recordset.GetFieldAsAnsiString(FieldValueBuffer))
+  else
+    UTF8StrValue := SqlitePassUtils.AnsiToUTF8(PAnsiChar(FieldValueBuffer));
+
+ With Database
       do FEngine.CheckResult(SqliteDbv3_bind_text(PreparedStmt, PreparedStmtFieldNo, pAnsiChar(UTF8StrValue), Length(UTF8StrValue), SQLITE_TRANSIENT));
 end;
 
 procedure BindUTF8AnsiStringFieldValueBufferToSqliteValueAsUTF8
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
@@ -1138,13 +1158,18 @@ var
 UTF8StrValue: UTF8AnsiString;
 test : AnsiString;
 begin
- UTF8StrValue := Recordset.GetFieldAsAnsiString(FieldValueBuffer);
- With Recordset.FDataset.FDatabase
+  if Assigned(Recordset) then
+    UTF8StrValue := Recordset.GetFieldAsAnsiString(FieldValueBuffer)
+  else
+    UTF8StrValue := SqlitePassUtils.AnsiToUTF8(PAnsiChar(FieldValueBuffer));
+
+ With Database
       do FEngine.CheckResult(SqliteDbv3_bind_text(PreparedStmt, PreparedStmtFieldNo, pAnsiChar(UTF8StrValue), Length(UTF8StrValue), SQLITE_TRANSIENT));
 end;
 
 procedure BindUTF8AnsiStringFieldValueBufferToSqliteValueAsUTF16
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
@@ -1157,25 +1182,31 @@ begin
   else
     UTF16StrValue := SqlitePassUtils.UTF8Encode(PAnsiChar(FieldValueBuffer));
 
-  with Recordset.FDataset.FDatabase
+  with Database
       do FEngine.CheckResult(SqliteDbv3_bind_text16(PreparedStmt, PreparedStmtFieldNo, pWideChar(UTF16StrValue), Length(UTF16StrValue) * 2, SQLITE_TRANSIENT));
 end;
 
 procedure BindWideStringFieldValueBufferToSqliteValueAsUTF16
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 var
 UTF16StrValue: UTF16WideString;
 begin
- UTF16StrValue := Recordset.GetFieldAsWideString(FieldValueBuffer);
- With Recordset.FDataset.FDatabase
+  if Assigned(Recordset) then
+    UTF16StrValue := Recordset.GetFieldAsWideString(FieldValueBuffer)
+  else
+    UTF16StrValue := PWideChar(FieldValueBuffer);
+
+ With Database
       do FEngine.CheckResult(SqliteDbv3_bind_text16(PreparedStmt, PreparedStmtFieldNo, pWideChar(UTF16StrValue), Length(UTF16StrValue)* 2, SQLITE_TRANSIENT));
 end;
 
 procedure BindBlobFieldValueBufferToSqliteValue
-          (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
            Const FieldValueBuffer: PRecBuffer;
            Const PreparedStmt: Pointer;
            Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
@@ -1184,7 +1215,7 @@ MemoryStream: TMemoryStream;
 begin
  MemoryStream := Recordset.GetFieldAsBlob(FieldValueBuffer);
  if Assigned(MemoryStream)
-    then Recordset.FDataset.FDatabase.Engine.CheckResult(
+    then Database.Engine.CheckResult(
          SqliteDbv3_bind_blob(PreparedStmt,
                               PreparedStmtFieldNo,
                               MemoryStream.Memory,

@@ -8,66 +8,44 @@
   compilateur n'est liée à l'exécutable produit.
 */
 
-#define SqlitePassDesignErrorLang_Msg1027 65488
-#define SqlitePassDesignErrorLang_Msg1029 65489
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterShortcut 65504
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffCaption 65505
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffHintOn 65506
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffHintOff 65507
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffShortcut 65508
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordCaption 65509
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordHint 65510
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordShortcut 65511
-#define SqlitePassDesignErrorLang_CRLF 65512
-#define SqlitePassDesignErrorLang_Msg1000 65513
-#define SqlitePassDesignErrorLang_Msg1005 65514
-#define SqlitePassDesignErrorLang_Msg1010 65515
-#define SqlitePassDesignErrorLang_Msg1015 65516
-#define SqlitePassDesignErrorLang_Msg1017 65517
-#define SqlitePassDesignErrorLang_Msg1020 65518
-#define SqlitePassDesignErrorLang_Msg1025 65519
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscCaption 65520
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscHint 65521
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscShortcut 65522
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescCaption 65523
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescHint 65524
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescShortcut 65525
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortCaption 65526
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortHint 65527
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortShortcut 65528
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsFilterOnSelectionCaption 65529
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsFilterOnSelectionHintOn 65530
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsFilterOnSelectionHintOff 65531
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsFilterOnSelectionShortcut 65532
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterCaption 65533
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterHintOn 65534
-#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterHintOff 65535
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordHint 65488
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordShortcut 65489
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortCaption 65504
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortHint 65505
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortShortcut 65506
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsFilterOnSelectionCaption 65507
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsFilterOnSelectionHintOn 65508
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsFilterOnSelectionHintOff 65509
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsFilterOnSelectionShortcut 65510
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterCaption 65511
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterHintOn 65512
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterHintOff 65513
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterShortcut 65514
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffCaption 65515
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffHintOn 65516
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffHintOff 65517
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffShortcut 65518
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordCaption 65519
+#define SqlitePassDesignErrorLang_CRLF 65520
+#define SqlitePassDesignErrorLang_Msg1000 65521
+#define SqlitePassDesignErrorLang_Msg1005 65522
+#define SqlitePassDesignErrorLang_Msg1010 65523
+#define SqlitePassDesignErrorLang_Msg1015 65524
+#define SqlitePassDesignErrorLang_Msg1017 65525
+#define SqlitePassDesignErrorLang_Msg1020 65526
+#define SqlitePassDesignErrorLang_Msg1025 65527
+#define SqlitePassDesignErrorLang_Msg1027 65528
+#define SqlitePassDesignErrorLang_Msg1029 65529
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscCaption 65530
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscHint 65531
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscShortcut 65532
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescCaption 65533
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescHint 65534
+#define SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescShortcut 65535
 STRINGTABLE
 BEGIN
-	SqlitePassDesignErrorLang_Msg1027,	"Cannot display Database items."
-	SqlitePassDesignErrorLang_Msg1029,	"The current dataset is not filtered. Do you want to activate the filter(s) now ?"
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterShortcut,	"CTRL+F"
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffCaption,	"&Apply Filter"
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffHintOn,	"Current filter is : "
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffHintOff,	"Filter record on defined advanced filter : "
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffShortcut,	""
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordCaption,	"&Locate"
 	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordHint,	"Locate one or more records"
 	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordShortcut,	"CTRL+L"
-	SqlitePassDesignErrorLang_CRLF,	"\r\n"
-	SqlitePassDesignErrorLang_Msg1000,	"The MasterSource property should be defined first..."
-	SqlitePassDesignErrorLang_Msg1005,	"The MasterSource dataset is closed and the MasterSourceAutoActivate Property is set to False..."
-	SqlitePassDesignErrorLang_Msg1010,	"The Database property should be defined first..."
-	SqlitePassDesignErrorLang_Msg1015,	"Cannot display Fields information when dataset is closed."
-	SqlitePassDesignErrorLang_Msg1017,	"Cannot display IndexDefs information when dataset is closed"
-	SqlitePassDesignErrorLang_Msg1020,	"The Database is not connected."
-	SqlitePassDesignErrorLang_Msg1025,	"Cannot display Datatypes mapping rules."
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscCaption,	"&Sort +"
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscHint,	"Sort the selected field on ascending order"
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscShortcut,	"CTRL+D"
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescCaption,	"&Sort -"
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescHint,	"Sort the selected field on descending order"
-	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescShortcut,	"CTRL+U"
 	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortCaption,	"&Sort"
 	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortHint,	"Sort on one or more fields"
 	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortShortcut,	"CTRL+S"
@@ -78,28 +56,50 @@ BEGIN
 	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterCaption,	"&Filter"
 	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterHintOn,	"Current filter is : "
 	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterHintOff,	"Advanced filter editor. No filter defined"
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterShortcut,	"CTRL+F"
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffCaption,	"&Apply Filter"
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffHintOn,	"Current filter is : "
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffHintOff,	"Filter record on defined advanced filter : "
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsAdvancedFilterOnOffShortcut,	""
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsLocateRecordCaption,	"&Locate"
+	SqlitePassDesignErrorLang_CRLF,	"\r\n"
+	SqlitePassDesignErrorLang_Msg1000,	"The MasterSource property should be defined first..."
+	SqlitePassDesignErrorLang_Msg1005,	"The MasterSource dataset is closed and the MasterSourceAutoActivate Property is set to False..."
+	SqlitePassDesignErrorLang_Msg1010,	"The Database property should be defined first..."
+	SqlitePassDesignErrorLang_Msg1015,	"Cannot display Fields information when dataset is closed."
+	SqlitePassDesignErrorLang_Msg1017,	"Cannot display IndexDefs information when dataset is closed"
+	SqlitePassDesignErrorLang_Msg1020,	"The Database is not connected."
+	SqlitePassDesignErrorLang_Msg1025,	"Cannot display Datatypes mapping rules."
+	SqlitePassDesignErrorLang_Msg1027,	"Cannot display Database items."
+	SqlitePassDesignErrorLang_Msg1029,	"The current dataset is not filtered. Do you want to activate the filter(s) now ?"
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscCaption,	"&Sort +"
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscHint,	"Sort the selected field on ascending order"
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortAscShortcut,	"CTRL+D"
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescCaption,	"&Sort -"
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescHint,	"Sort the selected field on descending order"
+	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescShortcut,	"CTRL+U"
 END
 
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassSortByDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassFilterValues.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassFiltersDialogTemplate.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassLocateDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassFiltersDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassVisualTools.RES */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassParamsDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassCreateNewDatabaseDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassIndexedByDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassCustomFieldDefsDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassDataTypesDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassFieldDefsDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassMasterDetailFieldsDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassCreateNewIndex.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassRenameItem.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassIndexesDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassChooseDatasetDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassSortByDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFilterValues.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFiltersDialogTemplate.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFiltersDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassLocateDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassVisualTools.RES */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassChooseDatasetDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassRenameItem.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCreateNewIndex.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassIndexesDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassMasterDetailFieldsDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFieldDefsDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassDataTypesDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCustomFieldDefsDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassIndexedByDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCreateNewDatabaseDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassParamsDialog.DFM */
 /* ../Dx_SqlitePassDbo_Designtime.dcr */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassCreateTableDialog.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassDataTypeOptions.DFM */
-/* ..\..\..\Sources\DesignTimeEditors\SqlitePassParserDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Designtime.res */
-/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Designtime.drf */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCreateTableDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassDataTypeOptions.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassParserDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Designtime.res */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Designtime.drf */

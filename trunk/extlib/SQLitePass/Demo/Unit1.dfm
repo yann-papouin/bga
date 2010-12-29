@@ -29,8 +29,6 @@ object Form1: TForm1
     BevelOuter = bvLowered
     Caption = ' '
     TabOrder = 0
-    ExplicitTop = 7
-    ExplicitHeight = 280
     object SelectInteger: TButton
       AlignWithMargins = True
       Left = 4

@@ -4836,15 +4836,16 @@ procedure TSqlitePassParam.BindValue;
 var
 MasterDataset: TSqlitePassDataset;
 begin
+
 if Assigned(FMasterField)
    then begin
         MasterDataset := TSqlitePassDataset(FMasterField.Dataset);
         FValue := MasterDataset.FRecordset.GetFieldValueBuffer(MasterDataset.GetActiveRecord, FMasterField.Tag);
         if not MasterDataset.FRecordset.FieldIsNull(FValue)
-           then FBindValue(FParams.FDataset.FRecordset, FValue, FParams.FDataset.FSQLSelectStmt.StmtHandle, FParamIndex);
+           then FBindValue(FParams.FDataset.FDatabase, FParams.FDataset.FRecordset, FValue, FParams.FDataset.FSQLSelectStmt.StmtHandle, FParamIndex);
         end
    else if Not FIsNull
-     then FBindValue(nil, FValue, FParams.FDataset.FSQLSelectStmt.StmtHandle, FParamIndex);
+     then FBindValue(FParams.FDataset.FDatabase, nil, FValue, FParams.FDataset.FSQLSelectStmt.StmtHandle, FParamIndex);
 end;
 
 procedure TSqlitePassParam.SetDataTypeFromParamName;

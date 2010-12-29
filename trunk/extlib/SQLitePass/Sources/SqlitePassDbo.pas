@@ -161,7 +161,8 @@ TSqlitePassSqliteValueToValueBuffer = procedure(Const Recordset: TSqlitePassReco
                                                 Const ColumnIndex: Integer);
                                                 
 { Procedure to bind a FieldValue Buffer to a sqlite statement }
-TSqlitePassValueBufferToSqliteValue = procedure(Const Recordset: TSqlitePassRecordset;
+TSqlitePassValueBufferToSqliteValue = procedure(Const Database: TSqlitePassDatabase;
+                                                Const Recordset: TSqlitePassRecordset;
                                                 Const FieldValueBuffer: PRecBuffer;
                                                 Const PreparedStmt: Pointer;
                                                 Const PreparedStmtFieldNo: Integer);
@@ -3652,110 +3653,128 @@ TSqlitePassEngine = Class
   StmtFieldNo is 1 based, FieldIndex is Zero based }
 
 procedure BindDummyFieldValueBufferToSqliteValue
-         (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 
 procedure BindWordBoolFieldValueBufferToSqliteValue
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindWordBoolFieldValueBufferToSqliteValueAsText 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindIntegerFieldValueBufferToSqliteValue 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindInt64FieldValueBufferToSqliteValue 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
-procedure BindDoubleFieldValueBufferToSqliteValue 
-         (Const Recordset: TSqlitePassRecordset; 
+procedure BindDoubleFieldValueBufferToSqliteValue
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindCurrencyFieldValueBufferToSqliteValue 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindDateFieldValueBufferToSqliteValueAsText 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindTimeFieldValueBufferToSqliteValueAsText 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindDateTimeFieldValueBufferToSqliteValueAsText 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindDateTimeFieldValueBufferToSqliteValueAsJulianDateTime 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindDateTimeFieldValueBufferToSqliteValueAsUnixDateTime 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindDateTimeFieldValueBufferToSqliteValueAsMacDateTime 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer;
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindAnsiStringFieldValueBufferToSqliteValueAsUTF8 
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindUTF8AnsiStringFieldValueBufferToSqliteValueAsUTF8
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer; 
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF} 
 
 procedure BindUTF8AnsiStringFieldValueBufferToSqliteValueAsUTF16
-         (Const Recordset: TSqlitePassRecordset; 
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer;
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 
 procedure BindWideStringFieldValueBufferToSqliteValueAsUTF16
-         (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer;
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
 
 procedure BindBlobFieldValueBufferToSqliteValue
-         (Const Recordset: TSqlitePassRecordset;
+         (Const Database: TSqlitePassDatabase;
+          Const Recordset: TSqlitePassRecordset;
           Const FieldValueBuffer: PRecBuffer;
           Const PreparedStmt: Pointer;
           Const PreparedStmtFieldNo: Integer);{$IFDEF HasInline} inline; {$ENDIF}
