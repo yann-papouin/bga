@@ -31,7 +31,7 @@
 			<BRCC_IncludePath>..\..\..\Sources;..\..\..\Sources\DesignTimeEditors;..\..\..\Sources\Debug;$(BRCC_IncludePath)</BRCC_IncludePath>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
 			<GenPackage>true</GenPackage>
-			<DCC_DependencyCheckOutputName>..\..\..\..\..\..\..\..\Public\Documents\RAD Studio\7.0\Bpl\D2010_SqlitePassDbo_Designtime.bpl</DCC_DependencyCheckOutputName>
+			<DCC_DependencyCheckOutputName>..\..\..\..\..\..\..\..\..\..\Public\Documents\RAD Studio\7.0\Bpl\D2010_SqlitePassDbo_Designtime.bpl</DCC_DependencyCheckOutputName>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_Platform>x86</DCC_Platform>
 			<DCC_E>false</DCC_E>

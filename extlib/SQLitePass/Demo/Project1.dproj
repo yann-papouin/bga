@@ -20,6 +20,9 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_Optimize>false</DCC_Optimize>
+			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+			<DCC_RangeChecking>true</DCC_RangeChecking>
 			<DCC_DependencyCheckOutputName>bin\Project1.exe</DCC_DependencyCheckOutputName>
 			<DCC_ExeOutput>.\bin</DCC_ExeOutput>
 			<DCC_BplOutput>.\dcu</DCC_BplOutput>

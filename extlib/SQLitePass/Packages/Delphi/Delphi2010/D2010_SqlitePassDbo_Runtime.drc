@@ -150,7 +150,7 @@ BEGIN
 	SqlitePassErrorLang_Msg1038,	"Cannot find Database :"
 END
 
-/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Sources\SqlitePassErrorLogDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Sources\Debug\SqlitePassDebug.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Runtime.res */
-/* C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Runtime.drf */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\Debug\SqlitePassDebug.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\SqlitePassErrorLogDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Runtime.res */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Runtime.drf */
