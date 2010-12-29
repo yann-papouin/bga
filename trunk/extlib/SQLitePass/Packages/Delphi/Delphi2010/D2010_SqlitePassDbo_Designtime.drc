@@ -80,26 +80,26 @@ BEGIN
 	SqlitePassVisualToolsLang_SqlitePassRes_DBActionsSortDescShortcut,	"CTRL+U"
 END
 
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassSortByDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFilterValues.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFiltersDialogTemplate.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFiltersDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassLocateDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassVisualTools.RES */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassChooseDatasetDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassRenameItem.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCreateNewIndex.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassIndexesDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassMasterDetailFieldsDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFieldDefsDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassDataTypesDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCustomFieldDefsDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassIndexedByDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCreateNewDatabaseDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassParamsDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassSortByDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFilterValues.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFiltersDialogTemplate.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFiltersDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassLocateDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassVisualTools.RES */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassChooseDatasetDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassRenameItem.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCreateNewIndex.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassIndexesDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassMasterDetailFieldsDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassFieldDefsDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassDataTypesDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCustomFieldDefsDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassIndexedByDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCreateNewDatabaseDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassParamsDialog.DFM */
 /* ../Dx_SqlitePassDbo_Designtime.dcr */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCreateTableDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassDataTypeOptions.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassParserDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Designtime.res */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Designtime.drf */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassCreateTableDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassDataTypeOptions.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\DesignTimeEditors\SqlitePassParserDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Designtime.res */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Packages\Delphi\Delphi2010\D2010_SqlitePassDbo_Designtime.drf */

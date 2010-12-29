@@ -986,16 +986,16 @@ BEGIN
 	SysConst_SZeroDivide,	"Division par zéro en virgule flottante"
 END
 
-/* c:\program files (x86)\embarcadero\rad studio\7.0\lib\character.res */
-/* C:\Program Files (x86)\EurekaLog 6\Delphi14\DIALOG.RES */
-/* c:\program files (x86)\embarcadero\rad studio\7.0\lib\Controls.res */
-/* c:\program files (x86)\embarcadero\rad studio\7.0\lib\Buttons.res */
-/* c:\program files (x86)\embarcadero\rad studio\7.0\lib\DBPWDlg.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\7.0\lib\DBLogDlg.dfm */
-/* c:\program files (x86)\embarcadero\rad studio\7.0\lib\DBCtrls.res */
-/* c:\program files (x86)\embarcadero\rad studio\7.0\lib\DBGrids.res */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\Debug\SqlitePassDebug.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Sources\SqlitePassErrorLogDialog.DFM */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Demo\Unit1.dfm */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Demo\Project1.res */
-/* C:\Users\Yann\Documents\RAD Studio\Projets\bga\extlib\SQLitePass\Demo\Project1.drf */
+/* c:\program files\embarcadero\rad studio\7.0\lib\character.res */
+/* C:\Program Files\EurekaLog 6\Delphi14\DIALOG.RES */
+/* c:\program files\embarcadero\rad studio\7.0\lib\Controls.res */
+/* c:\program files\embarcadero\rad studio\7.0\lib\Buttons.res */
+/* c:\program files\embarcadero\rad studio\7.0\lib\DBPWDlg.dfm */
+/* c:\program files\embarcadero\rad studio\7.0\lib\DBLogDlg.dfm */
+/* c:\program files\embarcadero\rad studio\7.0\lib\DBCtrls.res */
+/* c:\program files\embarcadero\rad studio\7.0\lib\DBGrids.res */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\Debug\SqlitePassDebug.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Sources\SqlitePassErrorLogDialog.DFM */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Demo\Unit1.dfm */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Demo\Project1.res */
+/* C:\Users\Yann\Documents\RAD Studio\Projets\BGA\extlib\SQLitePass\Demo\Project1.drf */

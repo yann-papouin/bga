@@ -3,8 +3,8 @@ inherited FSViewForm: TFSViewForm
   ClientHeight = 452
   ClientWidth = 511
   Position = poScreenCenter
-  ExplicitWidth = 527
-  ExplicitHeight = 490
+  ExplicitWidth = 519
+  ExplicitHeight = 479
   PixelsPerInch = 96
   TextHeight = 13
   object Background: TSpTBXPanel
@@ -58,7 +58,7 @@ inherited FSViewForm: TFSViewForm
           TabOrder = 0
           Caption = 'SpTBXToolbar1'
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 236
+            CustomWidth = 248
           end
           object SpTBXItem3: TSpTBXItem
             Action = Add
@@ -281,9 +281,6 @@ inherited FSViewForm: TFSViewForm
     Options.TemporaryStorage = tsDefault
     QueryTimeout = 0
     ShowSystemObjects = False
-    SQLiteLibrary = 
-      'C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\sql' +
-      'ite3.dll'
     VersionInfo.Component = '0.55'
     VersionInfo.Schema = -1
     VersionInfo.Package = '0.55'

@@ -34,8 +34,8 @@
 
 unit SqlitePassDbo; 
 { Turns on/off debug output to Debuger Event Log} 
-{$DEFINE DEBUG_SQLITEPASS}
-{$DEFINE DEBUG_SQLStmt}
+{.$DEFINE DEBUG_SQLITEPASS}
+{.$DEFINE DEBUG_SQLStmt}
 
 {$i SqlitePassDbo.inc} 
 

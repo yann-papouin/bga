@@ -188,7 +188,7 @@ object FSSettingsForm: TFSSettingsForm
       Left = 325
       Top = 33
       Width = 317
-      Height = 224
+      Height = 231
       Align = alClient
       IntegralHeight = True
       ItemHeight = 20

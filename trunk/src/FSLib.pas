@@ -49,7 +49,6 @@ type
     GameVersion: string;
     GameName: string;
     AbsolutePath: string;
-    RelativePath : string;
     PathList : TStringList;
     Archives : TObjectList<TArchiveEntry>;
 
@@ -76,10 +75,48 @@ type
     property BattlefieldPath : string read FBattlefieldPath;
   end;
 
+  function FsAbsToRel(Path: String):string;
+  function FsRelToAbs(Path: String):string;
+
+var
+  Current_battlefield_path : string;
+  Current_mod_path         : string;
+  Current_archive_path     : string;
+
+const
+  BATTLEFIELD_PATH       = 'bf://';   ///  C:\Program files\EA Games\BF1942\ -> bf://
+  MOD_PATH               = 'mod://';
+  ARCHIVE_PATH           = 'archive://';
+
+  MOD_DIRECTORY_NAME     = 'Mods';
+  ARCHIVE_DIRECTORY_NAME = 'Archives';
+
 implementation
 
 uses
   CONLib;
+
+procedure FsCommonAssert;
+begin
+  Assert(Current_battlefield_path <> EmptyStr, 'Current_battlefield_path not set');
+end;
+
+function FsAbsToRel(Path: String):string;
+begin
+  FsCommonAssert;
+  Assert(AnsiPos('/', Path)=0);
+  Result := StringReplace(Path, Current_battlefield_path, BATTLEFIELD_PATH, [rfReplaceAll]);
+  Result := StringReplace(Result,'\','/',[rfReplaceAll]);
+end;
+
+
+function FsRelToAbs(Path: String):string;
+begin
+  FsCommonAssert;
+  Assert(AnsiPos('\', Path)=0);
+  Result := StringReplace(Path, BATTLEFIELD_PATH, Current_battlefield_path, [rfReplaceAll]);
+  Result := StringReplace(Result,'/','\',[rfReplaceAll]);
+end;
 
 { TBattlefieldModEntry }
 
@@ -107,6 +144,8 @@ begin
   GameURL := Filename;
   GameName := Filename;
   GameVersion := Filename;
+
+  AbsolutePath := ExtractFilePath(Filename);
 
   Text := TStringList.Create;
   ModPath := TStringList.Create;
