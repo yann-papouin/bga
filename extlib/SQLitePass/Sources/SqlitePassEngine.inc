@@ -26,7 +26,7 @@
 
   --------------------------------------------------------------------------- }
 
-{$DEFINE DEBUG_SQLITEPASS}
+{.$DEFINE DEBUG_SQLITEPASS}
 
 
 { ----- Utilities ----- }

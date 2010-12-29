@@ -101,7 +101,7 @@ implementation
 {$R *.dfm}
 
 uses
-  GuiFSSettings, Resources,  IOUtils, Types, StringFunction, TypInfo ;
+  DbugIntf, AppLib, GuiFSSettings, Resources, IOUtils, Types, StringFunction, TypInfo, MD5Api;
 
 
 procedure TFSViewForm.FormCreate(Sender: TObject);
@@ -160,10 +160,51 @@ end;
 *)
 
 procedure TFSViewForm.UpdateExecute(Sender: TObject);
+
 var
   Node: PVirtualNode;
   Data: pFilesystemData;
-  i :Integer;
+  i,j :Integer;
+  SQL : string;
+  test : TField;
+  ModEntry : TBattlefieldModEntry;
+  Found : boolean;
+  ModPath : string;
+  ModID : integer;
+  Content : TStringDynArray;
+
+
+  procedure InsertAchivesFromPath(Path : string);
+  var
+    k : integer;
+    FileMD5 : string;
+    FileName : string;
+    FilePath : string;
+  begin
+    Content := TDirectory.GetFileSystemEntries(IncludeTrailingBackslash(Path));
+    for k := 0 to Length(Content) - 1 do
+    begin
+
+      if TDirectory.Exists(Content[k]) then
+      begin
+        SendDebug(Content[k]);
+        InsertAchivesFromPath(Content[k]);
+      end
+        else
+      if TFile.Exists(Content[k]) then
+      begin
+        // Check if is a valid RFA
+        SendDebug(Content[k]);
+        FileName := ExtractFileName(Content[k]);
+        FilePath := IncludeTrailingBackslash(ExtractFilePath(Content[k]));
+        FileMD5 := MD5FromFile(Content[k]);
+        SQL := Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", "%s", "%d");', [FileName, FilePath, FileMD5, ModID]);
+        Database.Engine.ExecSQL(SQL);
+      end
+
+    end;
+  end;
+
 begin
   // Reset components to empty vars
   //Dataset.Active := false;
@@ -175,43 +216,147 @@ begin
   if Node <> nil then
   begin
     Data := FilesystemList.GetNodeData(Node);
-    Database.Database := IncludeTrailingBackslash(Data.Path) + Data.Name;
-    FSSettingsForm.ReadModsInfos(IncludeTrailingBackslash(Data.Path) +'Mods');
+    Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
+    Database.Database := Current_battlefield_path + Data.Name;
+    FSSettingsForm.ReadModsInfos(Current_battlefield_path + MOD_DIRECTORY_NAME);
   end;
 
   // Open database if settings are correct
   if FileExists(Database.Database) then
   begin
     if Database.SQLiteLibrary = EmptyStr then
-      Database.SQLiteLibrary := 'C:\Users\Yann\Documents\RAD Studio\Libraries\SQLitePass_0.55\sqlite3.dll';
+      Database.SQLiteLibrary := GetAppDirectory + 'sqlite3.dll';
 
     Database.Connected := true;
     if Database.Connected then
     begin
       //Database.Engine.ExecSQL('INSERT INTO "ARCHIVE" VALUES(NULL, "Name", "Path", "md5", NULL)');
 
+      //if Dataset.FieldByName('Name').AsString
+
+
+      for i:= 0 to FSSettingsForm.Modentries.Count - 1 do
+      begin
+        ModEntry := FSSettingsForm.Modentries[i];
+
+        Dataset.Close;
+        Dataset.Params.Clear;
+        Dataset.ParamCheck := True;
+        Dataset.SQL.Text := 'SELECT * FROM "MOD" WHERE name=:NameAsString;';
+        Dataset.Params.ParamByName('NameAsString').Value := ModEntry.GameName;
+        Dataset.Open;
+
+        if Dataset.RecordCount = 0 then
+        begin
+          SQL := Format('INSERT INTO "MOD" VALUES(NULL, "%s", "%s");', [ModEntry.GameName, FsAbsToRel(ModEntry.AbsolutePath)]);
+          Database.Engine.ExecSQL(SQL);
+        end;
+
+      end;
+
       Dataset.Close;
       Dataset.Params.Clear;
       Dataset.ParamCheck := True;
-
-      //Dataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE path=:PathAsWidestring;';
-      //Dataset.Params.ParamByName('PathAsWidestring').Value := '1';
-
-      Dataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE path=:PathAsString;';
-      Dataset.Params.ParamByName('PathAsString').Value := ('path');
-
-      //Dataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE id=:IdAsInteger;';
-      //Dataset.Params.ParamByName('IdAsInteger').Value := ('1');
-
-     (*
-      for i := 0 to Dataset.Params.Count - 1 do
-      begin
-        ShowMessageFmt('Type returned : %s',[GetEnumName(TypeInfo(TFieldType), Ord(Dataset.Params.Items[i].DataType))]);
-      end;
-      *)
-
-
+      Dataset.SQL.Text := 'SELECT * FROM "MOD";';
       Dataset.Open;
+
+      Dataset.First;
+      while Dataset.RecNo < Dataset.RecordCount - 1 do
+      begin
+        //SendDebugFmt('%d:%s',[i, Dataset.FieldByName('Name').AsString]);
+
+        if Dataset.FieldByName('Name').AsString = ModEntry.GameName then
+        begin
+          Found := true;
+          Break;
+        end;
+
+        ModID := Dataset.FieldByName('id').AsInteger;
+        ModPath := FsRelToAbs(Dataset.FieldByName('Path').AsString) + IncludeTrailingBackslash(ARCHIVE_DIRECTORY_NAME);
+
+        if DirectoryExists(ModPath) then
+        begin
+          InsertAchivesFromPath(ModPath);
+        end;
+    (*
+        if DirectoryExists(ModPath) then
+        begin
+          Content := TDirectory.GetFileSystemEntries(IncludeTrailingBackslash(ModPath));
+          for i := 0 to Length(Content) - 1 do
+          begin
+            SendDebug(Content[i]);
+          end;
+        end;
+        *)
+
+        Dataset.Next;
+      end;
+
+
+
+      /// RebuildModDependency
+      /// RebuildArchiveList with md5 hash
+      ///
+
+
+(*
+        Found := false;
+        Dataset.First;
+        while Dataset.RecNo < Dataset.RecordCount - 1 do
+        begin
+          //SendDebugFmt('%d:%s',[i, Dataset.FieldByName('Name').AsString]);
+          if Dataset.FieldByName('Name').AsString = ModEntry.GameName then
+          begin
+            Found := true;
+            Break;
+          end;
+
+          Dataset.Next;
+        end;
+
+        if Found then
+        ShowMessage('Found');
+        *)
+
+
+       // Dataset.Close;
+      //  Dataset.SQL.Text := 'SELECT * FROM "MOD";';
+     //   Dataset.Open;
+
+
+        //Dataset.Locate('name', 'dc_final', [loCaseInsensitive, loPartialKey]);
+
+(*
+        for j := 0 to Dataset.FieldCount - 1 do
+        begin
+
+
+          if Dataset.FieldValues['Name'] = ModEntry.GameName then
+
+          Dataset.FindField()
+          Dataset.Next;
+        end;
+*)
+
+
+
+
+(*
+      for i:= 0 to FSSettingsForm.Modentries.Count - 1 do
+      begin
+        ModEntry := FSSettingsForm.Modentries[i];
+        Dataset.Close;
+        SQL := 'SELECT * FROM ''MOD'' WHERE name=''%s'';';
+        Dataset.SQL.Text := Format(SQL,[ModEntry.GameName]);
+        Dataset.Open;
+
+        if Dataset.FieldCount = 0 then
+        begin
+Database.Engine.ExecSQL('INSERT INTO "ARCHIVE" VALUES(NULL, "Name", "Path", "md5", NULL)');
+
+        end;
+*)
+
 
 
     end;

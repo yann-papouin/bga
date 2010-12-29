@@ -62,6 +62,9 @@
 			<DCCReference Include="Resources.pas">
 				<Form>ResourcesForm</Form>
 			</DCCReference>
+			<DCCReference Include="FSLib.pas"/>
+			<DCCReference Include="Lib\MD5Api.pas"/>
+			<DCCReference Include="Lib\MD5Core.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -129,7 +132,7 @@
 
 <!-- EurekaLog First Line
 [Exception Log]
-EurekaLog Version=6025
+EurekaLog Version=6023
 Activate=1
 Activate Handle=1
 Save Log File=1
@@ -280,7 +283,7 @@ boUseMainModuleOptions=1
 boCopyLogInCaseOfError=1
 boSaveCompressedCopyInCaseOfError=0
 boHandleSafeCallExceptions=1
-boCallRTLExceptionEvent=0
+boCallRTLExceptionEvent=1
 boCatchHandledExceptions=0
 loCatchLeaks=1
 loGroupsSonLeaks=1

@@ -29,6 +29,7 @@ uses
 
 function ApplicationSvnTitle: String;
 
+function GetAppDirectory: String;
 function GetAppTempDirectory: String;
 function GetMapTempDirectory: String;
 
@@ -38,6 +39,12 @@ function ApplicationSvnTitle: String;
 begin
   result := Format('%s (rev #%d)',[Application.Title, SVN_REVISION]);
 end;
+
+function GetAppDirectory: String;
+begin
+  Result := IncludeTrailingBackslash(ExtractFilePath(Application.ExeName));
+end;
+
 
 function GetAppTempDirectory: String;
 begin

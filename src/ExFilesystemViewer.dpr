@@ -9,7 +9,10 @@ uses
   AppLib in 'Lib\AppLib.pas',
   CommonLib in 'Lib\CommonLib.pas',
   SvnInfo in 'Lib\SvnInfo.pas',
-  Resources in 'Resources.pas' {ResourcesForm};
+  Resources in 'Resources.pas' {ResourcesForm},
+  FSLib in 'FSLib.pas',
+  MD5Api in 'Lib\MD5Api.pas',
+  MD5Core in 'Lib\MD5Core.pas';
 
 {$R *.res}
 

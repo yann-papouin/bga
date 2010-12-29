@@ -58,12 +58,12 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure ModsClick(Sender: TObject);
   private
-    ModEntries : TModEntryList;
     function SearchBattleField: boolean;
     { Déclarations privées }
   public
     { Déclarations publiques }
     OpenMode : TOpenMode;
+    ModEntries : TModEntryList;
     function ReadModsInfos(ModPath : string) : boolean;
   end;
 
