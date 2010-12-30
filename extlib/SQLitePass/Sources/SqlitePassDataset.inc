@@ -1434,7 +1434,7 @@ End;
 Must free the memory allocated in the AllocRecordBuffer call.}
 Procedure TSqlitePassDataset.FreeRecordBuffer(var Buffer: PRecBuffer);
 begin
-  FreeMem(Buffer, GetRecordSize);
+  FreeMemAndNil(Buffer, GetRecordSize);
 end;
 
 
@@ -1906,7 +1906,7 @@ end;
 destructor TSqlitePassFieldFilterExp.Destroy;
 begin
  If Assigned(FValueMem)
-    then FreeMem(FValueMem);
+    then FreeMemAndNil(FValueMem);
  FValueMem := nil;
  FValue := nil;
  FFieldFilter := nil;
@@ -2142,7 +2142,7 @@ begin
 FTextValue := StrValue;
 
 If Assigned(FValueMem)
-   then FreeMem(FValueMem);
+   then FreeMemAndNil(FValueMem);
 
 FValue := nil;
 
@@ -4541,9 +4541,10 @@ if not (csReading in ComponentState) then
          NewParamsList.CreateParam(ParamName, ftUnknown, i);
          end;
      NewParamsList.AssignValues(FParams);
-     FParams.Clear;
+     FParams.ClearParams;
      FParams.Assign(NewParamsList);
    finally
+     //NewParamsList.ClearParams;
      NewParamsList.Free;
    end;
    end;
@@ -4807,7 +4808,7 @@ end;
 destructor TSqlitePassParam.Destroy;
 begin
  If Assigned(FValueMem)
-    then FreeMem(FValueMem);
+    then FreeMemAndNil(FValueMem, FValueMemSize);
  FValueMem := nil;
  FValue := nil;
  FParams := nil;
@@ -4917,13 +4918,13 @@ end;
 
 procedure TSqlitePassParam.Prepare;
 begin
- If Assigned(FValueMem)
-    then FreeMem(FValueMem);
+ If Assigned(FValueMem) then
+   FreeMemAndNil(FValueMem, FValueMemSize);
 
  if Assigned(FParams.FDataset.MasterSource) and Assigned(FParams.FDataset.MasterSource.Dataset)
     then FMasterField := FParams.FDataset.MasterSource.Dataset.FindField(FTextValue);
 
- FParams.FDataset.FDatabase.FTranslator.GetMemoryBuffer(FTextValue, FValueMem, FDataType);
+ FValueMemSize := FParams.FDataset.FDatabase.FTranslator.GetMemoryBuffer(FTextValue, FValueMem, FDataType);
  FValue := FValueMem;
 
  PrepareBindValueDispacher;
@@ -4996,7 +4997,8 @@ var
 i: Integer;
 begin
 { Clears the internal items }
-for i := 0 to Pred(Count)
+//for i := 0 to Pred(Count)
+for i := Pred(Count) downto 0
     do Items[i].Free;
 { Clears the list pointers }
 inherited Clear;

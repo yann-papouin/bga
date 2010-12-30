@@ -3,8 +3,8 @@ inherited FSViewForm: TFSViewForm
   ClientHeight = 452
   ClientWidth = 511
   Position = poScreenCenter
-  ExplicitWidth = 519
-  ExplicitHeight = 479
+  ExplicitWidth = 527
+  ExplicitHeight = 490
   PixelsPerInch = 96
   TextHeight = 13
   object Background: TSpTBXPanel
@@ -58,7 +58,7 @@ inherited FSViewForm: TFSViewForm
           TabOrder = 0
           Caption = 'SpTBXToolbar1'
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 248
+            CustomWidth = 236
           end
           object SpTBXItem3: TSpTBXItem
             Action = Add
@@ -169,7 +169,6 @@ inherited FSViewForm: TFSViewForm
       Width = 495
       Height = 157
       Align = alClient
-      DataSource = DataSource
       DrawingStyle = gdsGradient
       TabOrder = 2
       TitleFont.Charset = DEFAULT_CHARSET

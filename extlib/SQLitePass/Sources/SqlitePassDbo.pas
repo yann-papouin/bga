@@ -1847,6 +1847,7 @@ TSqlitePassSelectStmtTableDefs = class(TSqlitePassObjectList)
     FTextValue: String;
     FValue: Pointer;
     FValueMem: Pointer; { Pointer to original GetMem memory address }
+    FValueMemSize : Cardinal;
     procedure Prepare;
     procedure PrepareBindValueDispacher;
     procedure SetFDataType(const Value: TFieldType);
@@ -2926,7 +2927,7 @@ TSqlitePassTranslator = class
    FFieldTypesTranslationRules: TSqlitePassFieldTypesTranslationRules; 
 
    { Buffer function }
-   procedure GetMemoryBuffer(const StrValue: String; var Buffer: Pointer; Const DataType: TFieldType);
+   function GetMemoryBuffer(const StrValue: String; var Buffer: Pointer; Const DataType: TFieldType) : Cardinal;
 
    { Conversion functions from a SQLite Db Value to it's internal MemRecord storage }
    procedure IntegerToWordBool(Const IntegerValue: Integer; out Value: WordBool);
