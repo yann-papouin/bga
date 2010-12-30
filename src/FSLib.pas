@@ -80,13 +80,13 @@ type
 
 var
   Current_battlefield_path : string;
-  Current_mod_path         : string;
-  Current_archive_path     : string;
+  //Current_mod_path         : string;
+  //Current_archive_path     : string;
 
 const
   BATTLEFIELD_PATH       = 'bf://';   ///  C:\Program files\EA Games\BF1942\ -> bf://
-  MOD_PATH               = 'mod://';
-  ARCHIVE_PATH           = 'archive://';
+  //MOD_PATH               = 'mod://';
+  //ARCHIVE_PATH           = 'archive://';
 
   MOD_DIRECTORY_NAME     = 'Mods';
   ARCHIVE_DIRECTORY_NAME = 'Archives';
@@ -96,27 +96,62 @@ implementation
 uses
   CONLib;
 
-procedure FsCommonAssert;
-begin
-  Assert(Current_battlefield_path <> EmptyStr, 'Current_battlefield_path not set');
-end;
+
 
 function FsAbsToRel(Path: String):string;
 begin
-  FsCommonAssert;
   Assert(AnsiPos('/', Path)=0);
-  Result := StringReplace(Path, Current_battlefield_path, BATTLEFIELD_PATH, [rfReplaceAll]);
+(*
+  if AnsiPos(Current_archive_path, Path) > 0 then
+  begin
+    Assert(Current_archive_path <> EmptyStr, 'Current_archive_path not set');
+    Result := StringReplace(Path, Current_archive_path, ARCHIVE_PATH, [rfReplaceAll]);
+  end
+  else
+  if AnsiPos(Current_mod_path, Path) > 0 then
+  begin
+    Assert(Current_mod_path <> EmptyStr, 'Current_mod_path not set');
+    Result := StringReplace(Path, Current_mod_path, MOD_PATH, [rfReplaceAll])
+  end
+  else
+*)
+  if AnsiPos(Current_battlefield_path, Path) > 0 then
+  begin
+    Assert(Current_battlefield_path <> EmptyStr, 'Current_battlefield_path not set');
+    Result := StringReplace(Path, Current_battlefield_path, BATTLEFIELD_PATH, [rfReplaceAll]);
+  end;
+
   Result := StringReplace(Result,'\','/',[rfReplaceAll]);
 end;
 
 
 function FsRelToAbs(Path: String):string;
 begin
-  FsCommonAssert;
   Assert(AnsiPos('\', Path)=0);
-  Result := StringReplace(Path, BATTLEFIELD_PATH, Current_battlefield_path, [rfReplaceAll]);
+(*
+  if AnsiPos(ARCHIVE_PATH, Path) > 0 then
+  begin
+    Assert(Current_archive_path <> EmptyStr, 'Current_archive_path not set');
+    Result := StringReplace(Path, ARCHIVE_PATH, Current_archive_path, [rfReplaceAll]);
+  end
+  else
+  if AnsiPos(MOD_PATH, Path) > 0 then
+  begin
+    Assert(Current_mod_path <> EmptyStr, 'Current_mod_path not set');
+    Result := StringReplace(Path, MOD_PATH, Current_mod_path, [rfReplaceAll])
+  end
+  else
+*)
+  if AnsiPos(BATTLEFIELD_PATH, Path) > 0 then
+  begin
+    Assert(Current_battlefield_path <> EmptyStr, 'Current_battlefield_path not set');
+    Result := StringReplace(Path, BATTLEFIELD_PATH, Current_battlefield_path, [rfReplaceAll]);
+  end;
+
   Result := StringReplace(Result,'/','\',[rfReplaceAll]);
 end;
+
+
 
 { TBattlefieldModEntry }
 

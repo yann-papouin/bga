@@ -2763,9 +2763,7 @@ DbSettingsRecordset     := TSqlitePassRecordset.Create(FDatabase);
   because FDatabase.TableDefs could be out of date }
 DbSettingsRecordset.Open(SqlTableExists);
 
-if DbSettingsRecordset.RecordsCount = 0
-  then Exit;
-
+if DbSettingsRecordset.RecordsCount <> 0 then
 Try {1}
  Try {2}
  { Loads Options from database }
@@ -2850,12 +2848,13 @@ Try {1}
        then FDatabase.Engine.ExecSQL('Drop table "SQLitePass__DbSettings";');
  end; {Try 2 }
 finally
+
+end; {Try 1}
 StorageInfoStrings.Free;
 MainPropertiesStrings.Free;
 TranslationRulesStrings.Free;
 CustomFieldDefsStrings.Free;
 DbSettingsRecordset.Free;
-end; {Try 1}
 end;
 
 
