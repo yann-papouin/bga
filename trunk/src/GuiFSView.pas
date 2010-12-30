@@ -66,6 +66,7 @@ type
     DBGrid1: TDBGrid;
     Database: TSqlitePassDatabase;
     Dataset: TSqlitePassDataset;
+    SubDataset: TSqlitePassDataset;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -138,16 +139,15 @@ begin
   end;
 end;
 
-
-    (*
-    'CREATE TABLE [SampleTable]
-    ( [AutoIncField] AUTOINC, [BinIntField] BIGINT,' +
-    '[BinaryField] BINARY, [BlobField] BLOB, [BooleanField] BOOLEAN, [CharField] CHAR,' +
-    '[ClobField] CLOB, [CurrencyField] CURRENCY, [DateField] DATE, [DateTextField] DATE,' +
-    '[DateTimeField] DATETIME, [DecField] DEC, [DecimalField] DECIMAL, [DoubleField] DOUBLE,' +
-    '[DoublePrecisionField] DOUBLE PRECISION, [FloatField] FLOAT, [GaphicField] GRAPHIC,'+
-    '[GuidField] GUID, [IntField] INT, [Int64Field] INT64);');
-    *)
+  (*
+  'CREATE TABLE [SampleTable]
+  ( [AutoIncField] AUTOINC, [BinIntField] BIGINT,' +
+  '[BinaryField] BINARY, [BlobField] BLOB, [BooleanField] BOOLEAN, [CharField] CHAR,' +
+  '[ClobField] CLOB, [CurrencyField] CURRENCY, [DateField] DATE, [DateTextField] DATE,' +
+  '[DateTimeField] DATETIME, [DecField] DEC, [DecimalField] DECIMAL, [DoubleField] DOUBLE,' +
+  '[DoublePrecisionField] DOUBLE PRECISION, [FloatField] FLOAT, [GaphicField] GRAPHIC,'+
+  '[GuidField] GUID, [IntField] INT, [Int64Field] INT64);');
+  *)
 
 procedure TFSViewForm.UpdateExecute(Sender: TObject);
 
@@ -161,7 +161,7 @@ var
   Found : boolean;
   ModPath : string;
   ModID : integer;
-  Content : TStringDynArray;
+  Options : TLocateOptions;
 
 
   procedure InsertAchivesFromPath(Path : string);
@@ -170,26 +170,30 @@ var
     FileMD5 : string;
     FileName : string;
     FilePath : string;
+    Content : TStringDynArray;
   begin
     Content := TDirectory.GetFileSystemEntries(IncludeTrailingBackslash(Path));
     for k := 0 to Length(Content) - 1 do
     begin
+      SendDebugFmt('%d:%s',[k, Content[k]]);
 
       if TDirectory.Exists(Content[k]) then
       begin
-        SendDebug(Content[k]);
         InsertAchivesFromPath(Content[k]);
       end
         else
       if TFile.Exists(Content[k]) then
       begin
         // Check if is a valid RFA
-        SendDebug(Content[k]);
         FileName := ExtractFileName(Content[k]);
-        FilePath := IncludeTrailingBackslash(ExtractFilePath(Content[k]));
-        //FileMD5 := MD5FromFile(Content[k]);
-        SQL := Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", "%s", "%d");', [FileName, FilePath, FileMD5, ModID]);
-        Database.Engine.ExecSQL(SQL);
+        FilePath := FsAbsToRel(IncludeTrailingBackslash(ExtractFilePath(Content[k])));
+        if not SubDataset.Locate('path; name', VarArrayOf([FilePath, FileName]), Options) then
+        begin
+          //FileMD5 := MD5FromFile(Content[k]);
+          SQL := Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", "%s", "%d");', [FileName, FilePath, FileMD5, ModID]);
+          SendDebug(SQL);
+          Database.Engine.ExecSQL(SQL);
+        end;
       end
 
     end;
@@ -201,6 +205,11 @@ begin
   Database.Connected := false;
   Database.Database := EmptyStr;
 
+  Options := [loCaseInsensitive, loPartialKey];
+
+  if Database.SQLiteLibrary = EmptyStr then
+    Database.SQLiteLibrary := GetAppDirectory + 'sqlite3.dll';
+
   // Find selected file system
   Node := FilesystemList.GetFirstSelected;
   if Node <> nil then
@@ -211,10 +220,11 @@ begin
     FSSettingsForm.ReadModsInfos(Current_battlefield_path + MOD_DIRECTORY_NAME);
   end;
 
+  if FileExists(Database.Database) then
+    DeleteFile(Database.Database);
 
   if not FileExists(Database.Database) then
   begin
-    DeleteFile(Database.Database);
     Database.CreateDatabase(Database.Database, dbtSqlitePass);
     Database.Open;
 
@@ -266,139 +276,51 @@ begin
   // Open database if settings are correct
   if FileExists(Database.Database) then
   begin
-    if Database.SQLiteLibrary = EmptyStr then
-      Database.SQLiteLibrary := GetAppDirectory + 'sqlite3.dll';
 
     Database.Connected := true;
     if Database.Connected then
     begin
-      //Database.Engine.ExecSQL('INSERT INTO "ARCHIVE" VALUES(NULL, "Name", "Path", "md5", NULL)');
-
-      //if Dataset.FieldByName('Name').AsString
+      Dataset.Close;
+      Dataset.SQL.Text := 'SELECT * FROM "MOD";';
+      Dataset.Open;
 
       for i:= 0 to FSSettingsForm.Modentries.Count - 1 do
       begin
         ModEntry := FSSettingsForm.Modentries[i];
 
-        Dataset.Close;
-        Dataset.Params.Clear;
-        Dataset.ParamCheck := True;
-        Dataset.SQL.Text := 'SELECT * FROM "MOD" WHERE name=:NameAsString;';
-        Dataset.Params.ParamByName('NameAsString').Value := ModEntry.GameName +'aa';
-        Dataset.Open;
-
-        if Dataset.RecordCount = 0 then
+        if not Dataset.Locate('name', ModEntry.GameName, Options) then
         begin
           SQL := Format('INSERT INTO "MOD" VALUES(NULL, "%s", "%s");', [ModEntry.GameName, FsAbsToRel(ModEntry.AbsolutePath)]);
           Database.Engine.ExecSQL(SQL);
         end;
-
       end;
 
-      Dataset.Close;
-      Dataset.Params.Clear;
-      Dataset.ParamCheck := True;
-      Dataset.SQL.Text := 'SELECT * FROM "MOD";';
-      Dataset.Open;
-{
-      Dataset.First;
+      Dataset.Refresh;
       while Dataset.RecNo < Dataset.RecordCount - 1 do
       begin
-        //SendDebugFmt('%d:%s',[i, Dataset.FieldByName('Name').AsString]);
-
-        if Dataset.FieldByName('Name').AsString = ModEntry.GameName then
-        begin
-          Found := true;
-          Break;
-        end;
+        SendDebugFmt('%d:%s',[i, Dataset.FieldByName('Name').AsString]);
 
         ModID := Dataset.FieldByName('id').AsInteger;
         ModPath := FsRelToAbs(Dataset.FieldByName('Path').AsString) + IncludeTrailingBackslash(ARCHIVE_DIRECTORY_NAME);
+        //Current_mod_path := ModPath;
 
         if DirectoryExists(ModPath) then
         begin
+          SubDataset.Close;
+          SubDataset.ParamCheck := true;
+          SubDataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE mod=:IdAsInteger;';
+          SubDataset.Params.ParamByName('IdAsInteger').Value := IntToStr(ModID);
+          SubDataset.Open;
+
           InsertAchivesFromPath(ModPath);
         end;
-    (*
-        if DirectoryExists(ModPath) then
-        begin
-          Content := TDirectory.GetFileSystemEntries(IncludeTrailingBackslash(ModPath));
-          for i := 0 to Length(Content) - 1 do
-          begin
-            SendDebug(Content[i]);
-          end;
-        end;
-        *)
 
         Dataset.Next;
       end;
-}
-
 
       /// RebuildModDependency
       /// RebuildArchiveList with md5 hash
       ///
-
-
-(*
-        Found := false;
-        Dataset.First;
-        while Dataset.RecNo < Dataset.RecordCount - 1 do
-        begin
-          //SendDebugFmt('%d:%s',[i, Dataset.FieldByName('Name').AsString]);
-          if Dataset.FieldByName('Name').AsString = ModEntry.GameName then
-          begin
-            Found := true;
-            Break;
-          end;
-
-          Dataset.Next;
-        end;
-
-        if Found then
-        ShowMessage('Found');
-        *)
-
-
-       // Dataset.Close;
-      //  Dataset.SQL.Text := 'SELECT * FROM "MOD";';
-     //   Dataset.Open;
-
-
-        //Dataset.Locate('name', 'dc_final', [loCaseInsensitive, loPartialKey]);
-
-(*
-        for j := 0 to Dataset.FieldCount - 1 do
-        begin
-
-
-          if Dataset.FieldValues['Name'] = ModEntry.GameName then
-
-          Dataset.FindField()
-          Dataset.Next;
-        end;
-*)
-
-
-
-
-(*
-      for i:= 0 to FSSettingsForm.Modentries.Count - 1 do
-      begin
-        ModEntry := FSSettingsForm.Modentries[i];
-        Dataset.Close;
-        SQL := 'SELECT * FROM ''MOD'' WHERE name=''%s'';';
-        Dataset.SQL.Text := Format(SQL,[ModEntry.GameName]);
-        Dataset.Open;
-
-        if Dataset.FieldCount = 0 then
-        begin
-Database.Engine.ExecSQL('INSERT INTO "ARCHIVE" VALUES(NULL, "Name", "Path", "md5", NULL)');
-
-        end;
-*)
-
-
 
     end;
   end;

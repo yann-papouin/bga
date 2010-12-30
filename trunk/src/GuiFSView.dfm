@@ -3,8 +3,8 @@ inherited FSViewForm: TFSViewForm
   ClientHeight = 452
   ClientWidth = 511
   Position = poScreenCenter
-  ExplicitWidth = 527
-  ExplicitHeight = 490
+  ExplicitWidth = 519
+  ExplicitHeight = 479
   PixelsPerInch = 96
   TextHeight = 13
   object Background: TSpTBXPanel
@@ -58,7 +58,7 @@ inherited FSViewForm: TFSViewForm
           TabOrder = 0
           Caption = 'SpTBXToolbar1'
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 236
+            CustomWidth = 248
           end
           object SpTBXItem3: TSpTBXItem
             Action = Add
@@ -309,6 +309,29 @@ inherited FSViewForm: TFSViewForm
     WriteMode = wmDirect
     Left = 56
     Top = 96
+    pParams = ()
+  end
+  object SubDataset: TSqlitePassDataset
+    CalcDisplayedRecordsOnly = False
+    Database = Database
+    MasterSourceAutoActivate = True
+    FilterMode = fmSQLDirect
+    FilterRecordLowerLimit = 0
+    FilterRecordUpperLimit = 0
+    Indexed = True
+    LocateSmartRefresh = False
+    LookUpCache = False
+    LookUpDisplayedRecordsOnly = False
+    LookUpSmartRefresh = False
+    Sorted = False
+    RecordsCacheCapacity = 100
+    DatabaseAutoActivate = True
+    VersionInfo.Component = '0.55'
+    VersionInfo.Package = '0.55'
+    ParamCheck = False
+    WriteMode = wmDirect
+    Left = 56
+    Top = 128
     pParams = ()
   end
 end
