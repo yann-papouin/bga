@@ -1591,71 +1591,78 @@ FDatabase := nil;
 Inherited Destroy;
 end;
 
-procedure TSqlitePassTranslator.GetMemoryBuffer(const StrValue: String; var Buffer: Pointer; Const DataType: TFieldType);
-var
-StrSize: Integer;
+function TSqlitePassTranslator.GetMemoryBuffer(const StrValue: String; var Buffer: Pointer; Const DataType: TFieldType): Cardinal;
 begin
+Assert(Buffer = nil);
+Result := 0;
 Case DataType of
      ftInteger, ftSmallInt, ftWord:
        begin
-       GetMem(Buffer,SizeOf(Integer));
+       Result := SizeOf(Integer);
+       GetMem(Buffer, Result);
        PInteger(Buffer)^ := StrToIntDef(StrValue,0);
        end;
 
      ftDate:
        begin
-       GetMem(Buffer,SizeOf(Integer));
+       Result := SizeOf(Integer);
+       GetMem(Buffer, Result);
        DateTextToInteger(StrValue,PInteger(Buffer)^);
        end;
 
      ftTime :
        begin
-       GetMem(Buffer,SizeOf(Integer));
+       Result := SizeOf(Integer);
+       GetMem(Buffer, Result);
        TimeTextToInteger(StrValue,PInteger(Buffer)^);
        end;
 
      ftString, ftFixedChar, ftMemo, FtFmtMemo:
        begin
-       StrSize := Length(StrValue)+1;
-       GetMem(Buffer, StrSize);
+       Result := Length(StrValue)+1;
+       GetMem(Buffer, Result);
        StrCopy(Buffer, PAnsiChar(AnsiString(StrValue)));
        end;
 
      ftWideString:
        begin
-       // TODO - Check WideString Size...// Length
-       StrSize := (Length(StrValue)+1)*2;
-       GetMem(Buffer, StrSize);
+       Result := (Length(StrValue)+1)*2;
+       GetMem(Buffer, Result);
        SqlitePassUtils.WStrCopy(Buffer, PWideChar(StrValue));
        end;
 
      ftFloat, ftCurrency:
        begin
-       GetMem(Buffer,SizeOf(Double));
+       Result := SizeOf(Double);
+       GetMem(Buffer, Result);
        PDouble(Buffer)^ := StrToFloat(StrValue);
        end;
 
      ftBCD:
        begin
-       GetMem(Buffer,SizeOf(Currency));
+       Result := SizeOf(Currency);
+       GetMem(Buffer, Result);
        PCurrency(Buffer)^ := StrToFloat(StrValue);
        end;
 
      ftDateTime:
        begin
-       GetMem(Buffer,SizeOf(Double));
+       Result := SizeOf(Double);
+       GetMem(Buffer, Result);
        DateTimeTextToDouble(StrValue,PDouble(Buffer)^);
        end;
 
      ftBoolean:
        begin
-       GetMem(Buffer,SizeOf(WordBool));
+       Result := SizeOf(WordBool);
+       GetMem(Buffer, Result);
        BooleanTextToWordBool(StrValue, PWordBool(Buffer)^);
        end;
 
      ftAutoInc, ftLargeint:
        begin
-       GetMem(Buffer,SizeOf(Int64));
+       Result := SizeOf(Int64);
+       GetMem(Buffer, Result);
        PInt64(Buffer)^ := StrToInt64Def(StrValue,0);
        end;
    end; { Case }

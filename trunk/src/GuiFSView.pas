@@ -138,26 +138,16 @@ begin
   end;
 end;
 
-(*
-  procedure TForm1.BtCreateDatabaseClick(Sender: TObject);
-  begin
-  if Not FileExists('NewDb.db3')
-     then SqlitePassDatabase1.CreateDatabase('NewDb.db3');
 
-  SqlitePassDatabase1.Close;
-  SqlitePassDatabase1.Database := 'NewDb.db3';
-  SqlitePassDatabase1.Open;
-  SqlitePassDatabase1.TableDefs.CreateTable(
-  'CREATE TABLE [SampleTable] ( [AutoIncField] AUTOINC, [BinIntField] BIGINT,' +
-  '[BinaryField] BINARY, [BlobField] BLOB, [BooleanField] BOOLEAN, [CharField] CHAR,' +
-  '[ClobField] CLOB, [CurrencyField] CURRENCY, [DateField] DATE, [DateTextField] DATE,' +
-  '[DateTimeField] DATETIME, [DecField] DEC, [DecimalField] DECIMAL, [DoubleField] DOUBLE,' +
-  '[DoublePrecisionField] DOUBLE PRECISION, [FloatField] FLOAT, [GaphicField] GRAPHIC,'+
-  '[GuidField] GUID, [IntField] INT, [Int64Field] INT64);');
-  SqlitePassDataset1.DatasetName := 'SampleTable';
-  SqlitePassDataset1.Open;
-  end;
-*)
+    (*
+    'CREATE TABLE [SampleTable]
+    ( [AutoIncField] AUTOINC, [BinIntField] BIGINT,' +
+    '[BinaryField] BINARY, [BlobField] BLOB, [BooleanField] BOOLEAN, [CharField] CHAR,' +
+    '[ClobField] CLOB, [CurrencyField] CURRENCY, [DateField] DATE, [DateTextField] DATE,' +
+    '[DateTimeField] DATETIME, [DecField] DEC, [DecimalField] DECIMAL, [DoubleField] DOUBLE,' +
+    '[DoublePrecisionField] DOUBLE PRECISION, [FloatField] FLOAT, [GaphicField] GRAPHIC,'+
+    '[GuidField] GUID, [IntField] INT, [Int64Field] INT64);');
+    *)
 
 procedure TFSViewForm.UpdateExecute(Sender: TObject);
 
@@ -197,7 +187,7 @@ var
         SendDebug(Content[k]);
         FileName := ExtractFileName(Content[k]);
         FilePath := IncludeTrailingBackslash(ExtractFilePath(Content[k]));
-        FileMD5 := MD5FromFile(Content[k]);
+        //FileMD5 := MD5FromFile(Content[k]);
         SQL := Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", "%s", "%d");', [FileName, FilePath, FileMD5, ModID]);
         Database.Engine.ExecSQL(SQL);
       end
@@ -221,6 +211,58 @@ begin
     FSSettingsForm.ReadModsInfos(Current_battlefield_path + MOD_DIRECTORY_NAME);
   end;
 
+
+  if not FileExists(Database.Database) then
+  begin
+    DeleteFile(Database.Database);
+    Database.CreateDatabase(Database.Database, dbtSqlitePass);
+    Database.Open;
+
+    Database.TableDefs.CreateTable
+    (
+      'CREATE TABLE "MOD"' +
+      '(' +
+      '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
+      '"name" STRING,' +
+      '"path" STRING' +
+      ');'
+    );
+
+    Database.TableDefs.CreateTable
+    (
+      'CREATE TABLE "DEPENDENCY"' +
+      '(' +
+      '"mod" INTEGER,' +
+      '"depends" INTEGER,' +
+      '"order" INTEGER' +
+      ');'
+    );
+
+    Database.TableDefs.CreateTable
+    (
+      'CREATE TABLE "ARCHIVE"' +
+      '(' +
+      '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
+      '"name" STRING,' +
+      '"path" STRING,' +
+      '"md5" STRING,' +
+      '"mod" INTEGER' +
+      ');'
+    );
+
+    Database.TableDefs.CreateTable
+    (
+      'CREATE TABLE "FILE"' +
+      '(' +
+      '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
+      '"filename" STRING,' +
+      '"path" STRING' +
+      ');'
+    );
+
+    Database.Close;
+  end;
+
   // Open database if settings are correct
   if FileExists(Database.Database) then
   begin
@@ -234,7 +276,6 @@ begin
 
       //if Dataset.FieldByName('Name').AsString
 
-
       for i:= 0 to FSSettingsForm.Modentries.Count - 1 do
       begin
         ModEntry := FSSettingsForm.Modentries[i];
@@ -243,7 +284,7 @@ begin
         Dataset.Params.Clear;
         Dataset.ParamCheck := True;
         Dataset.SQL.Text := 'SELECT * FROM "MOD" WHERE name=:NameAsString;';
-        Dataset.Params.ParamByName('NameAsString').Value := ModEntry.GameName;
+        Dataset.Params.ParamByName('NameAsString').Value := ModEntry.GameName +'aa';
         Dataset.Open;
 
         if Dataset.RecordCount = 0 then
@@ -259,7 +300,7 @@ begin
       Dataset.ParamCheck := True;
       Dataset.SQL.Text := 'SELECT * FROM "MOD";';
       Dataset.Open;
-
+{
       Dataset.First;
       while Dataset.RecNo < Dataset.RecordCount - 1 do
       begin
@@ -291,7 +332,7 @@ begin
 
         Dataset.Next;
       end;
-
+}
 
 
       /// RebuildModDependency
