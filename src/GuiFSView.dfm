@@ -217,6 +217,10 @@ inherited FSViewForm: TFSViewForm
       ImageIndex = 1118
       OnExecute = OkExecute
     end
+    object Init: TAction
+      Caption = 'Init'
+      OnExecute = InitExecute
+    end
   end
   object FormStorage: TJvFormStorage
     AppStorage = TemporaryAppStorage
@@ -242,7 +246,7 @@ inherited FSViewForm: TFSViewForm
     Top = 96
   end
   object Database: TSqlitePassDatabase
-    DatabaseType = dbtUnknown
+    DatabaseType = dbtSqlitePass
     DatatypeOptions.BooleanStorage = asInteger
     DatatypeOptions.DateFormat = 'YYYY-MM-DD'
     DatatypeOptions.DateStorage = asInteger
@@ -333,5 +337,12 @@ inherited FSViewForm: TFSViewForm
     Left = 56
     Top = 128
     pParams = ()
+  end
+  object Sync: TTimer
+    Enabled = False
+    Interval = 10
+    OnTimer = SyncTimer
+    Left = 24
+    Top = 128
   end
 end

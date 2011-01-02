@@ -78,18 +78,25 @@ type
   function FsAbsToRel(Path: String):string;
   function FsRelToAbs(Path: String):string;
 
+  function ExtractUnixFilePath(const FileName: string): string;
+  function ExtractUnixFileName(const FileName: string): string;
+  function ExtractUnixFileExt(const FileName: string): string;
+
 var
   Current_battlefield_path : string;
   //Current_mod_path         : string;
   //Current_archive_path     : string;
 
 const
+  UNIX_PATH_DELIM = '/';
+
   BATTLEFIELD_PATH       = 'bf://';   ///  C:\Program files\EA Games\BF1942\ -> bf://
   //MOD_PATH               = 'mod://';
-  //ARCHIVE_PATH           = 'archive://';
+  ARCHIVE_PATH           = 'archive://';
 
   MOD_DIRECTORY_NAME     = 'Mods';
   ARCHIVE_DIRECTORY_NAME = 'Archives';
+
 
 implementation
 
@@ -151,6 +158,32 @@ begin
   Result := StringReplace(Result,'/','\',[rfReplaceAll]);
 end;
 
+
+function ExtractUnixFilePath(const FileName: string): string;
+var
+  I: Integer;
+begin
+  I := LastDelimiter(UNIX_PATH_DELIM, FileName);
+  Result := Copy(FileName, 1, I);
+end;
+
+function ExtractUnixFileName(const FileName: string): string;
+var
+  I: Integer;
+begin
+  I := LastDelimiter(UNIX_PATH_DELIM, FileName);
+  Result := Copy(FileName, I + 1, MaxInt);
+end;
+
+function ExtractUnixFileExt(const FileName: string): string;
+var
+  I: Integer;
+begin
+  I := LastDelimiter('.' + UNIX_PATH_DELIM, FileName);
+  if (I > 0) and (FileName[I] = '.') then
+    Result := Copy(FileName, I, MaxInt) else
+    Result := '';
+end;
 
 
 { TBattlefieldModEntry }

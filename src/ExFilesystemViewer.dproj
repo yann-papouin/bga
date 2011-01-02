@@ -65,6 +65,7 @@
 			<DCCReference Include="FSLib.pas"/>
 			<DCCReference Include="Lib\MD5Api.pas"/>
 			<DCCReference Include="Lib\MD5Core.pas"/>
+			<DCCReference Include="Lib\MiniLZO.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

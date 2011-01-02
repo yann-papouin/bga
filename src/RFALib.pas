@@ -120,6 +120,7 @@ const
   PG_AUTO = -3;
   NORMAL_DATA = false;
   COMPRESSED_DATA = true;
+  RFA_EXTENSION = '.RFA';
 
 implementation
 
