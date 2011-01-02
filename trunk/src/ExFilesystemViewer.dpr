@@ -12,7 +12,8 @@ uses
   Resources in 'Resources.pas' {ResourcesForm},
   FSLib in 'FSLib.pas',
   MD5Api in 'Lib\MD5Api.pas',
-  MD5Core in 'Lib\MD5Core.pas';
+  MD5Core in 'Lib\MD5Core.pas',
+  MiniLZO in 'Lib\MiniLZO.pas';
 
 {$R *.res}
 

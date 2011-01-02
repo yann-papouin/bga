@@ -25,7 +25,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GuiFormCommon, ActnList, SpTBXControls, StdCtrls, SpTBXEditors, SpTBXItem, VirtualTrees,
-  ExtCtrls, TB2Item, TB2Dock, TB2Toolbar, FSLib, JvComponentBase, JvFormPlacement, DB, SqlitePassDbo, JvAppStorage, JvAppRegistryStorage, Grids, DBGrids, JvExDBGrids, JvDBGrid;
+  ExtCtrls, TB2Item, TB2Dock, TB2Toolbar, FSLib, JvComponentBase, JvFormPlacement, DB, RFALib,
+  SqlitePassDbo, JvAppStorage, JvAppRegistryStorage, Grids, DBGrids, JvExDBGrids, JvDBGrid;
 
 type
 
@@ -67,6 +68,8 @@ type
     Database: TSqlitePassDatabase;
     Dataset: TSqlitePassDataset;
     SubDataset: TSqlitePassDataset;
+    Sync: TTimer;
+    Init: TAction;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -83,8 +86,13 @@ type
     procedure RemoveExecute(Sender: TObject);
     procedure EditExecute(Sender: TObject);
     procedure FilesystemListDblClick(Sender: TObject);
+    procedure SyncTimer(Sender: TObject);
+    procedure InitExecute(Sender: TObject);
   private
+    FArchiveID : integer;
     procedure ApplySettingsData(Data: pFilesystemData);
+    procedure SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
+
     { Déclarations privées }
   public
     { Déclarations publiques }
@@ -126,6 +134,7 @@ begin
 end;
 
 
+
 procedure TFSViewForm.RemoveExecute(Sender: TObject);
 var
   Node, NextNode: PVirtualNode;
@@ -139,7 +148,7 @@ begin
   end;
 end;
 
-  (*
+(*
   'CREATE TABLE [SampleTable]
   ( [AutoIncField] AUTOINC, [BinIntField] BIGINT,' +
   '[BinaryField] BINARY, [BlobField] BLOB, [BooleanField] BOOLEAN, [CharField] CHAR,' +
@@ -149,16 +158,35 @@ end;
   '[GuidField] GUID, [IntField] INT, [Int64Field] INT64);');
   *)
 
-procedure TFSViewForm.UpdateExecute(Sender: TObject);
-
+procedure TFSViewForm.InitExecute(Sender: TObject);
 var
   Node: PVirtualNode;
   Data: pFilesystemData;
-  i,j :Integer;
+begin
+  // Reset components to empty vars
+  Database.Connected := false;
+  Database.Database := EmptyStr;
+  Current_battlefield_path := EmptyStr;
+
+  if Database.SQLiteLibrary = EmptyStr then
+    Database.SQLiteLibrary := GetAppDirectory + 'sqlite3.dll';
+
+  // Find selected file system
+  Node := FilesystemList.GetFirstSelected;
+  if Node <> nil then
+  begin
+    Data := FilesystemList.GetNodeData(Node);
+    Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
+    Database.Database := Current_battlefield_path + Data.Name;
+  end;
+end;
+
+
+procedure TFSViewForm.UpdateExecute(Sender: TObject);
+var
+  i :Integer;
   SQL : string;
-  test : TField;
   ModEntry : TBattlefieldModEntry;
-  Found : boolean;
   ModPath : string;
   ModID : integer;
   Options : TLocateOptions;
@@ -167,9 +195,9 @@ var
   procedure InsertAchivesFromPath(Path : string);
   var
     k : integer;
-    FileMD5 : string;
-    FileName : string;
-    FilePath : string;
+    ArchiveName : string;
+    ArchivePath : string;
+
     Content : TStringDynArray;
   begin
     Content := TDirectory.GetFileSystemEntries(IncludeTrailingBackslash(Path));
@@ -182,15 +210,15 @@ var
         InsertAchivesFromPath(Content[k]);
       end
         else
-      if TFile.Exists(Content[k]) then
+      if TFile.Exists(Content[k]) and (UpperCase(ExtractFileExt(Content[k])) = RFA_EXTENSION)  then
       begin
         // Check if is a valid RFA
-        FileName := ExtractFileName(Content[k]);
-        FilePath := FsAbsToRel(IncludeTrailingBackslash(ExtractFilePath(Content[k])));
-        if not SubDataset.Locate('path; name', VarArrayOf([FilePath, FileName]), Options) then
+        ArchiveName := ExtractFileName(Content[k]);
+        ArchivePath := FsAbsToRel(IncludeTrailingBackslash(ExtractFilePath(Content[k])));
+
+        if not SubDataset.Locate('path; name', VarArrayOf([ArchivePath, ArchiveName]), Options) then
         begin
-          //FileMD5 := MD5FromFile(Content[k]);
-          SQL := Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", "%s", "%d");', [FileName, FilePath, FileMD5, ModID]);
+          SQL := Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", NULL, NULL, "%d");', [ArchiveName, ArchivePath, ModID]);
           SendDebug(SQL);
           Database.Engine.ExecSQL(SQL);
         end;
@@ -200,25 +228,8 @@ var
   end;
 
 begin
-  // Reset components to empty vars
-  //Dataset.Active := false;
-  Database.Connected := false;
-  Database.Database := EmptyStr;
-
+  Init.Execute;
   Options := [loCaseInsensitive, loPartialKey];
-
-  if Database.SQLiteLibrary = EmptyStr then
-    Database.SQLiteLibrary := GetAppDirectory + 'sqlite3.dll';
-
-  // Find selected file system
-  Node := FilesystemList.GetFirstSelected;
-  if Node <> nil then
-  begin
-    Data := FilesystemList.GetNodeData(Node);
-    Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
-    Database.Database := Current_battlefield_path + Data.Name;
-    FSSettingsForm.ReadModsInfos(Current_battlefield_path + MOD_DIRECTORY_NAME);
-  end;
 
   if FileExists(Database.Database) then
     DeleteFile(Database.Database);
@@ -255,6 +266,7 @@ begin
       '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
       '"name" STRING,' +
       '"path" STRING,' +
+      '"age" DATETIME,' +
       '"md5" STRING,' +
       '"mod" INTEGER' +
       ');'
@@ -267,6 +279,11 @@ begin
       '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
       '"filename" STRING,' +
       '"path" STRING' +
+      '"offset" INTEGER' +
+      '"size" INTEGER' +
+      '"compressed" BOOLEAN' +
+      '"csize" INTEGER' +
+      '"archive" INTEGER' +
       ');'
     );
 
@@ -284,6 +301,12 @@ begin
       Dataset.SQL.Text := 'SELECT * FROM "MOD";';
       Dataset.Open;
 
+      // Find selected file system
+      if Database.Database <> EmptyStr then
+      begin
+        FSSettingsForm.ReadModsInfos(Current_battlefield_path + MOD_DIRECTORY_NAME);
+      end;
+
       for i:= 0 to FSSettingsForm.Modentries.Count - 1 do
       begin
         ModEntry := FSSettingsForm.Modentries[i];
@@ -298,11 +321,10 @@ begin
       Dataset.Refresh;
       while Dataset.RecNo < Dataset.RecordCount - 1 do
       begin
-        SendDebugFmt('%d:%s',[i, Dataset.FieldByName('Name').AsString]);
+        SendDebugFmt('%d:%s',[Dataset.RecNo, Dataset.FieldByName('Name').AsString]);
 
         ModID := Dataset.FieldByName('id').AsInteger;
         ModPath := FsRelToAbs(Dataset.FieldByName('Path').AsString) + IncludeTrailingBackslash(ARCHIVE_DIRECTORY_NAME);
-        //Current_mod_path := ModPath;
 
         if DirectoryExists(ModPath) then
         begin
@@ -318,12 +340,103 @@ begin
         Dataset.Next;
       end;
 
+      SyncTimer(self);
+
       /// RebuildModDependency
       /// RebuildArchiveList with md5 hash
       ///
 
+
     end;
   end;
+end;
+
+
+
+procedure TFSViewForm.SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
+var
+  Filename : string;
+  Path : string;
+  SQL : string;
+begin
+  Filename := ExtractUnixFileName(Name);
+  Path := ARCHIVE_PATH + ExtractUnixFilePath(Name);
+
+  SQL := Format('INSERT INTO "FILE" VALUES(NULL, "%s", "%s", "%d", "%d", "%d", "%d", "%d");', [Filename, Path, Offset, ucSize, Integer(Compressed), cSize, FArchiveID]);
+  Database.Engine.ExecSQL(SQL);
+end;
+
+procedure TFSViewForm.SyncTimer(Sender: TObject);
+var
+  Archive : TRFAFile;
+  ArchiveID : integer;
+  ArchiveFilename : string;
+  ArchiveDateTime: TDateTime;
+  ArchiveMD5 : string;
+  FileDateAndTime : TDateTime;
+  SQL : string;
+
+
+begin
+  //Init.Execute;
+
+  if Database.Connected then
+  begin
+    Dataset.Close;
+    Dataset.SQL.Text := 'SELECT * FROM "ARCHIVE";';
+    Dataset.Open;
+
+    while Dataset.RecNo < Dataset.RecordCount - 1 do
+    begin
+      ArchiveID := Dataset.FieldByName('id').AsInteger;
+      ArchiveFilename := FsRelToAbs(Dataset.FieldByName('path').AsString + Dataset.FieldByName('name').AsString);
+      ArchiveDateTime := Dataset.FieldByName('age').AsDateTime;
+      ArchiveMD5 :=  Dataset.FieldByName('md5').AsString;
+
+      //SendDebug();
+
+      if FileAge(ArchiveFilename, FileDateAndTime) then
+      begin
+        if (FileDateAndTime <> ArchiveDateTime) then
+        begin
+          if MD5FromFile(ArchiveFilename) <> ArchiveMD5 then
+          begin
+            // Updates archives
+            SQL := Format('DELETE * FROM "FILES" WHERE archive=%d',[ArchiveID]);
+            Database.Engine.ExecSQL(SQL);
+
+
+            FArchiveID := ArchiveID;
+            Archive := TRFAFile.Create;
+            Archive.OnReadEntry := SyncReadEntry;
+            if Archive.Open(ArchiveFilename) >=0 then
+            begin
+            // Update DB data like MD5 & filedate
+
+            /// FileAge(Content[k], DateAndTime);
+            /// ArchiveAge := FormatDateTime('YYYY-MM-DD hh:mm:ss.zzz', DateAndTime);
+            /// FileMD5 := MD5FromFile(Content[k]);
+            end;
+            Archive.Free;
+
+
+          end
+          else
+
+        end;
+      end
+        else
+      begin
+        // File doesn't exists anymore, remove it
+        //Database.Engine.ExecSQL('DELETE')
+      end;
+
+
+      Dataset.Next;
+    end;
+  end;
+
+
 end;
 
 procedure TFSViewForm.ImportExecute(Sender: TObject);
