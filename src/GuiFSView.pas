@@ -88,8 +88,10 @@ type
     procedure FilesystemListDblClick(Sender: TObject);
     procedure SyncTimer(Sender: TObject);
     procedure InitExecute(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     FArchiveID : integer;
+    FSQL : TStringList;
     procedure ApplySettingsData(Data: pFilesystemData);
     procedure SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
 
@@ -115,9 +117,16 @@ uses
 
 procedure TFSViewForm.FormCreate(Sender: TObject);
 begin
+  FSQL := TStringList.Create;
   FormStorage.RestoreFormPlacement;
 end;
 
+
+procedure TFSViewForm.FormDestroy(Sender: TObject);
+begin
+  FSQL.Free;
+  inherited;
+end;
 
 procedure TFSViewForm.OkExecute(Sender: TObject);
 begin
@@ -357,13 +366,13 @@ procedure TFSViewForm.SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, 
 var
   Filename : string;
   Path : string;
-  SQL : string;
+  Query : string;
 begin
   Filename := ExtractUnixFileName(Name);
   Path := ARCHIVE_PATH + ExtractUnixFilePath(Name);
 
-  SQL := Format('INSERT INTO "FILE" VALUES(NULL, "%s", "%s", "%d", "%d", "%d", "%d", "%d");', [Filename, Path, Offset, ucSize, Integer(Compressed), cSize, FArchiveID]);
-  Database.Engine.ExecSQL(SQL);
+  Query := Format('INSERT INTO "FILE" VALUES(NULL, "%s", "%s", "%d", "%d", "%d", "%d", "%d");', [Filename, Path, Offset, ucSize, Integer(Compressed), cSize, FArchiveID]);
+  FSQL.Add(Query);
 end;
 
 procedure TFSViewForm.SyncTimer(Sender: TObject);
@@ -374,7 +383,7 @@ var
   ArchiveDateTime: TDateTime;
   ArchiveMD5 : string;
   FileDateAndTime : TDateTime;
-  SQL : string;
+  Query : string;
 
 
 begin
@@ -402,15 +411,17 @@ begin
           if MD5FromFile(ArchiveFilename) <> ArchiveMD5 then
           begin
             // Updates archives
-            SQL := Format('DELETE * FROM "FILES" WHERE archive=%d',[ArchiveID]);
-            Database.Engine.ExecSQL(SQL);
+            Query := Format('DELETE FROM "FILE" WHERE archive=%d',[ArchiveID]);
+            Database.Engine.ExecSQL(Query);
 
-
+            FSQL.Clear;
             FArchiveID := ArchiveID;
             Archive := TRFAFile.Create;
             Archive.OnReadEntry := SyncReadEntry;
             if Archive.Open(ArchiveFilename) >=0 then
             begin
+
+              Database.Engine.ExecSQL(FSQL.Text);
             // Update DB data like MD5 & filedate
 
             /// FileAge(Content[k], DateAndTime);
