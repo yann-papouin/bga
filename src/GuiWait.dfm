@@ -34,7 +34,7 @@ object WaitForm: TWaitForm
     Alignment = taCenter
     Anchors = [akLeft, akRight, akBottom]
     AutoSize = False
-    Caption = 'BGA : Loading ...'
+    Caption = 'DEFAULT'
     Transparent = True
     Layout = tlCenter
     WordWrap = True

@@ -13,7 +13,8 @@ uses
   FSLib in 'FSLib.pas',
   MD5Api in 'Lib\MD5Api.pas',
   MD5Core in 'Lib\MD5Core.pas',
-  MiniLZO in 'Lib\MiniLZO.pas';
+  MiniLZO in 'Lib\MiniLZO.pas',
+  GuiWait in 'GuiWait.pas' {WaitForm};
 
 {$R *.res}
 
@@ -24,5 +25,6 @@ begin
   Application.CreateForm(TFSSettingsForm, FSSettingsForm);
   Application.CreateForm(TFormCommon, FormCommon);
   Application.CreateForm(TResourcesForm, ResourcesForm);
+  Application.CreateForm(TWaitForm, WaitForm);
   Application.Run;
 end.

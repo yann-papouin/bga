@@ -36,8 +36,8 @@
 			<DCC_DebugInformation>false</DCC_DebugInformation>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
-			<DCC_RangeChecking>true</DCC_RangeChecking>
 			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+			<DCC_RangeChecking>true</DCC_RangeChecking>
 			<DCC_MapFile>3</DCC_MapFile>
 			<DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
 			<DCC_Optimize>false</DCC_Optimize>
@@ -66,6 +66,9 @@
 			<DCCReference Include="Lib\MD5Api.pas"/>
 			<DCCReference Include="Lib\MD5Core.pas"/>
 			<DCCReference Include="Lib\MiniLZO.pas"/>
+			<DCCReference Include="GuiWait.pas">
+				<Form>WaitForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -133,7 +136,7 @@
 
 <!-- EurekaLog First Line
 [Exception Log]
-EurekaLog Version=6023
+EurekaLog Version=6025
 Activate=1
 Activate Handle=1
 Save Log File=1
@@ -277,15 +280,15 @@ csoShowBPLs=1
 csoShowBorlandThreads=1
 csoShowWindowsThreads=1
 csoDoNotStoreProcNames=0
-boPauseBorlandThreads=0
+boPauseBorlandThreads=1
 boDoNotPauseMainThread=0
-boPauseWindowsThreads=0
+boPauseWindowsThreads=1
 boUseMainModuleOptions=1
 boCopyLogInCaseOfError=1
 boSaveCompressedCopyInCaseOfError=0
 boHandleSafeCallExceptions=1
 boCallRTLExceptionEvent=1
-boCatchHandledExceptions=0
+boCatchHandledExceptions=1
 loCatchLeaks=1
 loGroupsSonLeaks=1
 loHideBorlandLeaks=1

@@ -25,7 +25,7 @@ type
     { Déclarations publiques }
     procedure BeginWait;
     procedure EndWait;
-    procedure IncProgress(Text : string = '');
+    procedure IncProgress(Text : string = ''; MaxStep : Integer = 0);
     property ApplicationModal : boolean read FApplicationModal write SetApplicationModal;
   end;
 
@@ -70,11 +70,17 @@ end;
 
 procedure TWaitForm.FormShow(Sender: TObject);
 begin
+  LabelText.Caption := 'BGA : Loading ...';
+  WaitBar.Position := 0;
   FWindowList := DisableTaskWindows(0);
 end;
 
-procedure TWaitForm.IncProgress(Text : string = '');
+procedure TWaitForm.IncProgress(Text : string = ''; MaxStep : Integer = 0);
 begin
+  if MaxStep > 0 then
+   WaitBar.Max := MaxStep;
+
+  LabelText.Caption := Text;
   WaitBar.Position := WaitBar.Position + 1;
   Application.ProcessMessages;
 end;
@@ -97,11 +103,12 @@ begin
   Dec(FWaitCounter);
   if FWaitCounter <= 0 then
   begin
-    FWaitCounter := 0;
-    Hide;
-
     if DebugHook <> 0 then
       SendDebugFmt('Max value should be %d',[WaitBar.Position]);
+
+    WaitBar.Position := WaitBar.Max;
+    FWaitCounter := 0;
+    Hide;
   end;
 end;
 

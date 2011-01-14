@@ -90,6 +90,7 @@ function TSqlitePassEngine.ExecSQL(Const Sql: String; CallBackFunc: TSqlitePassE
 var
 SQLText: UTF8AnsiString;
 begin
+
   {SqliteDbv3_Exec is Utf8 only, SQLText is encoded to Utf8 if needed}
   FDatabase.FTranslator.SystemEncodingToUTF8(sql, SQLText);
   repeat
@@ -97,9 +98,11 @@ begin
   (*if Assigned(CallBackFunc)
       then result:= SqliteDbv3_Exec(FConnectionHandle,Pchar(Sql),@_ExecCallBack,@@CallBackFunc,nil)
       else*)
+
   Result:= CheckResult(SqliteDbv3_Exec(FConnectionHandle,pUTF8AnsiString(SQLText),nil,nil,nil));
   until (result=SQLITE_OK) or not (result in [SQLITE_BUSY,SQLITE_LOCKED])
         or ((FQueryTimeOut>=0) and (Integer(GetTickCount)>=FStartTime));
+
 end;
 {$IFDEF Delphi2009}
 {$WARNINGS ON}
