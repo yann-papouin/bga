@@ -2844,8 +2844,10 @@ Try {1}
           end;
     end;
  except {Try 2}
+ (* REMOVED BY YANN
     if MessageDlg(Msg1044, mtWarning, [mbYes, mbNo], 0) = mrYes
        then FDatabase.Engine.ExecSQL('Drop table "SQLitePass__DbSettings";');
+ *)
  end; {Try 2 }
 finally
 

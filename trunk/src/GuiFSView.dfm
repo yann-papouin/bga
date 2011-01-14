@@ -58,8 +58,12 @@ inherited FSViewForm: TFSViewForm
           Stretch = True
           TabOrder = 0
           Caption = 'SpTBXToolbar1'
+          object SpTBXItem2: TSpTBXItem
+            Action = Active
+            DisplayMode = nbdmImageAndText
+          end
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 236
+            CustomWidth = 176
           end
           object SpTBXItem3: TSpTBXItem
             Action = Add
@@ -105,11 +109,13 @@ inherited FSViewForm: TFSViewForm
         TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
         TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines, toUseExplorerTheme]
         TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect, toMultiSelect, toRightClickSelect]
+        OnBeforeCellPaint = FilesystemListBeforeCellPaint
         OnDblClick = FilesystemListDblClick
         OnDrawText = FilesystemListDrawText
         OnFreeNode = FilesystemListFreeNode
         OnGetText = FilesystemListGetText
         OnGetNodeDataSize = FilesystemListGetNodeDataSize
+        OnStateChange = FilesystemListStateChange
         Columns = <
           item
             MinWidth = 200
@@ -221,6 +227,11 @@ inherited FSViewForm: TFSViewForm
     object Init: TAction
       Caption = 'Init'
       OnExecute = InitExecute
+    end
+    object Active: TAction
+      Caption = 'Active'
+      ImageIndex = 495
+      OnExecute = ActiveExecute
     end
   end
   object FormStorage: TJvFormStorage
@@ -341,9 +352,32 @@ inherited FSViewForm: TFSViewForm
   end
   object Sync: TTimer
     Enabled = False
-    Interval = 10
+    Interval = 100
     OnTimer = SyncTimer
     Left = 24
     Top = 128
+  end
+  object SyncDataset: TSqlitePassDataset
+    CalcDisplayedRecordsOnly = False
+    Database = Database
+    MasterSourceAutoActivate = True
+    FilterMode = fmSQLDirect
+    FilterRecordLowerLimit = 0
+    FilterRecordUpperLimit = 0
+    Indexed = True
+    LocateSmartRefresh = False
+    LookUpCache = False
+    LookUpDisplayedRecordsOnly = False
+    LookUpSmartRefresh = False
+    Sorted = False
+    RecordsCacheCapacity = 100
+    DatabaseAutoActivate = True
+    VersionInfo.Component = '0.55'
+    VersionInfo.Package = '0.55'
+    ParamCheck = False
+    WriteMode = wmDirect
+    Left = 56
+    Top = 160
+    pParams = ()
   end
 end

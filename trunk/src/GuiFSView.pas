@@ -70,6 +70,9 @@ type
     SubDataset: TSqlitePassDataset;
     Sync: TTimer;
     Init: TAction;
+    SyncDataset: TSqlitePassDataset;
+    SpTBXItem2: TSpTBXItem;
+    Active: TAction;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -89,15 +92,24 @@ type
     procedure SyncTimer(Sender: TObject);
     procedure InitExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure ActiveExecute(Sender: TObject);
+    procedure FilesystemListStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
+    procedure FilesystemListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
   private
+    FActiveIndex : Integer;
     FArchiveID : integer;
     FSQL : TStringList;
+    FSyncRunning : Boolean;
     procedure ApplySettingsData(Data: pFilesystemData);
     procedure SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
 
     { Déclarations privées }
+    procedure SyncStart;
+    procedure SyncStop;
+    procedure SetActiveIndex(const Value: Integer);
   public
     { Déclarations publiques }
+    property ActiveIndex : Integer read FActiveIndex write SetActiveIndex;
   end;
 
 
@@ -106,13 +118,15 @@ var
 
 const
   FS_SEPARATOR = '|';
+  SYNC_HARDTIME = 10;
+  SYNC_EASYTIME = 200;
 
 implementation
 
 {$R *.dfm}
 
 uses
-  DbugIntf, AppLib, GuiFSSettings, Resources, IOUtils, Types, StringFunction, TypInfo, MD5Api;
+  DbugIntf, GuiWait, AppLib, GuiFSSettings, Resources, IOUtils, Types, StringFunction, TypInfo, MD5Api;
 
 
 procedure TFSViewForm.FormCreate(Sender: TObject);
@@ -124,6 +138,8 @@ end;
 
 procedure TFSViewForm.FormDestroy(Sender: TObject);
 begin
+  SyncStop;
+  Database.Close;
   FSQL.Free;
   inherited;
 end;
@@ -168,9 +184,6 @@ end;
   *)
 
 procedure TFSViewForm.InitExecute(Sender: TObject);
-var
-  Node: PVirtualNode;
-  Data: pFilesystemData;
 begin
   // Reset components to empty vars
   Database.Connected := false;
@@ -179,29 +192,22 @@ begin
 
   if Database.SQLiteLibrary = EmptyStr then
     Database.SQLiteLibrary := GetAppDirectory + 'sqlite3.dll';
-
-  // Find selected file system
-  Node := FilesystemList.GetFirstSelected;
-  if Node <> nil then
-  begin
-    Data := FilesystemList.GetNodeData(Node);
-    Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
-    Database.Database := Current_battlefield_path + Data.Name;
-  end;
 end;
 
 
 procedure TFSViewForm.UpdateExecute(Sender: TObject);
 var
-  i :Integer;
-  SQL : string;
+  i,j :Integer;
+  Query : string;
   ModEntry : TBattlefieldModEntry;
   ModPath : string;
   ModID : integer;
+  DepID : Integer;
   Options : TLocateOptions;
+  Node: PVirtualNode;
+  Data: pFilesystemData;
 
-
-  procedure InsertAchivesFromPath(Path : string);
+  procedure PrepareInsertAchivesFromPath(Path : string);
   var
     k : integer;
     ArchiveName : string;
@@ -216,7 +222,7 @@ var
 
       if TDirectory.Exists(Content[k]) then
       begin
-        InsertAchivesFromPath(Content[k]);
+        PrepareInsertAchivesFromPath(Content[k]);
       end
         else
       if TFile.Exists(Content[k]) and (UpperCase(ExtractFileExt(Content[k])) = RFA_EXTENSION)  then
@@ -227,9 +233,8 @@ var
 
         if not SubDataset.Locate('path; name', VarArrayOf([ArchivePath, ArchiveName]), Options) then
         begin
-          SQL := Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", NULL, NULL, "%d");', [ArchiveName, ArchivePath, ModID]);
-          SendDebug(SQL);
-          Database.Engine.ExecSQL(SQL);
+          FSQL.Add(Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", NULL, NULL, "%d");', [ArchiveName, ArchivePath, ModID]));
+          SendDebug(FSQL.Strings[FSQL.Count-1]);
         end;
       end
 
@@ -237,24 +242,39 @@ var
   end;
 
 begin
-  Init.Execute;
-  Options := [loCaseInsensitive, loPartialKey];
 
+  SyncStop;
+  WaitForm.BeginWait;
+  WaitForm.IncProgress('Init', 5);
+  Init.Execute;
+
+  // Find selected file system
+  Node := FilesystemList.GetFirstSelected;
+  if Node <> nil then
+  begin
+    Data := FilesystemList.GetNodeData(Node);
+    Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
+    Database.Database := Current_battlefield_path + Data.Name;
+  end;
+
+  Options := [loCaseInsensitive, loPartialKey];
+(*
   if FileExists(Database.Database) then
     DeleteFile(Database.Database);
-
+*)
   if not FileExists(Database.Database) then
   begin
     Database.CreateDatabase(Database.Database, dbtSqlitePass);
     Database.Open;
+    WaitForm.IncProgress('Creating tables');
 
     Database.TableDefs.CreateTable
     (
       'CREATE TABLE "MOD"' +
       '(' +
       '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
-      '"name" STRING,' +
-      '"path" STRING' +
+      '"name" BLOB,' +
+      '"path" BLOB' +
       ');'
     );
 
@@ -273,10 +293,10 @@ begin
       'CREATE TABLE "ARCHIVE"' +
       '(' +
       '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
-      '"name" STRING,' +
-      '"path" STRING,' +
+      '"name" BLOB,' +
+      '"path" BLOB,' +
       '"age" DATETIME,' +
-      '"md5" STRING,' +
+      '"hash" BLOB,' +
       '"mod" INTEGER' +
       ');'
     );
@@ -286,12 +306,12 @@ begin
       'CREATE TABLE "FILE"' +
       '(' +
       '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
-      '"filename" STRING,' +
-      '"path" STRING' +
-      '"offset" INTEGER' +
-      '"size" INTEGER' +
-      '"compressed" BOOLEAN' +
-      '"csize" INTEGER' +
+      '"filename" BLOB,' +
+      '"path" BLOB,' +
+      '"offset" INTEGER,' +
+      '"size" INTEGER,' +
+      '"compressed" BOOLEAN,' +
+      '"csize" INTEGER,' +
       '"archive" INTEGER' +
       ');'
     );
@@ -309,6 +329,7 @@ begin
       Dataset.Close;
       Dataset.SQL.Text := 'SELECT * FROM "MOD";';
       Dataset.Open;
+      WaitForm.IncProgress('Updating MODs');
 
       // Find selected file system
       if Database.Database <> EmptyStr then
@@ -322,13 +343,49 @@ begin
 
         if not Dataset.Locate('name', ModEntry.GameName, Options) then
         begin
-          SQL := Format('INSERT INTO "MOD" VALUES(NULL, "%s", "%s");', [ModEntry.GameName, FsAbsToRel(ModEntry.AbsolutePath)]);
-          Database.Engine.ExecSQL(SQL);
+          Query := Format('INSERT INTO "MOD" VALUES(NULL, "%s", "%s");', [ModEntry.GameName, FsAbsToRel(ModEntry.AbsolutePath)]);
+          Database.Engine.ExecSQL(Query);
         end;
       end;
 
       Dataset.Refresh;
-      while Dataset.RecNo < Dataset.RecordCount - 1 do
+      for i:= 0 to FSSettingsForm.Modentries.Count - 1 do
+      begin
+        ModEntry := FSSettingsForm.Modentries[i];
+
+        if Dataset.Locate('name', ModEntry.GameName, Options) then
+        begin
+          ModID := Dataset.FieldByName('id').AsInteger;
+
+          for j := 0 to ModEntry.PathList.Count - 1 do
+          begin
+            SubDataset.Close;
+            SubDataset.ParamCheck := true;
+            SubDataset.SQL.Text := Format('SELECT * FROM "MOD" WHERE path LIKE "%%%s%%"',[ModEntry.PathList[j]]);
+            //SubDataset.Params.ParamByName('PathAsString').Value := '%'+ModEntry.PathList[j]+'%';
+            SubDataset.Open;
+            DepID := SubDataset.FieldByName('id').AsInteger;
+
+            while not SubDataset.Eof do
+            begin
+             SendDebug(SubDataset.FieldByName('name').AsString);
+             SubDataset.Next;
+            end;
+
+
+            Query := Format('INSERT INTO "DEPENDENCY" VALUES(%d, %d, %d);', [ModID, DepID, j+1]);
+            Database.Engine.ExecSQL(Query);
+          end;
+        end
+      else
+      begin
+      ShowMessage('Not found');
+      end;
+
+      end;
+
+      Dataset.Refresh;
+      while not Dataset.Eof do
       begin
         SendDebugFmt('%d:%s',[Dataset.RecNo, Dataset.FieldByName('Name').AsString]);
 
@@ -337,30 +394,44 @@ begin
 
         if DirectoryExists(ModPath) then
         begin
+          WaitForm.IncProgress('Updating ARCHIVES');
           SubDataset.Close;
           SubDataset.ParamCheck := true;
           SubDataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE mod=:IdAsInteger;';
           SubDataset.Params.ParamByName('IdAsInteger').Value := IntToStr(ModID);
           SubDataset.Open;
 
-          InsertAchivesFromPath(ModPath);
+          FSQL.Clear;
+          FSQL.Add('BEGIN;');
+          PrepareInsertAchivesFromPath(ModPath);
+          FSQL.Add('COMMIT;');
+          Database.Engine.ExecSQL(FSQL.Text);
         end;
 
         Dataset.Next;
       end;
 
-      SyncTimer(self);
-
       /// RebuildModDependency
-      /// RebuildArchiveList with md5 hash
-      ///
-
-
     end;
   end;
+
+  Active.Execute;
+  SyncStart;
+  WaitForm.IncProgress('Syncing started');
+  Sleep(500);
+  WaitForm.EndWait;
 end;
 
 
+procedure TFSViewForm.SetActiveIndex(const Value: Integer);
+var
+  Status : Boolean;
+begin
+  Status := FSyncRunning;
+  if Status then SyncStop;
+  FActiveIndex := Value;
+  if Status then SyncStart;
+end;
 
 procedure TFSViewForm.SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
 var
@@ -375,6 +446,42 @@ begin
   FSQL.Add(Query);
 end;
 
+procedure TFSViewForm.SyncStart;
+var
+  Node: PVirtualNode;
+  Data: pFilesystemData;
+begin
+  Assert(not Sync.Enabled, 'Syncing must be started/stopped with Start and Stop');
+  FSyncRunning := true;
+  Init.Execute;
+
+  // Find active file system
+  Node := FilesystemList.GetFirst;
+  while (Node <> nil) do
+  begin
+    if (Node.Index = ActiveIndex) then
+    begin
+      Data := FilesystemList.GetNodeData(Node);
+      Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
+      Database.Database := Current_battlefield_path + Data.Name;
+    end;
+    Node := FilesystemList.GetNext(Node);
+  end;
+
+  if FileExists(Database.Database) then
+    Database.Open;
+
+  Sync.Enabled := FSyncRunning;
+end;
+
+procedure TFSViewForm.SyncStop;
+begin
+  FSyncRunning := false;
+  Sync.Enabled := FSyncRunning;
+  SyncDataset.Close;
+end;
+
+
 procedure TFSViewForm.SyncTimer(Sender: TObject);
 var
   Archive : TRFAFile;
@@ -383,76 +490,126 @@ var
   ArchiveDateTime: TDateTime;
   ArchiveMD5 : string;
   FileDateAndTime : TDateTime;
+  FileMD5 : string;
+  FileAgeString : string;
   Query : string;
 
-
 begin
-  //Init.Execute;
-
-  if Database.Connected then
-  begin
-    Dataset.Close;
-    Dataset.SQL.Text := 'SELECT * FROM "ARCHIVE";';
-    Dataset.Open;
-
-    while Dataset.RecNo < Dataset.RecordCount - 1 do
+  try
+    if Database.Connected then
     begin
-      ArchiveID := Dataset.FieldByName('id').AsInteger;
-      ArchiveFilename := FsRelToAbs(Dataset.FieldByName('path').AsString + Dataset.FieldByName('name').AsString);
-      ArchiveDateTime := Dataset.FieldByName('age').AsDateTime;
-      ArchiveMD5 :=  Dataset.FieldByName('md5').AsString;
-
-      //SendDebug();
-
-      if FileAge(ArchiveFilename, FileDateAndTime) then
+      if not SyncDataset.Active or (SyncDataset.Active and SyncDataset.Eof) then
       begin
-        if (FileDateAndTime <> ArchiveDateTime) then
+        SyncDataset.Close;
+        SyncDataset.SQL.Text := 'SELECT * FROM "ARCHIVE";';
+        SyncDataset.Open;
+      end;
+
+      ArchiveID := SyncDataset.FieldByName('id').AsInteger;
+      ArchiveFilename := FsRelToAbs(SyncDataset.FieldByName('path').AsString + SyncDataset.FieldByName('name').AsString);
+      ArchiveDateTime := SyncDataset.FieldByName('age').AsDateTime;
+      ArchiveMD5 :=  SyncDataset.FieldByName('hash').AsString;
+
+      SendDebugFmt('Scanning archive %d:%s',[ArchiveID, ArchiveFilename]);
+
+      if FileAge(ArchiveFilename, FileDateAndTime) = true then
+      begin
+        // We need to compare time with an Epsilon due to rounding errors
+        if Abs(FileDateAndTime - ArchiveDateTime) > 0.00001 then
         begin
-          if MD5FromFile(ArchiveFilename) <> ArchiveMD5 then
+          SendDebugWarning('Date & Time compare failed');
+          FileMD5 :=  MD5FromFile(ArchiveFilename);
+          if FileMD5 <> ArchiveMD5 then
           begin
             // Updates archives
-            Query := Format('DELETE FROM "FILE" WHERE archive=%d',[ArchiveID]);
+            Query := Format('DELETE FROM "FILE" WHERE archive=%d;',[ArchiveID]);
             Database.Engine.ExecSQL(Query);
 
             FSQL.Clear;
+            FSQL.Add('BEGIN;');
             FArchiveID := ArchiveID;
             Archive := TRFAFile.Create;
+            SendDebugFmt('Reading entries from %d:%s',[SyncDataset.RecNo, SyncDataset.FieldByName('Name').AsString]);
             Archive.OnReadEntry := SyncReadEntry;
             if Archive.Open(ArchiveFilename) >=0 then
             begin
+              FSQL.Add('COMMIT;');
+              SendDebugFmt('Inserting %d:%s',[SyncDataset.RecNo, SyncDataset.FieldByName('Name').AsString]);
 
-              Database.Engine.ExecSQL(FSQL.Text);
-            // Update DB data like MD5 & filedate
+              try
+                Database.Engine.ExecSQL(FSQL.Text);
+              except
+                on e:Exception do
+                begin
+                  SyncStop;
+                  SendDebugError(e.Message);
+                end;
+              end;
 
-            /// FileAge(Content[k], DateAndTime);
-            /// ArchiveAge := FormatDateTime('YYYY-MM-DD hh:mm:ss.zzz', DateAndTime);
-            /// FileMD5 := MD5FromFile(Content[k]);
             end;
             Archive.Free;
+          end;
 
+          FileAgeString := FormatDateTime('YYYY-MM-DD hh:mm:ss', FileDateAndTime);
+          Query := Format('UPDATE "ARCHIVE" SET age="%s", hash="%s" WHERE id=%d;',[FileAgeString, FileMD5, ArchiveID]);
+          Sync.Interval := SYNC_HARDTIME;
+          try
+            SendDebug(Query);
+            Database.Engine.ExecSQL(Query);
+          except
+            on e:Exception do
+            begin
+              SyncStop;
+              SendDebugError(e.Message);
+            end;
+          end;
 
-          end
+        end
           else
-
+        begin
+          Sync.Interval := SYNC_EASYTIME;
         end;
       end
         else
       begin
         // File doesn't exists anymore, remove it
-        //Database.Engine.ExecSQL('DELETE')
+        Query := Format('DELETE FROM "FILE" WHERE archive=%d;',[ArchiveID]);
+        Database.Engine.ExecSQL(Query);
+        Query := Format('DELETE FROM "ARCHIVE" WHERE id=%d;',[ArchiveID]);
+        Database.Engine.ExecSQL(Query);
       end;
 
+      SyncDataset.Next;
 
-      Dataset.Next;
     end;
-  end;
 
+  except
+    on e:Exception do
+    begin
+      SyncStop;
+      SendDebugError(e.Message);
+    end;
+
+  end;
 
 end;
 
 procedure TFSViewForm.ImportExecute(Sender: TObject);
 begin
 //
+end;
+
+procedure TFSViewForm.ActiveExecute(Sender: TObject);
+var
+  Node: PVirtualNode;
+begin
+  Node := FilesystemList.GetFirstSelected;
+  if Node <> nil then
+  begin
+    ActiveIndex := Node.Index;
+    Active.Enabled := False;
+    FilesystemList.Repaint;
+  end;
 end;
 
 procedure TFSViewForm.AddExecute(Sender: TObject);
@@ -500,6 +657,20 @@ procedure TFSViewForm.FilesystemChoiceChange(Sender: TObject);
 begin
   inherited;
   //Settings.Enabled := FileExists(FilesystemChoice.Text);
+end;
+
+procedure TFSViewForm.FilesystemListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
+begin
+  inherited;
+
+  if Node.Index = ActiveIndex then
+  with TargetCanvas do
+  begin
+    Pen.Style := psClear;
+    Brush.Color := $00B0FFB0;
+    InflateRect(CellRect,1,1);
+    Rectangle(CellRect);
+  end;
 end;
 
 procedure TFSViewForm.FilesystemListDblClick(Sender: TObject);
@@ -551,6 +722,22 @@ begin
   end;
 end;
 
+procedure TFSViewForm.FilesystemListStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
+var
+  Node: PVirtualNode;
+begin
+  if tsChangePending in Leave then
+  begin
+    Node := Sender.GetFirstSelected;
+    if Node <> nil then
+    begin
+      Active.Enabled := ActiveIndex <> Node.Index;
+    end
+      else
+    Active.Enabled := False;
+  end;
+end;
+
 procedure TFSViewForm.FormStorageBeforeSavePlacement(Sender: TObject);
 var
   Node: PVirtualNode;
@@ -558,10 +745,12 @@ var
 begin
   Node := FilesystemList.GetFirst;
   FormStorage.WriteInteger('FilesystemCount', FilesystemList.RootNodeCount);
+  FormStorage.WriteInteger('FilesystemSelected', ActiveIndex);
   while Node <> nil do
   begin
     Data := FilesystemList.GetNodeData(Node);
-    FormStorage.WriteString(IntToStr(Node.Index), Data.Name + FS_SEPARATOR + Data.Path);
+    FormStorage.WriteString(IntToStr(Node.Index)+':NAME', Data.Name);
+    FormStorage.WriteString(IntToStr(Node.Index)+':PATH', Data.Path);
     Node := FilesystemList.GetNext(Node);
   end;
 end;
@@ -580,10 +769,10 @@ begin
   begin
     Node := FilesystemList.AddChild(nil);
     Data := FilesystemList.GetNodeData(Node);
-    Txt := FormStorage.ReadString(IntToStr(i), FS_SEPARATOR);
-    Data.Name := SFLeft(FS_SEPARATOR, Txt);
-    Data.Path := SFRight(FS_SEPARATOR, Txt);
+    Data.Name := FormStorage.ReadString(IntToStr(i)+':NAME');
+    Data.Path := FormStorage.ReadString(IntToStr(i)+':PATH');
   end;
+  ActiveIndex := FormStorage.ReadInteger('FilesystemSelected', -1);
 end;
 
 
