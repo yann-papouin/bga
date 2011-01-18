@@ -1,18 +1,18 @@
 inherited FSViewForm: TFSViewForm
   Caption = 'File system View'
-  ClientHeight = 452
+  ClientHeight = 455
   ClientWidth = 511
   Position = poScreenCenter
   OnDestroy = FormDestroy
-  ExplicitWidth = 527
-  ExplicitHeight = 490
+  ExplicitWidth = 519
+  ExplicitHeight = 482
   PixelsPerInch = 96
   TextHeight = 13
   object Background: TSpTBXPanel
     Left = 0
     Top = 0
     Width = 511
-    Height = 452
+    Height = 455
     Caption = 'Background'
     Align = alClient
     Padding.Left = 5
@@ -22,12 +22,13 @@ inherited FSViewForm: TFSViewForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
+    ExplicitHeight = 452
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
       Left = 5
       Top = 5
       Width = 501
-      Height = 236
+      Height = 308
       Margins.Left = 0
       Margins.Top = 0
       Margins.Right = 0
@@ -41,11 +42,12 @@ inherited FSViewForm: TFSViewForm
       TabOrder = 0
       object SpTBXDock1: TSpTBXDock
         Left = 12
-        Top = 198
+        Top = 270
         Width = 477
         Height = 26
         AllowDrag = False
         Position = dpBottom
+        ExplicitTop = 198
         object SpTBXToolbar1: TSpTBXToolbar
           Left = 0
           Top = 0
@@ -63,7 +65,7 @@ inherited FSViewForm: TFSViewForm
             DisplayMode = nbdmImageAndText
           end
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 176
+            CustomWidth = 191
           end
           object SpTBXItem3: TSpTBXItem
             Action = Add
@@ -89,7 +91,7 @@ inherited FSViewForm: TFSViewForm
         Left = 12
         Top = 25
         Width = 477
-        Height = 173
+        Height = 245
         Align = alClient
         DragMode = dmAutomatic
         DragOperations = [doMove]
@@ -107,7 +109,7 @@ inherited FSViewForm: TFSViewForm
         TabOrder = 1
         TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking]
         TreeOptions.MiscOptions = [toAcceptOLEDrop, toFullRepaintOnResize, toGridExtensions, toInitOnSave, toToggleOnDblClick, toWheelPanning, toEditOnClick]
-        TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines, toUseExplorerTheme]
+        TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines, toUseBlendedSelection, toUseExplorerTheme]
         TreeOptions.SelectionOptions = [toExtendedFocus, toFullRowSelect, toMultiSelect, toRightClickSelect]
         OnBeforeCellPaint = FilesystemListBeforeCellPaint
         OnDblClick = FilesystemListDblClick
@@ -116,6 +118,7 @@ inherited FSViewForm: TFSViewForm
         OnGetText = FilesystemListGetText
         OnGetNodeDataSize = FilesystemListGetNodeDataSize
         OnStateChange = FilesystemListStateChange
+        ExplicitHeight = 173
         Columns = <
           item
             MinWidth = 200
@@ -133,7 +136,7 @@ inherited FSViewForm: TFSViewForm
     object Footer: TSpTBXPanel
       AlignWithMargins = True
       Left = 5
-      Top = 414
+      Top = 417
       Width = 501
       Height = 33
       Margins.Left = 0
@@ -144,6 +147,7 @@ inherited FSViewForm: TFSViewForm
       UseDockManager = True
       TabOrder = 1
       Borders = False
+      ExplicitTop = 414
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 264
@@ -169,20 +173,65 @@ inherited FSViewForm: TFSViewForm
         ImageIndex = 143
       end
     end
-    object DBGrid1: TDBGrid
+    object SyncStatusGroup: TSpTBXGroupBox
       AlignWithMargins = True
-      Left = 8
-      Top = 254
-      Width = 495
-      Height = 157
-      Align = alClient
-      DrawingStyle = gdsGradient
+      Left = 5
+      Top = 323
+      Width = 501
+      Height = 78
+      Margins.Left = 0
+      Margins.Top = 0
+      Margins.Right = 0
+      Margins.Bottom = 10
+      Caption = 'Syncing status'
+      Align = alTop
+      Padding.Left = 10
+      Padding.Top = 10
+      Padding.Right = 10
+      Padding.Bottom = 10
       TabOrder = 2
-      TitleFont.Charset = DEFAULT_CHARSET
-      TitleFont.Color = clWindowText
-      TitleFont.Height = -11
-      TitleFont.Name = 'Tahoma'
-      TitleFont.Style = []
+      Visible = False
+      DesignSize = (
+        501
+        78)
+      object SyncStatusAction: TSpTBXLabel
+        Left = 13
+        Top = 23
+        Width = 18
+        Height = 19
+        Caption = '---'
+      end
+      object SyncProgressBar: TSpTBXProgressBar
+        AlignWithMargins = True
+        Left = 208
+        Top = 24
+        Width = 275
+        Height = 17
+        Margins.Left = 6
+        Margins.Top = 2
+        Margins.Right = 8
+        Margins.Bottom = 2
+        Color = clBtnFace
+        Anchors = [akLeft, akTop, akRight]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold]
+        ParentFont = False
+        CaptionGlow = gldNone
+        CaptionType = pctNone
+        Smooth = True
+      end
+      object SyncStatusArchiveName: TSpTBXLabel
+        Left = 13
+        Top = 48
+        Width = 475
+        Height = 19
+        Caption = '---'
+        Anchors = [akLeft, akTop, akRight]
+        Wrapping = twPathEllipsis
+      end
     end
   end
   object Actions: TActionList
@@ -232,6 +281,10 @@ inherited FSViewForm: TFSViewForm
       Caption = 'Active'
       ImageIndex = 495
       OnExecute = ActiveExecute
+    end
+    object Delete: TAction
+      Caption = 'Delete'
+      ImageIndex = 268
     end
   end
   object FormStorage: TJvFormStorage

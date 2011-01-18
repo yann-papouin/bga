@@ -64,7 +64,6 @@ type
     SpTBXItem1: TSpTBXItem;
     TemporaryAppStorage: TJvAppRegistryStorage;
     DataSource: TDataSource;
-    DBGrid1: TDBGrid;
     Database: TSqlitePassDatabase;
     Dataset: TSqlitePassDataset;
     SubDataset: TSqlitePassDataset;
@@ -73,6 +72,11 @@ type
     SyncDataset: TSqlitePassDataset;
     SpTBXItem2: TSpTBXItem;
     Active: TAction;
+    SyncStatusGroup: TSpTBXGroupBox;
+    SyncStatusAction: TSpTBXLabel;
+    SyncProgressBar: TSpTBXProgressBar;
+    SyncStatusArchiveName: TSpTBXLabel;
+    Delete: TAction;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -100,6 +104,8 @@ type
     FArchiveID : integer;
     FSQL : TStringList;
     FSyncRunning : Boolean;
+    FSyncMutex : boolean;
+    FPassCount : integer;
     procedure ApplySettingsData(Data: pFilesystemData);
     procedure SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
 
@@ -118,8 +124,8 @@ var
 
 const
   FS_SEPARATOR = '|';
-  SYNC_HARDTIME = 10;
-  SYNC_EASYTIME = 200;
+  SYNC_HARDTIME = 5;
+  SYNC_EASYTIME = 400;
 
 implementation
 
@@ -138,7 +144,10 @@ end;
 
 procedure TFSViewForm.FormDestroy(Sender: TObject);
 begin
+  Ok.Enabled := false;
+  Cancel.Enabled := false;
   SyncStop;
+
   Database.Close;
   FSQL.Free;
   inherited;
@@ -198,6 +207,7 @@ end;
 procedure TFSViewForm.UpdateExecute(Sender: TObject);
 var
   i,j :Integer;
+  Order : integer;
   Query : string;
   ModEntry : TBattlefieldModEntry;
   ModPath : string;
@@ -218,7 +228,7 @@ var
     Content := TDirectory.GetFileSystemEntries(IncludeTrailingBackslash(Path));
     for k := 0 to Length(Content) - 1 do
     begin
-      SendDebugFmt('%d:%s',[k, Content[k]]);
+      //SendDebugFmt('%d:%s',[k, Content[k]]);
 
       if TDirectory.Exists(Content[k]) then
       begin
@@ -234,7 +244,7 @@ var
         if not SubDataset.Locate('path; name', VarArrayOf([ArchivePath, ArchiveName]), Options) then
         begin
           FSQL.Add(Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", NULL, NULL, "%d");', [ArchiveName, ArchivePath, ModID]));
-          SendDebug(FSQL.Strings[FSQL.Count-1]);
+          //SendDebug(FSQL.Strings[FSQL.Count-1]);
         end;
       end
 
@@ -348,46 +358,53 @@ begin
         end;
       end;
 
-      Dataset.Refresh;
       for i:= 0 to FSSettingsForm.Modentries.Count - 1 do
       begin
         ModEntry := FSSettingsForm.Modentries[i];
+        Dataset.Close;
+        Dataset.SQL.Text := Format('SELECT * FROM "MOD" WHERE path ="%s";',[FsAbsToRel(ModEntry.AbsolutePath)]);
+        Dataset.Open;
 
         if Dataset.Locate('name', ModEntry.GameName, Options) then
         begin
+          Order := 0;
           ModID := Dataset.FieldByName('id').AsInteger;
+
+          // Remove existing dependencies
+          Query := Format('DELETE FROM "DEPENDENCY" WHERE mod=%d;',[ModID]);
+          Database.Engine.ExecSQL(Query);
 
           for j := 0 to ModEntry.PathList.Count - 1 do
           begin
             SubDataset.Close;
             SubDataset.ParamCheck := true;
             SubDataset.SQL.Text := Format('SELECT * FROM "MOD" WHERE path LIKE "%%%s%%"',[ModEntry.PathList[j]]);
-            //SubDataset.Params.ParamByName('PathAsString').Value := '%'+ModEntry.PathList[j]+'%';
             SubDataset.Open;
-            DepID := SubDataset.FieldByName('id').AsInteger;
 
             while not SubDataset.Eof do
             begin
-             SendDebug(SubDataset.FieldByName('name').AsString);
+             Inc(Order);
+             DepID := SubDataset.FieldByName('id').AsInteger;
+             Query := Format('INSERT INTO "DEPENDENCY" VALUES(%d, %d, %d);', [ModID, DepID, Order]);
+             Database.Engine.ExecSQL(Query);
+
              SubDataset.Next;
             end;
-
-
-            Query := Format('INSERT INTO "DEPENDENCY" VALUES(%d, %d, %d);', [ModID, DepID, j+1]);
-            Database.Engine.ExecSQL(Query);
           end;
         end
-      else
-      begin
-      ShowMessage('Not found');
-      end;
+          else
+        begin
+          SendDebugError('MOD Not found');
+        end;
 
       end;
 
-      Dataset.Refresh;
+      Dataset.Close;
+      Dataset.SQL.Text := 'SELECT * FROM "MOD";';
+      Dataset.Open;
       while not Dataset.Eof do
       begin
-        SendDebugFmt('%d:%s',[Dataset.RecNo, Dataset.FieldByName('Name').AsString]);
+        //SendDebugFmt('%d:%s',[Dataset.RecNo, Dataset.FieldByName('Name').AsString]);
 
         ModID := Dataset.FieldByName('id').AsInteger;
         ModPath := FsRelToAbs(Dataset.FieldByName('Path').AsString) + IncludeTrailingBackslash(ARCHIVE_DIRECTORY_NAME);
@@ -431,6 +448,7 @@ begin
   if Status then SyncStop;
   FActiveIndex := Value;
   if Status then SyncStart;
+  FPassCount := 0;
 end;
 
 procedure TFSViewForm.SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
@@ -439,11 +457,16 @@ var
   Path : string;
   Query : string;
 begin
+  SyncProgressBar.Max := Sender.Count;
+  SyncProgressBar.Position := SyncProgressBar.Position+1;
   Filename := ExtractUnixFileName(Name);
   Path := ARCHIVE_PATH + ExtractUnixFilePath(Name);
 
   Query := Format('INSERT INTO "FILE" VALUES(NULL, "%s", "%s", "%d", "%d", "%d", "%d", "%d");', [Filename, Path, Offset, ucSize, Integer(Compressed), cSize, FArchiveID]);
   FSQL.Add(Query);
+
+  if Sync.Enabled then
+    Application.ProcessMessages;
 end;
 
 procedure TFSViewForm.SyncStart;
@@ -472,12 +495,23 @@ begin
     Database.Open;
 
   Sync.Enabled := FSyncRunning;
+  SyncProgressBar.Visible := False;
+  SyncStatusGroup.Visible := FSyncRunning;
 end;
 
 procedure TFSViewForm.SyncStop;
 begin
   FSyncRunning := false;
+  SyncStatusGroup.Visible := FSyncRunning;
   Sync.Enabled := FSyncRunning;
+
+  while FSyncMutex do
+  begin
+    Application.ProcessMessages;
+    SendDebugWarning('Waiting for MUTEX');
+  end;
+
+
   SyncDataset.Close;
 end;
 
@@ -493,13 +527,20 @@ var
   FileMD5 : string;
   FileAgeString : string;
   Query : string;
+  CommonActionText : string;
 
 begin
+  if FSyncMutex then
+    Exit
+  else
+    FSyncMutex := true;
+
   try
     if Database.Connected then
     begin
       if not SyncDataset.Active or (SyncDataset.Active and SyncDataset.Eof) then
       begin
+        Inc(FPassCount);
         SyncDataset.Close;
         SyncDataset.SQL.Text := 'SELECT * FROM "ARCHIVE";';
         SyncDataset.Open;
@@ -509,15 +550,18 @@ begin
       ArchiveFilename := FsRelToAbs(SyncDataset.FieldByName('path').AsString + SyncDataset.FieldByName('name').AsString);
       ArchiveDateTime := SyncDataset.FieldByName('age').AsDateTime;
       ArchiveMD5 :=  SyncDataset.FieldByName('hash').AsString;
+      CommonActionText := Format(' archive (%d/%d)',[SyncDataset.RecNo+1, SyncDataset.RecordCount]);
 
-      SendDebugFmt('Scanning archive %d:%s',[ArchiveID, ArchiveFilename]);
+      SyncStatusAction.Caption := 'Scanning'+CommonActionText;
+      SyncStatusArchiveName.Caption := ArchiveFilename;
 
       if FileAge(ArchiveFilename, FileDateAndTime) = true then
       begin
         // We need to compare time with an Epsilon due to rounding errors
         if Abs(FileDateAndTime - ArchiveDateTime) > 0.00001 then
         begin
-          SendDebugWarning('Date & Time compare failed');
+          //SendDebugWarning('Date & Time compare failed');
+          SyncStatusAction.Caption := 'Storing'+CommonActionText;
           FileMD5 :=  MD5FromFile(ArchiveFilename);
           if FileMD5 <> ArchiveMD5 then
           begin
@@ -531,13 +575,20 @@ begin
             Archive := TRFAFile.Create;
             SendDebugFmt('Reading entries from %d:%s',[SyncDataset.RecNo, SyncDataset.FieldByName('Name').AsString]);
             Archive.OnReadEntry := SyncReadEntry;
+            SyncProgressBar.Visible := true;
+            SyncProgressBar.Position := 0;
             if Archive.Open(ArchiveFilename) >=0 then
             begin
               FSQL.Add('COMMIT;');
-              SendDebugFmt('Inserting %d:%s',[SyncDataset.RecNo, SyncDataset.FieldByName('Name').AsString]);
 
               try
-                Database.Engine.ExecSQL(FSQL.Text);
+                if Sync.Enabled then
+                  Database.Engine.ExecSQL(FSQL.Text)
+                else
+                begin
+                  FSyncMutex := false;
+                  Exit;
+                end;
               except
                 on e:Exception do
                 begin
@@ -548,11 +599,13 @@ begin
 
             end;
             Archive.Free;
+            SyncProgressBar.Visible := false;
           end;
 
           FileAgeString := FormatDateTime('YYYY-MM-DD hh:mm:ss', FileDateAndTime);
           Query := Format('UPDATE "ARCHIVE" SET age="%s", hash="%s" WHERE id=%d;',[FileAgeString, FileMD5, ArchiveID]);
           Sync.Interval := SYNC_HARDTIME;
+
           try
             SendDebug(Query);
             Database.Engine.ExecSQL(Query);
@@ -567,7 +620,10 @@ begin
         end
           else
         begin
-          Sync.Interval := SYNC_EASYTIME;
+          if FPassCount <= 1 then
+            Sync.Interval := SYNC_HARDTIME
+          else
+            Sync.Interval := SYNC_EASYTIME;
         end;
       end
         else
@@ -581,6 +637,11 @@ begin
 
       SyncDataset.Next;
 
+    end
+      else
+    begin
+      SyncStop;
+      SendDebugWarning('Auto stop synctimer');
     end;
 
   except
@@ -591,7 +652,7 @@ begin
     end;
 
   end;
-
+  FSyncMutex := false;
 end;
 
 procedure TFSViewForm.ImportExecute(Sender: TObject);
@@ -763,6 +824,7 @@ var
   Count, i: Integer;
   Txt: string;
 begin
+  SyncStop;
   FilesystemList.Clear;
   Count := FormStorage.ReadInteger('FilesystemCount', 0);
   for i := 0 to Count - 1 do
@@ -773,6 +835,7 @@ begin
     Data.Path := FormStorage.ReadString(IntToStr(i)+':PATH');
   end;
   ActiveIndex := FormStorage.ReadInteger('FilesystemSelected', -1);
+  SyncStart;
 end;
 
 
