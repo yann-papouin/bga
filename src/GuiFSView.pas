@@ -23,7 +23,7 @@ unit GuiFSView;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, SyncObjs,
   Dialogs, GuiFormCommon, ActnList, SpTBXControls, StdCtrls, SpTBXEditors, SpTBXItem, VirtualTrees,
   ExtCtrls, TB2Item, TB2Dock, TB2Toolbar, FSLib, JvComponentBase, JvFormPlacement, DB, RFALib,
   SqlitePassDbo, JvAppStorage, JvAppRegistryStorage, Grids, DBGrids, JvExDBGrids, JvDBGrid;
@@ -268,10 +268,10 @@ begin
   end;
 
   Options := [loCaseInsensitive, loPartialKey];
-(*
+
   if FileExists(Database.Database) then
     DeleteFile(Database.Database);
-*)
+
   if not FileExists(Database.Database) then
   begin
     Database.CreateDatabase(Database.Database, dbtSqlitePass);

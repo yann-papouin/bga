@@ -4,8 +4,8 @@ inherited FSViewForm: TFSViewForm
   ClientWidth = 511
   Position = poScreenCenter
   OnDestroy = FormDestroy
-  ExplicitWidth = 519
-  ExplicitHeight = 482
+  ExplicitWidth = 527
+  ExplicitHeight = 493
   PixelsPerInch = 96
   TextHeight = 13
   object Background: TSpTBXPanel
@@ -22,7 +22,6 @@ inherited FSViewForm: TFSViewForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
-    ExplicitHeight = 452
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
       Left = 5
@@ -47,7 +46,6 @@ inherited FSViewForm: TFSViewForm
         Height = 26
         AllowDrag = False
         Position = dpBottom
-        ExplicitTop = 198
         object SpTBXToolbar1: TSpTBXToolbar
           Left = 0
           Top = 0
@@ -65,7 +63,7 @@ inherited FSViewForm: TFSViewForm
             DisplayMode = nbdmImageAndText
           end
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 191
+            CustomWidth = 176
           end
           object SpTBXItem3: TSpTBXItem
             Action = Add
@@ -118,7 +116,6 @@ inherited FSViewForm: TFSViewForm
         OnGetText = FilesystemListGetText
         OnGetNodeDataSize = FilesystemListGetNodeDataSize
         OnStateChange = FilesystemListStateChange
-        ExplicitHeight = 173
         Columns = <
           item
             MinWidth = 200
@@ -147,7 +144,6 @@ inherited FSViewForm: TFSViewForm
       UseDockManager = True
       TabOrder = 1
       Borders = False
-      ExplicitTop = 414
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 264
