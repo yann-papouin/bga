@@ -504,14 +504,6 @@ begin
   FSyncRunning := false;
   SyncStatusGroup.Visible := FSyncRunning;
   Sync.Enabled := FSyncRunning;
-
-  while FSyncMutex do
-  begin
-    Application.ProcessMessages;
-    SendDebugWarning('Waiting for MUTEX');
-  end;
-
-
   SyncDataset.Close;
 end;
 
@@ -530,7 +522,7 @@ var
   CommonActionText : string;
 
 begin
-  if FSyncMutex then
+  if FSyncMutex or not Sync.Enabled then
     Exit
   else
     FSyncMutex := true;
@@ -635,12 +627,13 @@ begin
         Database.Engine.ExecSQL(Query);
       end;
 
-      SyncDataset.Next;
+      if SyncDataset.Active then
+        SyncDataset.Next;
 
     end
       else
     begin
-      SyncStop;
+      //SyncStop;
       SendDebugWarning('Auto stop synctimer');
     end;
 
