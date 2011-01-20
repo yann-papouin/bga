@@ -80,7 +80,9 @@ begin
   if MaxStep > 0 then
    WaitBar.Max := MaxStep;
 
-  LabelText.Caption := Text;
+  if Text <> EmptyStr then
+    LabelText.Caption := Text;
+
   WaitBar.Position := WaitBar.Position + 1;
   Application.ProcessMessages;
 end;

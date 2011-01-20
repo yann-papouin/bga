@@ -131,7 +131,7 @@ object RFASettingsForm: TRFASettingsForm
           TabOrder = 0
           Caption = 'SpTBXToolbar1'
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 158
+            CustomWidth = 146
           end
           object SpTBXItem1: TSpTBXItem
             Action = Add

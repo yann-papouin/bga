@@ -614,7 +614,7 @@ begin
   TotalProgress(roBegin, 0, 0);
 
   try
-    if FArchive.Open(Path) < 0 then
+    if FArchive.Open(Path) = orFailed then
     begin
       ShowError('Archive opening error', 'This file is already used by another application');
       FreeAndNil(FArchive);
@@ -743,132 +743,139 @@ begin
 
     if Assigned(FArchive) and (FArchive.Filepath = Path) and not Defrag then
     begin
-      TotalProgress(roBegin, 0, RFAList.TotalCount*3);
-
-      /// Step-1 : First delete entries
-      Node := RFAList.GetFirst;
-      while Node <> nil do
+      if FArchive.ReadOnly then
       begin
-        if not Cancel.Enabled then
-          Break;
-
-        NextNode := RFAList.GetNext(Node);
-        Data := RFAList.GetNodeData(Node);
-
-        if (fsDelete in Data.Status) and IsFile(Data.FileType) then
-        begin
-          DeleteResult := Data.RFAFileHandle.DeleteEntry(Data.EntryName);
-          //ShiftData(DeleteResult, shLeft);
-          RFAList.DeleteNode(Node);
-        end;
-
-        TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
-        Node := NextNode;
-      end;
-
-
-      /// Step-2 : Update edited files
-      Node := RFAList.GetFirst;
-      while Node <> nil do
+        ShowError('Archive saving error', 'This file is already used by another application. Use "Save as" instead');
+      end
+        else
       begin
-        if not Cancel.Enabled then
-          Break;
+        TotalProgress(roBegin, 0, RFAList.TotalCount*3);
 
-        NextNode := RFAList.GetNext(Node);
-        Data := RFAList.GetNodeData(Node);
-
-        if (fsExternal in Data.Status) and IsFile(Data.FileType) then
+        /// Step-1 : First delete entries
+        Node := RFAList.GetFirst;
+        while Node <> nil do
         begin
+          if not Cancel.Enabled then
+            Break;
 
-          // if the file is the last one then remove it first
-          if LastOne(Data.Offset) then
+          NextNode := RFAList.GetNext(Node);
+          Data := RFAList.GetNodeData(Node);
+
+          if (fsDelete in Data.Status) and IsFile(Data.FileType) then
           begin
-            DeleteResult := Data.RFAFileHandle.DeleteFile(Data.Offset, Data.CompSize);
-            ShiftData(DeleteResult, shLeft, Node);
+            DeleteResult := Data.RFAFileHandle.DeleteEntry(Data.EntryName);
+            //ShiftData(DeleteResult, shLeft);
+            RFAList.DeleteNode(Node);
           end;
 
-          ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
-          Size := ExternalFile.Size;
-          InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, FArchive.UseCompression);
-          ShiftData(InsertResult, shRight, Node);
-          ExternalFile.Free;
-
-          Data.RFAFileHandle.UpdateEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size);
-
-          Exclude(Data.Status, fsExternal);
-          Data.Size := Size;
-          Data.Offset := InsertResult.offset;
-          Data.Compressed := FArchive.UseCompression;
-          Data.CompSize := InsertResult.size;
-          Data.ExternalMD5 := MD5FromFile(Data.ExternalFilePath);
-          RFAList.InvalidateNode(Node);
+          TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
+          Node := NextNode;
         end;
 
-        TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
-        Node := NextNode;
-      end;
 
-      /// Step-3 : Add new files
-      Node := RFAList.GetFirst;
-      while Node <> nil do
-      begin
-        if not Cancel.Enabled then
-          Break;
-
-        NextNode := RFAList.GetNext(Node);
-        Data := RFAList.GetNodeData(Node);
-
-        if (fsNew in Data.Status) and IsFile(Data.FileType) then
+        /// Step-2 : Update edited files
+        Node := RFAList.GetFirst;
+        while Node <> nil do
         begin
-          ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
-          Size := ExternalFile.Size;
-          InsertResult := FArchive.InsertFile(ExternalFile, FArchive.UseCompression);
-          ShiftData(InsertResult, shRight, Node);
-          ExternalFile.Free;
+          if not Cancel.Enabled then
+            Break;
 
-          Data.EntryName := BuildEntryNameFromTree(Node);
-          Data.RFAFileHandle := FArchive;
-          Data.RFAFileHandle.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
+          NextNode := RFAList.GetNext(Node);
+          Data := RFAList.GetNodeData(Node);
 
-          Exclude(Data.Status, fsNew);
-          Exclude(Data.Status, fsEntry);
-          Data.Size := Size;
-          Data.Offset := InsertResult.offset;
-          Data.Compressed := FArchive.UseCompression;
-          Data.CompSize := InsertResult.size;
-          Data.ExternalFilePath := EmptyStr;
-          Data.ExternalMD5 := EmptyStr;
-          RFAList.InvalidateNode(Node);
+          if (fsExternal in Data.Status) and IsFile(Data.FileType) then
+          begin
+
+            // if the file is the last one then remove it first
+            if LastOne(Data.Offset) then
+            begin
+              DeleteResult := Data.RFAFileHandle.DeleteFile(Data.Offset, Data.CompSize);
+              ShiftData(DeleteResult, shLeft, Node);
+            end;
+
+            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+            Size := ExternalFile.Size;
+            InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, FArchive.UseCompression);
+            ShiftData(InsertResult, shRight, Node);
+            ExternalFile.Free;
+
+            Data.RFAFileHandle.UpdateEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size);
+
+            Exclude(Data.Status, fsExternal);
+            Data.Size := Size;
+            Data.Offset := InsertResult.offset;
+            Data.Compressed := FArchive.UseCompression;
+            Data.CompSize := InsertResult.size;
+            Data.ExternalMD5 := MD5FromFile(Data.ExternalFilePath);
+            RFAList.InvalidateNode(Node);
+          end;
+
+          TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
+          Node := NextNode;
         end;
 
-        TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
-        Node := NextNode;
-      end;
-
-      /// Step-4 : Update modified entries
-      Node := RFAList.GetFirst;
-      while Node <> nil do
-      begin
-        if not Cancel.Enabled then
-          Break;
-
-        NextNode := RFAList.GetNext(Node);
-        Data := RFAList.GetNodeData(Node);
-
-        if (fsEntry in Data.Status) and IsFile(Data.FileType) then
+        /// Step-3 : Add new files
+        Node := RFAList.GetFirst;
+        while Node <> nil do
         begin
-          Data.RFAFileHandle.DeleteEntry(Data.EntryName);
-          Data.EntryName := BuildEntryNameFromTree(Node);
-          Data.RFAFileHandle.InsertEntry(Data.EntryName, Data.offset, Data.Size, Data.CompSize, 0);
+          if not Cancel.Enabled then
+            Break;
+
+          NextNode := RFAList.GetNext(Node);
+          Data := RFAList.GetNodeData(Node);
+
+          if (fsNew in Data.Status) and IsFile(Data.FileType) then
+          begin
+            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+            Size := ExternalFile.Size;
+            InsertResult := FArchive.InsertFile(ExternalFile, FArchive.UseCompression);
+            ShiftData(InsertResult, shRight, Node);
+            ExternalFile.Free;
+
+            Data.EntryName := BuildEntryNameFromTree(Node);
+            Data.RFAFileHandle := FArchive;
+            Data.RFAFileHandle.InsertEntry(Data.EntryName, InsertResult.offset, Size, InsertResult.size, 0);
+
+            Exclude(Data.Status, fsNew);
+            Exclude(Data.Status, fsEntry);
+            Data.Size := Size;
+            Data.Offset := InsertResult.offset;
+            Data.Compressed := FArchive.UseCompression;
+            Data.CompSize := InsertResult.size;
+            Data.ExternalFilePath := EmptyStr;
+            Data.ExternalMD5 := EmptyStr;
+            RFAList.InvalidateNode(Node);
+          end;
+
+          TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
+          Node := NextNode;
         end;
 
-        TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
-        Node := NextNode;
-      end;
+        /// Step-4 : Update modified entries
+        Node := RFAList.GetFirst;
+        while Node <> nil do
+        begin
+          if not Cancel.Enabled then
+            Break;
 
-      TotalProgress(roEnd, PG_NULL, PG_NULL);
-      UpdateInfobar;
-      Result := true;
+          NextNode := RFAList.GetNext(Node);
+          Data := RFAList.GetNodeData(Node);
+
+          if (fsEntry in Data.Status) and IsFile(Data.FileType) then
+          begin
+            Data.RFAFileHandle.DeleteEntry(Data.EntryName);
+            Data.EntryName := BuildEntryNameFromTree(Node);
+            Data.RFAFileHandle.InsertEntry(Data.EntryName, Data.offset, Data.Size, Data.CompSize, 0);
+          end;
+
+          TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
+          Node := NextNode;
+        end;
+
+        TotalProgress(roEnd, PG_NULL, PG_NULL);
+        UpdateInfobar;
+        Result := true;
+      end;
     end
       else
     begin
@@ -990,20 +997,34 @@ begin
         end;
 
         TotalProgress(roEnd, PG_NULL, PG_NULL);
-        Result := true;
-
         TmpArchive.Free;
 
         if Assigned(FArchive) and Defrag then
         begin
-          Reset;
-          DeleteFile(Path);
-          RenameFile(TmpFilename, Path);
+          if not (FArchive.ReadOnly and (FArchive.Filepath = Path)) then
+            Reset;
+
+          if DeleteFile(Path) then
+            Result := RenameFile(TmpFilename, Path)
+          else
+            DeleteFile(TmpFilename);
+        end
+          else
+        begin
+          Result := true;
         end;
 
-        OpenDialog.FileName := Path;
-        CancelChange;
-        QuickOpen;
+        if Result then
+        begin
+          OpenDialog.FileName := Path;
+          CancelChange;
+          QuickOpen;
+        end
+          else
+        begin
+          ShowError('Archive saving error', 'This file is already used by another application');
+        end;
+
       end;
     end;
   end;
@@ -1052,6 +1073,8 @@ end;
 
 
 function TRFAViewForm.QuickOpen: boolean;
+var
+  WindowCaption : string;
 begin
   Result := false;
   if FileExists(OpenDialog.FileName) then
@@ -1063,7 +1086,11 @@ begin
       RebuildRecentList;
       SaveDialog.FileName := OpenDialog.FileName;
       CancelChange;
-      Title := OpenDialog.FileName;
+      WindowCaption := OpenDialog.FileName;
+      if FArchive.ReadOnly then
+        WindowCaption := WindowCaption + ' (Read-only)';
+
+      Title := WindowCaption;
       Result := true;
     end;
   end
@@ -1882,7 +1909,7 @@ procedure TRFAViewForm.NotifyChange;
 begin
   if Assigned(FArchive) then
   begin
-    Save.Enabled := true;
+    Save.Enabled := true; // and not FArchive.ReadOnly
     Defrag.Enabled := true;
   end;
 end;
