@@ -26,7 +26,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, SyncObjs,
   Dialogs, GuiFormCommon, ActnList, SpTBXControls, StdCtrls, SpTBXEditors, SpTBXItem, VirtualTrees,
   ExtCtrls, TB2Item, TB2Dock, TB2Toolbar, FSLib, JvComponentBase, JvFormPlacement, DB, RFALib,
-  SqlitePassDbo, JvAppStorage, JvAppRegistryStorage, Grids, DBGrids, JvExDBGrids, JvDBGrid;
+  SqlitePassDbo, JvAppStorage, JvAppRegistryStorage, Grids, DBGrids, JvExDBGrids, JvDBGrid, JvExControls, JvAnimatedImage, JvGIFCtrl;
 
 type
 
@@ -77,6 +77,9 @@ type
     SyncProgressBar: TSpTBXProgressBar;
     SyncStatusArchiveName: TSpTBXLabel;
     Delete: TAction;
+    SyncAnimScan: TJvGIFAnimator;
+    SyncAnimStore: TJvGIFAnimator;
+    SyncStatus: TSpTBXLabel;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -106,6 +109,7 @@ type
     FSyncRunning : Boolean;
     FSyncMutex : boolean;
     FPassCount : integer;
+    FUpdatePass : integer;
     procedure ApplySettingsData(Data: pFilesystemData);
     procedure SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
 
@@ -126,6 +130,11 @@ const
   FS_SEPARATOR = '|';
   SYNC_HARDTIME = 5;
   SYNC_EASYTIME = 400;
+
+  IMG_SYNC_STOP = 312;
+  IMG_SYNC_INIT = 325;
+  IMG_SYNC_RUNNING = 321;
+  IMG_SYNC_READY = 319;
 
 implementation
 
@@ -475,6 +484,10 @@ var
   Data: pFilesystemData;
 begin
   Assert(not Sync.Enabled, 'Syncing must be started/stopped with Start and Stop');
+
+  SyncStatus.Caption := 'Init';
+  SyncStatus.ImageIndex := IMG_SYNC_INIT;
+
   FSyncRunning := true;
   Init.Execute;
 
@@ -495,6 +508,12 @@ begin
     Database.Open;
 
   Sync.Enabled := FSyncRunning;
+
+  SyncAnimScan.Animate := FSyncRunning;
+  SyncAnimStore.Animate := FSyncRunning;
+  SyncAnimScan.Visible := true;
+  SyncAnimStore.Visible := false;
+
   SyncProgressBar.Visible := False;
   SyncStatusGroup.Visible := FSyncRunning;
 end;
@@ -502,9 +521,14 @@ end;
 procedure TFSViewForm.SyncStop;
 begin
   FSyncRunning := false;
+  SyncAnimScan.Animate := FSyncRunning;
+  SyncAnimStore.Animate := FSyncRunning;
   SyncStatusGroup.Visible := FSyncRunning;
   Sync.Enabled := FSyncRunning;
   SyncDataset.Close;
+
+  SyncStatus.Caption := 'Disabled';
+  SyncStatus.ImageIndex := IMG_SYNC_STOP;
 end;
 
 
@@ -553,7 +577,14 @@ begin
         if Abs(FileDateAndTime - ArchiveDateTime) > 0.00001 then
         begin
           //SendDebugWarning('Date & Time compare failed');
-          SyncStatusAction.Caption := 'Storing'+CommonActionText;
+          SyncAnimScan.Visible := false;
+          SyncAnimStore.Visible := true;
+          SyncStatusAction.Caption := 'Storing'+ CommonActionText;
+          FUpdatePass := FPassCount;
+
+          SyncStatus.Caption := 'Running';
+          SyncStatus.ImageIndex := IMG_SYNC_RUNNING;
+
           FileMD5 :=  MD5FromFile(ArchiveFilename);
           if FileMD5 <> ArchiveMD5 then
           begin
@@ -612,6 +643,10 @@ begin
         end
           else
         begin
+
+          SyncAnimStore.Visible := false;
+          SyncAnimScan.Visible := true;
+
           if FPassCount <= 1 then
             Sync.Interval := SYNC_HARDTIME
           else
@@ -625,6 +660,12 @@ begin
         Database.Engine.ExecSQL(Query);
         Query := Format('DELETE FROM "ARCHIVE" WHERE id=%d;',[ArchiveID]);
         Database.Engine.ExecSQL(Query);
+      end;
+
+      if (FPassCount > FUpdatePass) and (FPassCount > 1) then
+      begin
+        SyncStatus.Caption := 'Ready';
+        SyncStatus.ImageIndex := IMG_SYNC_READY;
       end;
 
       if SyncDataset.Active then
@@ -828,7 +869,7 @@ begin
     Data.Path := FormStorage.ReadString(IntToStr(i)+':PATH');
   end;
   ActiveIndex := FormStorage.ReadInteger('FilesystemSelected', -1);
- // SyncStart;
+  SyncStart;
 end;
 
 
