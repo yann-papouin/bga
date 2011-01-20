@@ -569,7 +569,7 @@ begin
             Archive.OnReadEntry := SyncReadEntry;
             SyncProgressBar.Visible := true;
             SyncProgressBar.Position := 0;
-            if Archive.Open(ArchiveFilename) >=0 then
+            if Archive.Open(ArchiveFilename, True) = orReadOnly then
             begin
               FSQL.Add('COMMIT;');
 
@@ -828,7 +828,7 @@ begin
     Data.Path := FormStorage.ReadString(IntToStr(i)+':PATH');
   end;
   ActiveIndex := FormStorage.ReadInteger('FilesystemSelected', -1);
-  SyncStart;
+ // SyncStart;
 end;
 
 

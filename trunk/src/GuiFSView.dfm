@@ -4,8 +4,8 @@ inherited FSViewForm: TFSViewForm
   ClientWidth = 511
   Position = poScreenCenter
   OnDestroy = FormDestroy
-  ExplicitWidth = 519
-  ExplicitHeight = 482
+  ExplicitWidth = 527
+  ExplicitHeight = 493
   PixelsPerInch = 96
   TextHeight = 13
   object Background: TSpTBXPanel
@@ -63,7 +63,7 @@ inherited FSViewForm: TFSViewForm
             DisplayMode = nbdmImageAndText
           end
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 191
+            CustomWidth = 176
           end
           object SpTBXItem3: TSpTBXItem
             Action = Add

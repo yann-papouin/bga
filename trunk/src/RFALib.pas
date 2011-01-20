@@ -43,6 +43,13 @@ type
     roDelete
   );
 
+  TRFAOpenResult =
+  (
+    orReadWrite,
+    orReadOnly,
+    orFailed
+  );
+
   TRFAFile = class;
 
   TRFAReadEntry = procedure(Sender : TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed : boolean; cSize : integer) of object;
@@ -58,6 +65,7 @@ type
     FLargeBuf : TMemoryStream;
     FHandle : TStream;
     FOnReadEntry: TRFAReadEntry;
+    FReadOnly : Boolean;
 
     FFilepath: string;
     FCount: integer;
@@ -86,7 +94,7 @@ type
     destructor Destroy; override;
 
     function New(Filename: string): integer;
-    function Open(Filename: string): integer;
+    function Open(Filename: string; OpenReadOnly : Boolean = false): TRFAOpenResult;
 
     procedure DecompressToStream(outputstream: TStream; Offset, Size: int64; silent: boolean = true);
     procedure ExtractToStream(Data: TStream; Offset, Size, UcSize: int64);
@@ -107,6 +115,7 @@ type
     property Fragmentation : Integer read GetFragmentation;
 
     property UseCompression : boolean read FUseCompression;
+    property ReadOnly : Boolean read FReadOnly;
 
     property OnReadEntry: TRFAReadEntry read FOnReadEntry write SetOnReadEntry;
     property OnProgress: TRFAProgress read FOnProgress write SetOnProgress;
@@ -274,6 +283,8 @@ begin
     FHandle.Free;
 
   FHandle := nil;
+  FReadOnly := False;
+  FUseCompression := False;
   FIndexedDataSize := 0;
   FCount := 0;
   FFilepath := EmptyStr;
@@ -316,7 +327,7 @@ end;
 
 
 
-function TRFAFile.Open(Filename: string): integer;
+function TRFAFile.Open(Filename: string; OpenReadOnly : Boolean = false): TRFAOpenResult;
 var
   ENT: RFA_Entry;
   Path: AnsiString;
@@ -326,23 +337,36 @@ var
 begin
   Release;
 
+  if not OpenReadOnly then
   try
-    Fhandle := TFileStream.Create(Filename, fmOpenReadWrite);
+    Fhandle := TFileStream.Create(Filename, fmOpenReadWrite or fmShareDenyWrite);
+    Result := orReadWrite;
   except
     on e:exception do
     try
+      OpenReadOnly := True;
       FHandle.Free;
-      Fhandle := TFileStream.Create(Filename, fmOpenRead);
-      Result := -1;
+    except
+      Result := orFailed;
+    end;
+  end;
+
+  if OpenReadOnly then
+  begin
+    try
+      OpenReadOnly := True;
+      Fhandle := TFileStream.Create(Filename, fmOpenRead or fmShareDenyNone);
+      Result := orReadOnly;
     except
       FHandle.Free;
-      Result := -3;
+      Result := orFailed;
     end;
   end;
 
   if Assigned(FHandle) then
   begin
     IsRetail := ReadHeader;
+    FReadOnly := OpenReadOnly;
     FCount := ElementQuantity;
     FIndexedDataSize := 0;
 
@@ -387,9 +411,10 @@ begin
     if Assigned(FOnProgress) then
       FOnProgress(Self, roEnd, 0);
 
-    Result := 0;
     FFilepath := Filename;
-  end;
+  end
+    else
+      Result := orFailed;
 
 end;
 
