@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, GR32_Image, GrProgressBar, SpTBXItem, SpTBXControls, StdCtrls, ComCtrls, JvTimer, AsyncTimer;
+  Dialogs, ExtCtrls, GR32_Image, SpTBXItem, SpTBXControls, StdCtrls, ComCtrls, JvTimer, AsyncTimer;
 
 type
   TWaitForm = class(TForm)

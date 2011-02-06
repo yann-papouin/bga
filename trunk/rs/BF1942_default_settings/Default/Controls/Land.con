@@ -1,0 +1,49 @@
+rem *** Controlmaps ***
+
+rem *** Player Input ***
+ControlMap.create LandSeaPlayerInputControlMap
+ControlMap.addKeysToAxisMapping c_PIThrottle IDFKeyboard IDKey_W IDKey_S
+ControlMap.addKeysToAxisMapping c_PIYaw IDFKeyboard IDKey_D IDKey_A
+ControlMap.addKeysToAxisMapping c_PIPitch IDFKeyboard IDKey_ArrowUp IDKey_ArrowDown
+ControlMap.addButtonToTriggerMapping c_PIAltFire IDFMouse IDButton_1 c_CMPushAndHold
+ControlMap.addKeyToTriggerMapping c_PIMenuSelect1 IDFKeyboard IDKey_1 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIMenuSelect2 IDFKeyboard IDKey_2 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIMenuSelect3 IDFKeyboard IDKey_3 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIMenuSelect4 IDFKeyboard IDKey_4 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIMenuSelect5 IDFKeyboard IDKey_5 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIMenuSelect6 IDFKeyboard IDKey_6 c_CMNonRepetive
+ControlMap.addButtonToTriggerMapping c_PIFire IDFMouse IDButton_0 c_CMPushAndHold
+ControlMap.addAxisToTriggerMapping c_PINextItem c_PIPrevItem IDFMouse IDAxis_2
+ControlMap.addAxisToAxisMapping c_PIMouseLookX IDFMouse IDAxis_0 0
+ControlMap.addAxisToAxisMapping c_PIMouseLookY IDFMouse IDAxis_1 0
+
+rem *** Additional variables***
+game.setLandSeaKeyboardSensitivity 0.500000
+game.setLandSeaMouseSensitivity 0.250000
+game.setLandSeaMouseInvert 0
+
+rem *** Common Player Input ***
+ControlMap.addKeyToTriggerMapping c_PISayAll IDFKeyboard IDKey_K c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PISayTeam IDFKeyboard IDKey_L c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIUse IDFKeyboard IDKey_E c_CMPushAndHold
+ControlMap.addKeyToTriggerMapping c_PIMenuSelect9 IDFKeyboard IDKey_9 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIMap IDFKeyboard IDKey_M c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIZoomMap IDFKeyboard IDKey_N c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIShowScoreBoard IDFKeyboard IDKey_Tab c_CMPushAndHold
+ControlMap.addKeyToTriggerMapping c_PICameraMode1 IDFKeyboard IDKey_F9 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PICameraMode2 IDFKeyboard IDKey_F10 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PICameraMode3 IDFKeyboard IDKey_F11 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PICameraMode4 IDFKeyboard IDKey_F12 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIToggleCameraMode IDFKeyboard IDKey_C c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIRadio1 IDFKeyboard IDKey_F1 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIRadio2 IDFKeyboard IDKey_F2 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIRadio3 IDFKeyboard IDKey_F3 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIRadio4 IDFKeyboard IDKey_F4 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIRadio5 IDFKeyboard IDKey_F5 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIRadio6 IDFKeyboard IDKey_F6 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIRadio7 IDFKeyboard IDKey_F7 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIRadio8 IDFKeyboard IDKey_F8 c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIScreenShot IDFKeyboard IDKey_PrintScreen c_CMNonRepetive
+ControlMap.addKeyToTriggerMapping c_PIToolTip IDFKeyboard IDKey_T c_CMNonRepetive
+ControlMap.addKeysToAxisMapping c_PICameraX IDFKeyboard IDKey_Numpad6 IDKey_Numpad4
+ControlMap.addKeysToAxisMapping c_PICameraY IDFKeyboard IDKey_Numpad8 IDKey_Numpad2

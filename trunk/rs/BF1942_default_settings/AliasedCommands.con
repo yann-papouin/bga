@@ -1,0 +1,104 @@
+rem - Client commands:
+
+alias listplayers game.listplayers
+alias players game.listplayers
+alias lp game.listplayers
+alias listmaps game.listmaps
+alias lm game.listmaps
+alias forgive game.TKForgive
+alias forgivetk game.TKForgive
+alias ftk game.TKForgive
+alias punish game.TKPunish
+alias punishtk game.TKPunish
+alias ptk game.TKPunish
+alias buddylist game.buddylist
+alias suicide game.suicide
+alias ignorelist chat.ignorelist
+alias textinfo chat.chatinfo
+
+rem - Client 'Toggle' settings:
+
+alias fps console.showfps
+alias hud game.usehud
+alias oldtext chat.oldChatListStyle
+
+rem - Client Settings
+
+alias name game.changePlayerName
+alias textsizes chat.setChatHistory
+alias killtext chat.killMessageSize
+alias flagtext chat.gameInfoMessageSize
+alias chattext chat.chatMessageSize
+alias oldtextsize chat.oldChatListHistory
+
+rem - Client Argument commands
+
+alias votemap game.voteMap
+alias vm game.voteMap
+alias kick game.voteKickPlayer
+alias kickteam game.votekickteamplayer
+alias kt game.votekickteamplayer
+alias addbuddy game.addPlayerToBuddyList
+alias buddy game.addPlayerToBuddyList
+alias ab game.addPlayerToBuddyList
+alias removebuddy game.removeplayerfrombuddylist
+alias unbuddy game.removeplayerfrombuddylist
+alias rb game.removeplayerfrombuddylist
+alias ignore chat.addToIgnoreList
+alias unignore chat.removeFromIgnoreList
+
+rem - Admin commands
+
+alias nextmap admin.runnextlevel
+alias nm admin.runnextlevel
+alias restart admin.restartmap
+alias rm admin.restartmap
+alias banlist admin.listBannedAddresses
+alias clearbans admin.clearbanlist
+alias pause admin.togglegamepause
+alias unpause admin.togglegamepause
+
+rem - Admin 'Toggle' settings:
+
+alias freecam game.enableFreeCamera
+alias tkban admin.banPlayerOnTKKick
+alias punishmode admin.TKPunishMode
+alias mapvoting admin.enableMapVote
+alias kickvoting admin.enableKickPlayerVote
+alias teamkickvoting admin.enableKickTeamPlayerVote
+alias nosecam admin.allownosecam
+alias extviews admin.externalViews
+alias autoteam admin.autoBalanceTeam
+
+rem - Admin Settings
+
+alias tkspawndelay admin.spawnDelayPenaltyForTK
+alias tklimit admin.nrOfTKToKick
+alias remoteconsole admin.enableRemoteConsole
+alias remoteadmin admin.enableRemoteAdmin
+alias votetime admin.votingTime
+alias bantime admin.banTime
+alias startdelay admin.delaybeforestartinggame
+alias rounddelay admin.roundDelayBeforeStartingGame
+alias timelimit admin.timeLimit
+alias scorelimit admin.scoreLimit
+alias roundlimit admin.setNrOfRounds
+
+rem - Admin argument commands
+
+alias adminkick admin.kickplayer
+alias kickplayer admin.kickplayer
+alias adminkick admin.kickplayer
+alias akick admin.kickplayer
+alias ban admin.banplayer
+alias banaddress admin.addAddresstoBanList
+alias unbanaddress admin.removeAddressFromBanList
+alias load admin.changemap
+alias map admin.changemap
+alias loadmap admin.changemap
+alias setnextmap admin.setNextLevel
+alias message admin.servermessage
+alias speak game.sayall
+alias say game.sayall
+
+

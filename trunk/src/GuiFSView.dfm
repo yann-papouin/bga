@@ -4,8 +4,8 @@ inherited FSViewForm: TFSViewForm
   ClientWidth = 511
   Position = poScreenCenter
   OnDestroy = FormDestroy
-  ExplicitWidth = 519
-  ExplicitHeight = 482
+  ExplicitWidth = 527
+  ExplicitHeight = 493
   PixelsPerInch = 96
   TextHeight = 13
   object Background: TSpTBXPanel
@@ -22,7 +22,6 @@ inherited FSViewForm: TFSViewForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
-    ExplicitLeft = -8
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
       Left = 5
@@ -64,7 +63,7 @@ inherited FSViewForm: TFSViewForm
             DisplayMode = nbdmImageAndText
           end
           object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
-            CustomWidth = 191
+            CustomWidth = 176
           end
           object SpTBXItem3: TSpTBXItem
             Action = Add
@@ -205,7 +204,6 @@ inherited FSViewForm: TFSViewForm
         Top = 24
         Width = 16
         Height = 16
-        AsyncDrawing = True
         Center = True
         Image.Data = {
           A705000047494638396110001000E60000FFFFFFB50000FCFAFADE9292DC8888
@@ -254,13 +252,13 @@ inherited FSViewForm: TFSViewForm
           8518199A8219643E2232861885303F318F8407343537B084339D2FB6248E2F9D
           38BB8E2E123605B685113202C78325422B5DAA852C090DAF84A1A382535F5344
           969882DA8F8DCCE681003B}
+        Threaded = False
       end
       object SyncAnimStore: TJvGIFAnimator
         Left = 13
         Top = 24
         Width = 16
         Height = 16
-        AsyncDrawing = True
         Center = True
         Image.Data = {
           4603000047494638396110001000C40000FFFFFF383838F9F9F96363639E9E9E
@@ -290,6 +288,7 @@ inherited FSViewForm: TFSViewForm
           08B09AA160083E6E850549302488188D1E4B37B20D482C07C1892D74832A8283
           451A1410A4C32DD160A88860C002F91031890818B097408F0E433768082F3104
           66055C298B8C2621003B}
+        Threaded = False
       end
       object SyncStatusAction: TSpTBXLabel
         Left = 33

@@ -1,0 +1,5 @@
+rem ** Custom **
+run Profiles/Custom/Controls/Common.con
+run Profiles/Custom/Controls/Infantry.con
+run Profiles/Custom/Controls/Land.con
+run Profiles/Custom/Controls/Air.con
