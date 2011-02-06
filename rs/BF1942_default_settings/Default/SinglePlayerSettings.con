@@ -1,0 +1,13 @@
+rem *** SinglePlayerSettings ***
+
+Game.setSkirmishAiSkill 2
+Game.setSkirmishBotRatio 2
+Game.setSkirmishNrOfLives 2
+Game.setSkirmishTeam 2
+Game.setSkirmishMap Battleaxe
+Game.setSkirmishDifficulty 2
+
+Game.setCampaignAiSkill 2
+Game.setCampaignBotRatio 2
+Game.setCampaignNrOfLives 2
+Game.setCampaignDifficulty 2

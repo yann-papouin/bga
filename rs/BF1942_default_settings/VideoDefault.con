@@ -1,0 +1,6 @@
+renderer.setFullScreen 1
+renderer.fieldOfView 1
+renderer.globalLodRadius 1
+renderer.globalLodRadiusScaleFactor 5
+console.showStats 0
+renderer.allowAllRefreshRates 1

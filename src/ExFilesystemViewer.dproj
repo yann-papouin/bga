@@ -36,6 +36,7 @@
 			<DCC_DebugInformation>false</DCC_DebugInformation>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
+			<DCC_DebugDCUs>true</DCC_DebugDCUs>
 			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
 			<DCC_RangeChecking>true</DCC_RangeChecking>
 			<DCC_MapFile>3</DCC_MapFile>
@@ -136,7 +137,7 @@
 
 <!-- EurekaLog First Line
 [Exception Log]
-EurekaLog Version=6025
+EurekaLog Version=6101
 Activate=1
 Activate Handle=1
 Save Log File=1
@@ -296,6 +297,7 @@ loFreeAllLeaks=1
 loCatchLeaksExceptions=1
 cfoReduceFileSize=1
 cfoCheckFileCorruption=0
+cfoUseEL7=1
 Count mtInformationMsgCaption=1
 mtInformationMsgCaption0="Information."
 Count mtQuestionMsgCaption=1

@@ -1,0 +1,14 @@
+rem *** Generated ***
+
+PlayerName=
+game.setConnection 2
+game.setToolTip 0
+game.setRadioToolTip 1
+game.setCrossHairColor 256.000000 256.000000 0.000000
+game.setStaticMinimap 1
+game.setMinimapTransparency 20
+game.setSkirmishPercentageOfBots 150
+game.setSkirmishPercentageOfCpu 20
+game.setCampaignPercentageOfBots 150
+game.setCampaignPercentageOfCpu 20
+game.setRadioToolTipColor 0.700000 0.700000 0.700000

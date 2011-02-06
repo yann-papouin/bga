@@ -1,0 +1,22 @@
+Game.setGameLevelPath Bf1942/Levels/Tobruk/
+Game.useMenu 1
+Game.useHud 1
+Game.menuMain BattlefieldMenu
+Game.menuInGame InGame
+Game.menuMap Map
+Game.DebugCallbackDisabled 0
+
+Game.addModServerInfoIcon "Xpack1" "Menu/serverInfo/serverInfo_xpack1.tga"
+
+rem Do _not_ change these unless you know exactly what you're doing.
+rem Ie. Do not change these. Vec order is lo/med/hi and 16/24/32
+Sound.soundStreamUpdateFrequency 20
+Sound.soundBufferCacheSize 200
+Sound.reserve2dMonoChans 4/4/4
+Sound.reserve2dStereoChans 2/2/2
+Sound.relaxHwReservations 0/0/0
+Sound.setHardwareVoiceLimit 32
+
+run AliasedCommands.con
+
+rem run ../../../Tools/Editors/Editors.con

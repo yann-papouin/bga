@@ -262,13 +262,16 @@ var
 
 begin
 
+  // Find selected file system
+  Node := FilesystemList.GetFirstSelected;
+  if Node = nil then
+    Exit;
+
   SyncStop;
   WaitForm.BeginWait;
   WaitForm.IncProgress('Init', 5);
   Init.Execute;
 
-  // Find selected file system
-  Node := FilesystemList.GetFirstSelected;
   if Node <> nil then
   begin
     Data := FilesystemList.GetNodeData(Node);

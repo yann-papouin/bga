@@ -1,0 +1,22 @@
+rem *** 3D settings ***
+Sound.setDopplerFactor 1
+Sound.setRolloffFactor 1
+Sound.setDistanceFactor 1
+
+rem *** Performance settings ***
+Sound.setPitchChangeRate 15
+
+rem Sound.setTemplateLevel HIGH
+
+rem *** Generated ***
+
+game.setDisableSound 0
+game.setChannels 16
+game.setMasterVolume 75
+game.setMenuMusicVolume 50
+game.setMusicOnOff 1
+game.setLocalizedDialog 0
+game.setQuality 0
+game.setSoundDetail 1
+game.setHardware 0
+

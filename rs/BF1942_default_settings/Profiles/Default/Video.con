@@ -1,0 +1,11 @@
+rem Optimal setting for CPU > 1400 MHZ
+game.setGameDisplayMode 800 600 32 0
+game.setDetailTexture 4
+game.setShadows 1
+game.setEnvironmentMapping 1
+game.setGraphicsQuality 3
+game.setLightmaps 1
+game.setRenderWhenSpawnMenu 1
+game.setMenuViewdistance 100
+game.setEffectsQuality 3
+game.setPerformance 3
