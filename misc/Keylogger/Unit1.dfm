@@ -31,7 +31,6 @@ object MainForm: TMainForm
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 0
-    ExplicitHeight = 407
   end
   object Panel1: TPanel
     Left = 0

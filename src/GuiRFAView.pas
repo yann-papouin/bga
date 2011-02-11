@@ -1864,8 +1864,8 @@ begin
     Theme.Text := SkinManager.CurrentSkinName;
     FormStorage.SaveFormPlacement;
 
-    if DirectoryExists(GetAppTempDirectory) then
-      DeleteDirectory(GetAppTempDirectory, false);
+    if DirectoryExists(GetMapTempDirectory) then
+      DeleteDirectory(GetMapTempDirectory, false);
   end;
 end;
 

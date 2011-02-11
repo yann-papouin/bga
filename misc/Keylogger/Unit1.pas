@@ -105,7 +105,7 @@ begin
    Sleep(1000);
    Keybd_Event(0, Code.Value, KEYEVENTF_KEYUP, 0);
 
-   Code.Value := Code.Value +1;
+ //  Code.Value := Code.Value +1;
 end;
 
 end.

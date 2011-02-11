@@ -83,6 +83,9 @@ begin
   if Text <> EmptyStr then
     LabelText.Caption := Text;
 
+  if WaitBar.Position+1 > WaitBar.Max then
+    WaitBar.Max := WaitBar.Max +1;
+
   WaitBar.Position := WaitBar.Position + 1;
   Application.ProcessMessages;
 end;
