@@ -430,6 +430,10 @@ var
       begin
         Data := Sender.GetNodeData(Node);
         Data.ExternalFilePath := Filename;
+        Include(Data.Status, fsExternal);
+        Exclude(Data.Status, fsDelete);
+        Sender.FullyVisible[Node] := True;
+        SendDebugError('FOUND');
       end;
     end;
   end;
