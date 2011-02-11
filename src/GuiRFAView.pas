@@ -1657,6 +1657,7 @@ var
 begin
   Data := RFAList.GetNodeData(Node);
   Include(Data.Status, fsEntry);
+  NotifyChange;
 end;
 
 procedure TRFAViewForm.RFAListStartDrag(Sender: TObject; var DragObject: TDragObject);
@@ -1710,7 +1711,7 @@ begin
 
     Brush.Color := clNone;
 
-    if fsExternal in Data.Status then
+    if (fsExternal in Data.Status) or (fsEntry in Data.Status)  then
       Brush.Color := $0093DCFF;
 
     if fsNew in Data.Status then
