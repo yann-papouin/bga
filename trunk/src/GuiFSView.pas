@@ -677,7 +677,7 @@ begin
     end
       else
     begin
-      //SyncStop;
+      SyncStop;
       SendDebugWarning('Auto stop synctimer');
     end;
 

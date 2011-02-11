@@ -134,7 +134,7 @@ type
     function IsFolder(Name: String) : boolean;
     procedure SetSearchText(const Value: string);
   protected
-    procedure MakePathVisible(Table: TBaseVirtualTree; Node: PVirtualNode);
+    procedure MakePathVisible(Table: TBaseVirtualTree; Node: PVirtualNode; Children : Boolean = false);
     function FindFileByName(Filename: string): PVirtualNode;
     function FindFile(Path: String): PVirtualNode;
     function FindPath(Path: String) : PVirtualNode;
@@ -152,6 +152,7 @@ type
     function PreviewSelection : boolean;
     function GetFileByPath(Sender: TObject; const VirtualPath : string) : string;
     procedure WarnAboutOpenGL;
+    procedure GoToSelection;
   public
     { Déclarations publiques }
     property SearchText : string read FSearchText write SetSearchText;
@@ -282,8 +283,10 @@ begin
 end;
 
 
-procedure TRFACommonForm.MakePathVisible(Table : TBaseVirtualTree; Node: PVirtualNode);
+procedure TRFACommonForm.MakePathVisible(Table : TBaseVirtualTree; Node: PVirtualNode; Children : Boolean = false);
 begin
+  Table.FullyVisible[Node] := True;
+(*
   repeat
     if Node = Table.RootNode then
       Break;
@@ -292,6 +295,7 @@ begin
     Table.Expanded[Node] := true;
     Node := Node.Parent;
   until False;
+*)
 end;
 
 
@@ -963,6 +967,7 @@ procedure TRFACommonForm.SearchTimer(Sender: TObject);
 var
   i, Count : integer;
   Data : pFse;
+  SelectedNode : PVirtualNode;
 
   function LocalMatchesMask(AString : string) : boolean;
   var
@@ -985,6 +990,8 @@ begin
   if OperationPending then
     Exit;
 
+  SelectedNode := RFAList.GetFirstSelected;
+
   Count := 10;
   Search.Enabled := false;
   for i := 0 to Count - 1 do
@@ -996,14 +1003,18 @@ begin
         SearchProgressBar.Position := SearchProgressBar.Position+1;
         Data := RFAList.GetNodeData(FSearchNode);
 
-        if LocalMatchesMask(Data.W32Name) then
+        if LocalMatchesMask(Data.W32Path) then
         begin
           MakePathVisible(RFAList, FSearchNode);
-          RFAList.ScrollIntoView(FSearchNode,true);
+
+          if SelectedNode = nil then
+            RFAList.ScrollIntoView(FSearchNode,true);
         end;
         FSearchNode := RFAList.GetNext(FSearchNode, true);
       end;
   end;
+
+  GoToSelection;
 
   if FSearchNode <> nil then
     Search.Enabled := true;
@@ -1037,9 +1048,21 @@ begin
   begin
     FSearchNode := RFAList.GetFirst;
     Search.Enabled := true;
-  end;
-
+  end
+    else
+  GoToSelection;
 end;
+
+
+procedure TRFACommonForm.GoToSelection;
+var
+  SelectedNode : PVirtualNode;
+begin
+  SelectedNode := RFAList.GetFirstSelected;
+  if (SelectedNode <> nil) and RFAList.IsVisible[SelectedNode] then
+    RFAList.ScrollIntoView(SelectedNode,true);
+end;
+
 
 procedure TRFACommonForm.Sort;
 begin
