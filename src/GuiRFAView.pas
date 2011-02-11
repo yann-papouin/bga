@@ -433,7 +433,6 @@ var
         Include(Data.Status, fsExternal);
         Exclude(Data.Status, fsDelete);
         Sender.FullyVisible[Node] := True;
-        SendDebugError('FOUND');
       end;
     end;
   end;
