@@ -25,13 +25,13 @@ interface
 {$I BGA.inc}
 
 uses
-  JvGnuGetText, ShellAPI,
+  JvGnuGetText, ShellAPI, GuiFormCommon,
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GuiRFACommon, ActnList, VirtualTrees, TB2Item, SpTBXItem, TB2Dock,
   TB2Toolbar, ExtCtrls, JvFormPlacement, JvAppStorage, JvAppRegistryStorage, Menus,
   JvComponentBase, JvAppInst, DragDrop, DropSource, DragDropFile, StdCtrls,
   SpTBXEditors, SpTBXControls, GuiUpdateManager, ActiveX, RFALib, JclFileUtils, ImgList,
-  PngImageList;
+  PngImageList, DropTarget, DropHandler;
 
 type
 
@@ -47,6 +47,22 @@ type
     edOk,
     edInvalid
   );
+
+  TDragDropStage =
+  (
+    dsNone,
+    dsIdle,
+    dsDrag,
+    dsDragAsync,
+    dsDragAsyncFailed,
+    dsDrop,
+    dsGetData,
+    dsAbort,
+    dsGetStream,
+    dsDoneStream,
+    dsDropComplete
+  );
+
 
   TRFAViewForm = class(TRFACommonForm)
     Open: TAction;
@@ -142,6 +158,8 @@ type
     EditByExtension: TSpTBXItem;
     ExtensionImageList: TPngImageList;
     RecentList: TMemo;
+    DropEmptySource: TDropEmptySource;
+    DragDataFormatAdapter: TDataFormatAdapter;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -191,11 +209,28 @@ type
     procedure PreviewExecute(Sender: TObject);
     procedure EditWithOSExecute(Sender: TObject);
     procedure EditByExtensionClick(Sender: TObject);
+    procedure DropEmptySourceAfterDrop(Sender: TObject; DragResult: TDragResult;
+      Optimized: Boolean);
+    procedure DropEmptySourceDrop(Sender: TObject; DragType: TDragType;
+      var ContinueDrop: Boolean);
+    procedure DropEmptySourceGetData(Sender: TObject;
+      const FormatEtc: tagFORMATETC; out Medium: tagSTGMEDIUM;
+      var Handled: Boolean);
+    procedure RFAListMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure FormMouseLeave(Sender: TObject);
+    procedure RFAListMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure DropEmptySourceFeedback(Sender: TObject; Effect: Integer;
+      var UseDefaultCursors: Boolean);
   private
     FEditResult : TEditResult;
     FSyncNode : PVirtualNode;
+    //FDragNode : PVirtualNode;
+    FDragNodes : Array of PVirtualNode;
     FArchive : TRFAFile;
     FResetMutex : boolean;
+    FStatus: TDragDropStage;
     procedure ReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
     { Déclarations privées }
     procedure SubProgress(Sender : TRFAFile; Operation : TRFAOperation; Value : Integer = 0);
@@ -222,11 +257,14 @@ type
     procedure UpdateInfobar;
     procedure UpdateReply(Sender: TObject; Result: TUpdateResult);
     procedure RebuildEditWithMenu;
+    procedure SetStatus(const Value: TDragDropStage);
+    procedure OnGetStream(Sender: TFileContentsStreamOnDemandClipboardFormat; Index: integer; out AStream: IStream);
   protected
     procedure CancelChange;
     procedure NotifyChange;
   public
     { Déclarations publiques }
+    property Status: TDragDropStage read FStatus write SetStatus;
   end;
 
 var
@@ -237,7 +275,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, VirtualTreeviewTheme, UAC,
+  DbugIntf, VirtualTreeviewTheme, UAC, ShlObj, DragDropFormats,
   GuiRFASettings,
   GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
   Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
@@ -1599,12 +1637,11 @@ begin
       Exit;
   end;
 
-  if Source = nil then
-    Accept := true
-  else
-    if Source = Sender then
-      Accept := true;
+  if DropEmptySource.PerformedDropEffect <> 0 then
+    Exit;
 
+  if (Source = nil) or (Source = Sender) then
+    Accept := true;
 end;
 
 
@@ -1625,6 +1662,76 @@ begin
   if CharCode = VK_DELETE then
   begin
     DeleteSelection;
+  end;
+end;
+
+procedure TRFAViewForm.RFAListMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  i : integer;
+  Node : PVirtualNode;
+  Data : pFse;
+  W32Path : string;
+begin
+  inherited;
+
+  Status := dsIdle;
+  if (ssCtrl in Shift) then
+  begin
+
+    RFAList.DragMode := dmManual;
+    if DragDetectPlus(Handle, Point(X, Y)) then
+    begin
+      Status := dsDrag;
+      with TVirtualFileStreamDataFormat(DragDataFormatAdapter.DataFormat) do
+      begin
+        FileNames.Clear;
+        i := 0;
+        Node := RFAList.GetFirstSelected;
+        while Node <> nil do
+        begin
+          ExtendSelection(Node);
+          Data := RFAList.GetNodeData(Node);
+
+          if IsFile(Data.FileType) then
+          begin
+            W32Path := BuildEntryNameFromTree(Node, true);
+            W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
+
+            FileNames.Add(W32Path);
+            SendDebugFmt('Adding %s',[W32Path]);
+
+            // Set the size and timestamp attributes of the filename we just added.
+            with PFileDescriptor(FileDescriptors[i])^ do
+            begin
+              GetSystemTimeAsFileTime(ftLastWriteTime);
+              nFileSizeLow := Data.Size and $00000000FFFFFFFF;
+              nFileSizeHigh := (Data.Size and $FFFFFFFF00000000) shr 32;
+              dwFlags := FD_WRITESTIME or FD_FILESIZE or FD_PROGRESSUI;
+            end;
+
+            SetLength(FDragNodes, i+1);
+            FDragNodes[i] := Node;
+            Inc(i);
+          end;
+
+          Node := RFAList.GetNextSelected(Node, true);
+        end;
+      end;
+
+      DropEmptySource.Execute;
+      Status := dsIdle;
+    end;
+  end;
+end;
+
+procedure TRFAViewForm.RFAListMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+  if RFAList.DragMode <> dmAutomatic then
+  begin
+    RFAList.DragMode := dmAutomatic;
   end;
 end;
 
@@ -1686,6 +1793,14 @@ begin
         SelectionText.Caption := Format('%d items in selection',[Sender.SelectedCount]);
     end;
   end;
+
+  if tsOLEDragging in Enter then
+  begin
+    SendDebug('tsOLEDragging');
+  end;
+
+
+
 end;
 
 procedure TRFAViewForm.RFAListDblClick(Sender: TObject);
@@ -1772,6 +1887,83 @@ begin
   end;
 end;
 
+procedure TRFAViewForm.DropEmptySourceAfterDrop(Sender: TObject;
+  DragResult: TDragResult; Optimized: Boolean);
+begin
+  Status := dsDropComplete;
+end;
+
+procedure TRFAViewForm.DropEmptySourceDrop(Sender: TObject; DragType: TDragType;
+  var ContinueDrop: Boolean);
+begin
+  // Warning:
+  // This event will be called in the context of the transfer thread during an
+  // asynchronous transfer. See TFormMain.OnProgress for a comment on this.
+  Status := dsDrop;
+end;
+
+procedure TRFAViewForm.DropEmptySourceFeedback(Sender: TObject; Effect: Integer;
+  var UseDefaultCursors: Boolean);
+begin
+  inherited;
+  //UseDefaultCursors := false;
+  //Effect := 0;
+end;
+
+procedure TRFAViewForm.DropEmptySourceGetData(Sender: TObject;
+  const FormatEtc: tagFORMATETC; out Medium: tagSTGMEDIUM;
+  var Handled: Boolean);
+begin
+  // Warning:
+  // This event will be called in the context of the transfer thread during an
+  // asynchronous transfer. See TFormMain.OnProgress for a comment on this.
+  Status := dsGetData;
+end;
+
+procedure TRFAViewForm.SetStatus(const Value: TDragDropStage);
+begin
+  FStatus := Value;
+end;
+
+
+procedure TRFAViewForm.OnGetStream( Sender: TFileContentsStreamOnDemandClipboardFormat; Index: integer; out AStream: IStream);
+var
+  Filename : string;
+  InternFile : TMemoryStream;
+  Data : pFse;
+begin
+  SendDebugFmt('OnGetStream %d',[Index]);
+  // Warning:
+  // This method will be called in the context of the transfer thread during an
+  // asynchronous transfer. See TFormMain.OnProgress for a comment on this.
+
+  // This event handler is called by TFileContentsStreamOnDemandClipboardFormat
+  // when the drop target requests data from the drop source (that's us).
+  Status := dsGetStream;
+
+  if FDragNodes[Index] <> nil then
+  begin
+    Data := RFAList.GetNodeData(FDragNodes[Index]);
+    if IsFile(Data.FileType) then
+    begin
+      Filename := TVirtualFileStreamDataFormat(DragDataFormatAdapter.DataFormat).FileNames[Index];
+      SendDebugFmt('OnGetStream %s',[Filename]);
+      InternFile := TMemoryStream.Create;
+      ExportFile(FDragNodes[Index], InternFile);
+      AStream := TFixedStreamAdapter.Create(InternFile, soOwned);
+      //InternFile.Free; // DO NOT FREE
+    end
+     else
+    begin
+      SendDebugFmt('Not extracted %d',[Index]);
+      AStream := nil;
+    end;
+  end;
+
+end;
+
+
+
 procedure TRFAViewForm.DropFileSourceAfterDrop(Sender: TObject; DragResult: TDragResult; Optimized: Boolean);
 begin
   DropFileSource.Files.Clear;
@@ -1812,6 +2004,9 @@ end;
 procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
+  // Setup event handler to let a drop target request data from our drop source.
+  (DragDataFormatAdapter.DataFormat as TVirtualFileStreamDataFormat).OnGetStream := OnGetStream;
+
   Filesystem.Visible := DebugHook <> 0;
   EnableSkinning(RFAList);
   Reset;
@@ -1849,6 +2044,12 @@ begin
 end;
 
 
+procedure TRFAViewForm.FormMouseLeave(Sender: TObject);
+begin
+  inherited;
+showmessage('FormMouseLeave');
+end;
+
 procedure TRFAViewForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   Result : TModalResult;
@@ -1881,7 +2082,6 @@ begin
     QuickOpen;
   end;
 end;
-
 
 
 procedure TRFAViewForm.OpenExecute(Sender: TObject);

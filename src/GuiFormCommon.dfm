@@ -12,6 +12,8 @@ object FormCommon: TFormCommon
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnMouseEnter = FormMouseEnter
+  OnMouseLeave = FormMouseLeave
   PixelsPerInch = 96
   TextHeight = 13
 end
