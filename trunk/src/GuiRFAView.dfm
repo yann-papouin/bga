@@ -1,16 +1,24 @@
 inherited RFAViewForm: TRFAViewForm
   Caption = 'RFA View'
+  ClientHeight = 522
+  ClientWidth = 726
   OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
+  ExplicitWidth = 742
+  ExplicitHeight = 560
   PixelsPerInch = 96
   TextHeight = 13
   inherited Container: TSpTBXPanel
     Top = 25
-    Height = 451
+    Width = 726
+    Height = 440
     ExplicitTop = 25
-    ExplicitHeight = 451
+    ExplicitWidth = 726
+    ExplicitHeight = 440
     inherited RFAList: TVirtualStringTree
-      Height = 416
+      Width = 726
+      Height = 405
+      DragMode = dmManual
       PopupMenu = ViewerPopup
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme]
       OnBeforeCellPaint = RFAListBeforeCellPaint
@@ -18,15 +26,59 @@ inherited RFAViewForm: TRFAViewForm
       OnDragOver = RFAListDragOver
       OnDragDrop = RFAListDragDrop
       OnEdited = RFAListEdited
+      OnMouseDown = RFAListMouseDown
+      OnMouseUp = RFAListMouseUp
       OnNewText = RFAListNewText
       OnNodeMoved = RFAListNodeMoved
       OnStartDrag = RFAListStartDrag
       OnStateChange = RFAListStateChange
-      ExplicitHeight = 416
+      ExplicitWidth = 726
+      ExplicitHeight = 405
+      Columns = <
+        item
+          MinWidth = 300
+          Position = 0
+          Width = 350
+          WideText = 'Filename'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 1
+          Width = 90
+          WideText = 'Size'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 2
+          Width = 90
+          WideText = 'Compressed'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 3
+          Width = 73
+          WideText = 'Ratio'
+        end
+        item
+          Alignment = taRightJustify
+          Position = 4
+          Width = 119
+          WideText = 'Offset'
+        end>
     end
     inherited SearchBar: TSpTBXPanel
-      Top = 416
-      ExplicitTop = 416
+      Top = 405
+      Width = 726
+      ExplicitTop = 405
+      ExplicitWidth = 726
+      inherited SearchEdit: TSpTBXEdit
+        Width = 291
+        ExplicitWidth = 291
+      end
+      inherited SearchProgressBar: TSpTBXProgressBar
+        Left = 377
+        ExplicitLeft = 377
+      end
     end
     object Theme: TSpTBXEdit
       Left = 8
@@ -49,7 +101,7 @@ inherited RFAViewForm: TRFAViewForm
   object TopDock: TSpTBXDock [1]
     Left = 0
     Top = 0
-    Width = 933
+    Width = 726
     Height = 25
     object tbMenuBar: TSpTBXToolbar
       Left = 0
@@ -175,8 +227,8 @@ inherited RFAViewForm: TRFAViewForm
   end
   object StatusBar: TSpTBXStatusBar [2]
     Left = 0
-    Top = 508
-    Width = 933
+    Top = 497
+    Width = 726
     Height = 25
     object ArchiveSize: TSpTBXLabelItem
       Caption = 'ArchiveSize'
@@ -199,8 +251,8 @@ inherited RFAViewForm: TRFAViewForm
   end
   object ProgressPanel: TSpTBXPanel [3]
     Left = 0
-    Top = 476
-    Width = 933
+    Top = 465
+    Width = 726
     Height = 32
     Caption = 'LoadBar'
     Align = alBottom
@@ -210,7 +262,7 @@ inherited RFAViewForm: TRFAViewForm
     TBXStyleBackground = True
     object SubProgressBar: TSpTBXProgressBar
       AlignWithMargins = True
-      Left = 671
+      Left = 464
       Top = 7
       Width = 168
       Height = 18
@@ -233,7 +285,7 @@ inherited RFAViewForm: TRFAViewForm
       AlignWithMargins = True
       Left = 67
       Top = 7
-      Width = 593
+      Width = 386
       Height = 18
       Margins.Top = 7
       Margins.Right = 8
@@ -262,7 +314,7 @@ inherited RFAViewForm: TRFAViewForm
     end
     object SpTBXButton2: TSpTBXButton
       AlignWithMargins = True
-      Left = 850
+      Left = 643
       Top = 4
       Width = 75
       Height = 24
@@ -507,7 +559,22 @@ inherited RFAViewForm: TRFAViewForm
   end
   object ExtensionImageList: TPngImageList
     PngImages = <>
+    Left = 8
+    Top = 192
+  end
+  object DropEmptySource: TDropEmptySource
+    DragTypes = [dtCopy]
+    OnFeedback = DropEmptySourceFeedback
+    OnDrop = DropEmptySourceDrop
+    OnAfterDrop = DropEmptySourceAfterDrop
+    OnGetData = DropEmptySourceGetData
     Left = 40
+    Top = 256
+  end
+  object DragDataFormatAdapter: TDataFormatAdapter
+    DragDropComponent = DropEmptySource
+    DataFormatName = 'TVirtualFileStreamDataFormat'
+    Left = 72
     Top = 256
   end
 end

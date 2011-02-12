@@ -1,17 +1,17 @@
 inherited RFACommonForm: TRFACommonForm
   Caption = 'RFACommonForm'
-  ClientHeight = 533
-  ClientWidth = 933
+  ClientHeight = 391
+  ClientWidth = 698
   OnDestroy = FormDestroy
-  ExplicitWidth = 949
-  ExplicitHeight = 571
+  ExplicitWidth = 714
+  ExplicitHeight = 429
   PixelsPerInch = 96
   TextHeight = 13
   object Container: TSpTBXPanel
     Left = 0
     Top = 0
-    Width = 933
-    Height = 533
+    Width = 698
+    Height = 391
     Align = alClient
     TabOrder = 0
     Borders = False
@@ -19,8 +19,8 @@ inherited RFACommonForm: TRFACommonForm
     object RFAList: TVirtualStringTree
       Left = 0
       Top = 0
-      Width = 933
-      Height = 498
+      Width = 698
+      Height = 356
       Align = alClient
       DragMode = dmAutomatic
       DragOperations = [doMove]
@@ -73,15 +73,15 @@ inherited RFACommonForm: TRFACommonForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 326
+          Width = 91
           WideText = 'Offset'
         end>
     end
     object SearchBar: TSpTBXPanel
       AlignWithMargins = True
       Left = 0
-      Top = 498
-      Width = 933
+      Top = 356
+      Width = 698
       Height = 35
       Margins.Left = 0
       Margins.Top = 0
@@ -100,7 +100,7 @@ inherited RFACommonForm: TRFACommonForm
       object SearchEdit: TSpTBXEdit
         Left = 80
         Top = 7
-        Width = 498
+        Width = 263
         Height = 21
         Align = alClient
         TabOrder = 0
@@ -131,7 +131,7 @@ inherited RFACommonForm: TRFACommonForm
       end
       object SearchProgressBar: TSpTBXProgressBar
         AlignWithMargins = True
-        Left = 584
+        Left = 349
         Top = 9
         Width = 334
         Height = 17

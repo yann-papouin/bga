@@ -29,6 +29,8 @@ uses
 type
   TFormCommon = class(TForm)
     procedure FormCreate(Sender: TObject);
+    procedure FormMouseEnter(Sender: TObject);
+    procedure FormMouseLeave(Sender: TObject);
   private
     function GetTitle: string;
     procedure SetTitle(const Value: string);
@@ -62,6 +64,16 @@ begin
     FApplicationTitle := Caption
   else
     FApplicationTitle := Caption + ' - ' + ApplicationSvnTitle;
+end;
+
+procedure TFormCommon.FormMouseEnter(Sender: TObject);
+begin
+  //Showmessage('FormMouseEnter');
+end;
+
+procedure TFormCommon.FormMouseLeave(Sender: TObject);
+begin
+  //Showmessage('FormMouseLeave');
 end;
 
 function TFormCommon.GetTitle: string;
