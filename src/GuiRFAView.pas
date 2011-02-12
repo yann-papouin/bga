@@ -258,6 +258,7 @@ type
     procedure UpdateReply(Sender: TObject; Result: TUpdateResult);
     procedure RebuildEditWithMenu;
     procedure SetStatus(const Value: TDragDropStage);
+    procedure PrepareDragList;
     procedure OnGetStream(Sender: TFileContentsStreamOnDemandClipboardFormat; Index: integer; out AStream: IStream);
   protected
     procedure CancelChange;
@@ -1620,7 +1621,7 @@ end;
 
 procedure TRFAViewForm.RFAListDragOver(Sender: TBaseVirtualTree; Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode; var Effect: Integer; var Accept: Boolean);
 var
-  TargetNode : PVirtualNode;
+  TargetNode, SourceNode : PVirtualNode;
   Data : pFse;
 begin
   Accept := false;
@@ -1635,6 +1636,15 @@ begin
     Data := Sender.GetNodeData(TargetNode);
     if IsFile(Data.FileType) then
       Exit;
+
+    SourceNode := Sender.GetFirstSelected;
+    while SourceNode <> nil do
+    begin
+      if SourceNode = TargetNode then
+        Exit;
+      SourceNode := Sender.GetNextSelected(SourceNode, true);
+    end;
+
   end;
 
   if DropEmptySource.PerformedDropEffect <> 0 then
@@ -1667,62 +1677,17 @@ end;
 
 procedure TRFAViewForm.RFAListMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
-var
-  i : integer;
-  Node : PVirtualNode;
-  Data : pFse;
-  W32Path : string;
 begin
   inherited;
 
-  Status := dsIdle;
   if (ssCtrl in Shift) then
   begin
-
-    RFAList.DragMode := dmManual;
     if DragDetectPlus(Handle, Point(X, Y)) then
     begin
-      Status := dsDrag;
-      with TVirtualFileStreamDataFormat(DragDataFormatAdapter.DataFormat) do
-      begin
-        FileNames.Clear;
-        i := 0;
-        Node := RFAList.GetFirstSelected;
-        while Node <> nil do
-        begin
-          ExtendSelection(Node);
-          Data := RFAList.GetNodeData(Node);
-
-          if IsFile(Data.FileType) then
-          begin
-            W32Path := BuildEntryNameFromTree(Node, true);
-            W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
-
-            FileNames.Add(W32Path);
-            SendDebugFmt('Adding %s',[W32Path]);
-
-            // Set the size and timestamp attributes of the filename we just added.
-            with PFileDescriptor(FileDescriptors[i])^ do
-            begin
-              GetSystemTimeAsFileTime(ftLastWriteTime);
-              nFileSizeLow := Data.Size and $00000000FFFFFFFF;
-              nFileSizeHigh := (Data.Size and $FFFFFFFF00000000) shr 32;
-              dwFlags := FD_WRITESTIME or FD_FILESIZE or FD_PROGRESSUI;
-            end;
-
-            SetLength(FDragNodes, i+1);
-            FDragNodes[i] := Node;
-            Inc(i);
-          end;
-
-          Node := RFAList.GetNextSelected(Node, true);
-        end;
-      end;
-
-      DropEmptySource.Execute;
-      Status := dsIdle;
+      PrepareDragList;
     end;
   end;
+
 end;
 
 procedure TRFAViewForm.RFAListMouseUp(Sender: TObject; Button: TMouseButton;
@@ -1793,13 +1758,12 @@ begin
         SelectionText.Caption := Format('%d items in selection',[Sender.SelectedCount]);
     end;
   end;
-
+(*
   if tsOLEDragging in Enter then
   begin
     SendDebug('tsOLEDragging');
   end;
-
-
+*)
 
 end;
 
@@ -1925,6 +1889,60 @@ begin
   FStatus := Value;
 end;
 
+procedure TRFAViewForm.PrepareDragList;
+var
+  i : integer;
+  Node : PVirtualNode;
+  Data : pFse;
+  W32Path : string;
+begin
+  Status := dsIdle;
+
+  if DragDataFormatAdapter.Enabled then
+  begin
+    RFAList.DragMode := dmManual;
+    Status := dsDrag;
+    with TVirtualFileStreamDataFormat(DragDataFormatAdapter.DataFormat) do
+    begin
+      FileNames.Clear;
+      i := 0;
+      Node := RFAList.GetFirstSelected;
+      while Node <> nil do
+      begin
+        ExtendSelection(Node);
+        Data := RFAList.GetNodeData(Node);
+
+        if IsFile(Data.FileType) then
+        begin
+          W32Path := BuildEntryNameFromTree(Node, true);
+          W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
+
+          FileNames.Add(W32Path);
+          SendDebugFmt('Adding %s',[W32Path]);
+
+          // Set the size and timestamp attributes of the filename we just added.
+          with PFileDescriptor(FileDescriptors[i])^ do
+          begin
+            GetSystemTimeAsFileTime(ftLastWriteTime);
+            nFileSizeLow := Data.Size and $00000000FFFFFFFF;
+            nFileSizeHigh := (Data.Size and $FFFFFFFF00000000) shr 32;
+            dwFlags := FD_WRITESTIME or FD_FILESIZE or FD_PROGRESSUI;
+          end;
+
+          SetLength(FDragNodes, i+1);
+          FDragNodes[i] := Node;
+          Inc(i);
+        end;
+
+        Node := RFAList.GetNextSelected(Node, true);
+      end;
+    end;
+
+    DropEmptySource.Execute;
+    Status := dsIdle;
+  end;
+
+end;
 
 procedure TRFAViewForm.OnGetStream( Sender: TFileContentsStreamOnDemandClipboardFormat; Index: integer; out AStream: IStream);
 var
@@ -2255,6 +2273,8 @@ begin
       Add(Node, nil, BrowsePackForm.Directory);
     end;
 end;
+
+
 
 procedure TRFAViewForm.PreviewExecute(Sender: TObject);
 begin
