@@ -45,7 +45,7 @@ implementation
 {$R *.dfm}
 
 uses
-  StringFunction, GuiRawView;
+  StringFunction, GuiMapView;
 
 
 procedure TExMapViewerMainForm.FormShow(Sender: TObject);
@@ -55,9 +55,9 @@ end;
 
 procedure TExMapViewerMainForm.Launch;
 begin
-  RAWViewForm.GetFileByPath := GetFileByPath;
-  RAWViewForm.LoadTerrain(ExtractFilePath(Application.ExeName)+'Init\Terrain.con');
-  RAWViewForm.Show;
+  MapViewForm.GetFileByPath := GetFileByPath;
+  MapViewForm.LoadTerrain(ExtractFilePath(Application.ExeName)+'Init\Terrain.con');
+  MapViewForm.Show;
 end;
 
 function TExMapViewerMainForm.GetFileByPath(Sender: TObject; const VirtualPath: string): string;

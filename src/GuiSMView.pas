@@ -144,7 +144,7 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, StringFunction, VirtualTreeviewTheme, OpenGL1x, OpenGLAdapter, OpenGLTokens, GLState,
+  DbugIntf, StringFunction, VirtualTreeviewTheme, GLContext, OpenGLAdapter, OpenGLTokens, GLState,
   GLFileSM, AppLib, Resources, Math, VectorTypes, VectorGeometry, GLColor;
 
 type
@@ -253,22 +253,22 @@ begin
 
               if FDrawEdges then
               begin
-                glColor4fv(@clrWhite);
-                glBegin(GL_LINE_STRIP);
-                glVertex3f(vA[0], vA[1], vA[2]);
-                glVertex3f(vB[0], vB[1], vB[2]);
-                glVertex3f(vC[0], vC[1], vC[2]);
-                glEnd;
+                GL.Color4fv(@clrWhite);
+                GL.Begin_(GL_LINE_STRIP);
+                GL.Vertex3f(vA[0], vA[1], vA[2]);
+                GL.Vertex3f(vB[0], vB[1], vB[2]);
+                GL.Vertex3f(vC[0], vC[1], vC[2]);
+                GL.End_;
               end;
 
               if FDrawVertices then
               begin
-                glColor4fv(@clrBlue);
-                glBegin(GL_POINTS);
-                glVertex3f(vA[0], vA[1], vA[2]);
-                glVertex3f(vB[0], vB[1], vB[2]);
-                glVertex3f(vC[0], vC[1], vC[2]);
-                glEnd;
+                GL.Color4fv(@clrBlue);
+                GL.Begin_(GL_POINTS);
+                GL.Vertex3f(vA[0], vA[1], vA[2]);
+                GL.Vertex3f(vB[0], vB[1], vB[2]);
+                GL.Vertex3f(vC[0], vC[1], vC[2]);
+                GL.End_;
               end;
 
             end;
@@ -277,7 +277,7 @@ begin
 
         if FDrawNormals then
         begin
-          glColor3f(1, 1, 1);
+          GL.Color3f(1, 1, 1);
           for k := 0 to FaceGroup.VertexIndices.Count - 1 do
           begin
             if k mod 3 = 0 then
@@ -294,9 +294,9 @@ begin
               vP[1] := (vA[1] + vB[1] + vC[1]) /3;
               vP[2] := (vA[2] + vB[2] + vC[2]) /3;
 
-              glBegin(GL_POINTS);
-              glVertex3f(vP[0], vP[1], vP[2]);
-              glEnd;
+              GL.Begin_(GL_POINTS);
+              GL.Vertex3f(vP[0], vP[1], vP[2]);
+              GL.End_;
 
             end;
           end;

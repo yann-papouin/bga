@@ -37,12 +37,11 @@
 			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2)'!=''">
-			<DCC_RangeChecking>true</DCC_RangeChecking>
-			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+			<DCC_DebugDCUs>true</DCC_DebugDCUs>
 			<DCC_MapFile>3</DCC_MapFile>
 			<DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
 			<DCC_Optimize>false</DCC_Optimize>
-			<DCC_Define>DEBUG;EUREKALOG;EUREKALOG_VER6;$(DCC_Define)</DCC_Define>
+			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="ExMapViewer.dpr">
@@ -51,8 +50,8 @@
 			<DCCReference Include="ExMapViewerMain.pas">
 				<Form>ExMapViewerMainForm</Form>
 			</DCCReference>
-			<DCCReference Include="GuiRAWView.pas">
-				<Form>RAWViewForm</Form>
+			<DCCReference Include="GuiMapView.pas">
+				<Form>MapViewForm</Form>
 			</DCCReference>
 			<DCCReference Include="StringFunction.pas"/>
 			<DCCReference Include="Lib\AppLib.pas"/>
@@ -62,6 +61,15 @@
 			<DCCReference Include="GuiFormCommon.pas">
 				<Form>FormCommon</Form>
 			</DCCReference>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_HashList.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_HeightMap.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_SOARDemo.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainDataSource.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainEngine.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainRendering.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileLodRenderer.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileLodVBORenderer.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileRender.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -129,8 +137,8 @@
 
 <!-- EurekaLog First Line
 [Exception Log]
-EurekaLog Version=6024
-Activate=1
+EurekaLog Version=6101
+Activate=0
 Activate Handle=1
 Save Log File=1
 Foreground Tab=0
@@ -289,6 +297,7 @@ loFreeAllLeaks=1
 loCatchLeaksExceptions=1
 cfoReduceFileSize=1
 cfoCheckFileCorruption=0
+cfoUseEL7=1
 Count mtInformationMsgCaption=1
 mtInformationMsgCaption0="Information."
 Count mtQuestionMsgCaption=1

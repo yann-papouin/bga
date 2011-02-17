@@ -52,9 +52,7 @@
 			</DCCReference>
 			<DCCReference Include="lib\oge2_HashList.pas"/>
 			<DCCReference Include="lib\oge2_HeightMap.pas"/>
-			<DCCReference Include="lib\oge2_SOARDemo.pas"/>
 			<DCCReference Include="lib\oge2_TerrainDataSource.pas"/>
-			<DCCReference Include="lib\oge2_TerrainEngine.pas"/>
 			<DCCReference Include="lib\oge2_TerrainRendering.pas"/>
 			<DCCReference Include="lib\oge2_TerrainTileLodRenderer.pas"/>
 			<DCCReference Include="lib\oge2_TerrainTileLodVBORenderer.pas"/>

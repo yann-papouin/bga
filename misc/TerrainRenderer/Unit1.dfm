@@ -17,14 +17,14 @@ object Form1: TForm1
   TextHeight = 13
   object glsv: TGLSceneViewer
     Left = 0
-    Top = 49
+    Top = 81
     Width = 680
-    Height = 393
+    Height = 361
     Camera = GLCamera
     Buffer.BackgroundColor = clSkyBlue
     Buffer.Lighting = False
     Buffer.ShadeModel = smSmooth
-    FieldOfView = 151.447769165039100000
+    FieldOfView = 149.033645629882800000
     Align = alClient
     OnMouseDown = glsvMouseDown
     TabOrder = 0
@@ -33,7 +33,7 @@ object Form1: TForm1
     Left = 0
     Top = 0
     Width = 680
-    Height = 49
+    Height = 81
     Align = alTop
     TabOrder = 1
     object Label1: TLabel
@@ -64,8 +64,8 @@ object Form1: TForm1
       OnClick = cb2Click
     end
     object Button1: TButton
-      Left = 152
-      Top = 16
+      Left = 8
+      Top = 39
       Width = 75
       Height = 25
       Caption = 'Reset Terrain'
@@ -73,16 +73,14 @@ object Form1: TForm1
       OnClick = Button1Click
     end
     object rg1: TRadioGroup
-      Left = 248
+      Left = 152
       Top = 0
-      Width = 193
-      Height = 45
+      Width = 161
+      Height = 75
       Caption = 'Terrain CLOD'
-      Columns = 2
       ItemIndex = 0
       Items.Strings = (
         'None'
-        'SOAR(bugged)'
         'IllyriumTriangle'
         'IllyriumVBO')
       TabOrder = 3
@@ -135,9 +133,12 @@ object Form1: TForm1
     Materials = <
       item
         Name = 'LibMaterial'
-        Material.FrontProperties.Ambient.Color = {0000803F0000803F0000803F0000803F}
-        Material.FrontProperties.Diffuse.Color = {0000803F0000803F0000803F0000803F}
-        Material.FrontProperties.Emission.Color = {0000803F0000803F0000803F0000803F}
+        Material.BackProperties.Ambient.Color = {BDBC3C3FBDBC3C3FF8F7773F0000803F}
+        Material.BackProperties.Emission.Color = {C3C2423FB7B6363FBDBC3C3F0000803F}
+        Material.FrontProperties.Ambient.Color = {0000000000000000000000000000803F}
+        Material.FrontProperties.Diffuse.Color = {8180803C8786063F0000803F0000803F}
+        Material.FrontProperties.Emission.Color = {9392123F8F8E0E3F9594143F0000803F}
+        Material.FrontProperties.Shininess = 128
         Material.Texture.Image.Picture.Data = {
           07544269746D617036000C00424D36000C000000000036000000280000000002
           000000020000010018000000000000000C00130B0000130B0000000000000000

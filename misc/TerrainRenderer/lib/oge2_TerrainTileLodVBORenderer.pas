@@ -145,6 +145,7 @@ begin
   GL.VertexPointer(3, GL_FLOAT, 0, 0);
 
   GL.DrawArrays(GL_TRIANGLE_STRIP, 0, VerticlesCount);
+
   GL.DisableClientState(GL_VERTEX_ARRAY);
 
   if RenderTextures then
