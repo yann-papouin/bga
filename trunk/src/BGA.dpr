@@ -31,7 +31,7 @@ uses
   MiniLZO in 'Lib\MiniLZO.pas',
   RFALib in 'RFALib.pas',
   StringFunction in 'StringFunction.pas',
-  GuiRAWView in 'GuiRAWView.pas' { RAWViewForm },
+  GuiMapView in 'GuiMapView.pas' {MapViewForm},
   CONLib in 'CONLib.pas',
   GuiAbout in 'GuiAbout.pas' { AboutForm },
   GuiSMView in 'GuiSMView.pas' { SMViewForm },
@@ -58,7 +58,8 @@ uses
   RSLib in 'RSLib.pas',
   FileTM in 'GLSceneExt\FileTM.pas',
   TypesTM in 'GLSceneExt\TypesTM.pas',
-  GuiWait in 'GuiWait.pas' {WaitForm};
+  GuiWait in 'GuiWait.pas' {WaitForm},
+  GuiRAWView in 'GuiRAWView.pas' {RAWViewForm};
 
 {$R *.res}
 
@@ -111,6 +112,9 @@ begin
     WaitForm.IncProgress();
 
   {$IfDef OPENGL_SUPPORT}
+    Application.CreateForm(TMapViewForm, MapViewForm);
+    WaitForm.IncProgress();
+
     Application.CreateForm(TRAWViewForm, RAWViewForm);
     WaitForm.IncProgress();
 

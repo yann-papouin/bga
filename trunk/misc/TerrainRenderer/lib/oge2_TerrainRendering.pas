@@ -12,11 +12,11 @@ uses
   VectorGeometry,
   oge2_TerrainDataSource,
   oge2_HeightMap,
-  oge2_TerrainEngine,
+  //oge2_TerrainEngine,
   oge2_TerrainTileRender;
 
 type
-  TTerrainLODType = (tlodNone, tlodSoar, tlodIllyrium, tlodIllyriumVBO);
+  TTerrainLODType = (tlodNone, tlodIllyrium, tlodIllyriumVBO);
   TTerrainOcclusionTesselate = (totTesselateAlways, totTesselateIfVisible);
 
 type
@@ -28,7 +28,7 @@ type
     FinvTileSize: Single;
     FTileSize: Integer;
     FMaxCLODTriangles, FCLODPrecision: Integer;
-    FTerrainEngine: TOGETerrainEngine;
+    //FTerrainEngine: TOGETerrainEngine;
 
     FQualityDistance: Integer;
     FLastTriangleCount: Integer;
@@ -81,7 +81,6 @@ uses
   OpenGLTokens,
   VectorTypes,
   XOpengl,
-  oge2_SoarDemo,
   oge2_TerrainTileLodRenderer,
   oge2_TerrainTileLodVBORenderer,
   forms,
@@ -148,11 +147,6 @@ begin
           begin
             tile.Renderer := TOGEHeightMapRender.Create(tile);
             TOGEHeightMapRender(tile.Renderer).BuildQuadTree;
-          end;
-        tlodSoar:
-          begin
-            tile.Renderer := TSoarTerrain.Create(tile);
-            TSoarTerrain(tile.Renderer).LoadTerrain(false);
           end;
         tlodIllyrium:
           begin
@@ -229,7 +223,7 @@ var
 
 var
   Temph, TempW: Single;
-  frustum2: TFrustumSOAR;
+  //frustum2: TFrustumSOAR;
 var
   vEye, vEyeDirection: TVector;
   tilePos, absTilePos, observer: TAffineVector;
@@ -341,16 +335,6 @@ begin
           nrtiles := nrtiles + 1;
           GL.color3f(0, 0, 0);
           case lodType of
-            tlodSoar:
-              begin
-                GL.FrontFace(GL_CW);
-                GL.EnableClientState(GL_VERTEX_ARRAY);
-                TSoarTerrain(patch).minlod := 0;
-                TSoarTerrain(patch).RenderTerrain(FDrawWireFrame, TempW,
-                  FCLODPrecision, VectorSubtract(observer, tilePos), frustum2);
-                GL.DisableClientState(GL_VERTEX_ARRAY);
-                GL.FrontFace(GL_CCW);
-              end;
             tlodNone:
               begin
                 if FDrawTextured then

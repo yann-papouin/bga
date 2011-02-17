@@ -115,6 +115,7 @@ begin
   Terrain.Free;
 end;
 
+
 procedure TForm1.HDSPreparingData(HeightData: TOGEHeightMap);
 var
   ii, jj: Integer;
@@ -237,10 +238,8 @@ begin
     0:
       Terrain.lodType := tlodNone;
     1:
-      Terrain.lodType := tlodSoar;
-    2:
       Terrain.lodType := tlodIllyrium;
-    3:
+    2:
       Terrain.lodType := tlodIllyriumVBO;
   end;
   TerrainData.MarkDirty(-200, -200, 200, 200);

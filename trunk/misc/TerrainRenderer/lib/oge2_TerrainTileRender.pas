@@ -135,9 +135,10 @@ var
   ii, jj: Integer;
   Quad: PQuad;
 begin
-  { glVertexPointer( 3, GL_FLOAT, length(lst), @lst[0] );
-    glDrawElements(GL_Triangle_Strip,VerticlesCount,GL_FLOAT,@lst[0]); }
-
+ (*
+  GL.VertexPointer( 3, GL_FLOAT, length(lst), @lst[0] );
+  GL.DrawElements(GL_Triangle_Strip,VerticlesCount,GL_FLOAT,@lst[0]);
+  *)
   for ii := 0 to FQuadTree.Count - 1 do
   begin
     Quad := FQuadTree.Items[ii];
@@ -146,6 +147,7 @@ begin
       GL.Vertex3fv(@Quad^.V[jj]);
     end;
   end;
+
 end;
 
 { TOGEBaseHeightMapRender }
