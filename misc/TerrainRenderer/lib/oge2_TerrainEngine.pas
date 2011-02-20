@@ -3,7 +3,7 @@ unit oge2_TerrainEngine;
 interface
 
 uses
-  oge2_TerrainTIleRender;
+  oge2_TerrainTileRender;
 
 Type
   TOGETerrainEngine = class(TObject)

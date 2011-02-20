@@ -5,27 +5,52 @@ interface
 uses
   Classes,
   GLScene,
+  GLUtils,
   GLTexture,
   GLMaterial,
   GLRenderContextInfo,
   VectorLists,
   VectorGeometry,
-  oge2_TerrainDataSource,
+  oge2_HashList,
   oge2_HeightMap,
-  //oge2_TerrainEngine,
   oge2_TerrainTileRender;
 
 type
   TTerrainLODType = (tlodNone, tlodIllyrium, tlodIllyriumVBO);
   TTerrainOcclusionTesselate = (totTesselateAlways, totTesselateIfVisible);
+  TOGEDataSourceStartPreparingData = procedure(HeightData: TOGEHeightMap) of Object;
 
-type
+  TOGETerrainRendering = class;
+
+  TOGEHeightDataSource = class(TObject)
+  private
+    FOGETerrainRendering : TOGETerrainRendering;
+    FTilesList: THashTable;
+    FTilesCache: TList;
+    FOnStartPreparingData: TOGEDataSourceStartPreparingData;
+    FVisibleDistance: Integer;
+    Procedure BuildTilesCache;
+    procedure ClearTilesCache;
+  public
+    constructor Create;
+    destructor Destroy; override;
+    procedure MarkDirty(x1, y1, x2, y2: Integer);
+    function GetTile(X, Y: Integer): TOGEHeightMap;
+    procedure RemoveTile(X, Y: Integer);
+    function InterpolatedHeight(X, Y: Single; tileSize: Integer): Single;
+  published
+    property TilesCache: TList read FTilesCache;
+    property OnStartPreparingData
+      : TOGEDataSourceStartPreparingData read FOnStartPreparingData write
+      FOnStartPreparingData;
+  end;
+
   TOGETerrainRendering = class(TGLSceneObject)
   private
     FHeightDataSource: TOGEHeightDataSource;
     FDrawTextured: Boolean;
     FDrawWireFrame: Boolean;
-    FinvTileSize: Single;
+    FinvTileSize: Extended;
     FTileSize: Integer;
     FMaxCLODTriangles, FCLODPrecision: Integer;
     //FTerrainEngine: TOGETerrainEngine;
@@ -40,6 +65,7 @@ type
     procedure RebuildCLOD;
     function GetPreparedPatch(const tilePos, eyePos: TAffineVector;
       texFactor: Single): TOGEBaseHeightMapRender;
+    procedure SetTileSize(const Value: Integer);
   public
     lodType: TTerrainLODType;
     QualityDistance: Integer;
@@ -52,7 +78,7 @@ type
     function InterpolatedHeight(const p: TVector): Single; overload;
     function InterpolatedHeight(const p: TAffineVector): Single; overload;
   published
-    property TileSize: Integer read FTileSize;
+    property TileSize: Integer read FTileSize write SetTileSize;
     property HeightDataSource
       : TOGEHeightDataSource read FHeightDataSource
       write SetHeightDataSource;
@@ -94,8 +120,7 @@ begin
   self.ShowAxes := true;
   FDrawTextured := true;
   FDrawWireFrame := false;
-  FTileSize := 64;
-  FinvTileSize := 1 / FTileSize;
+  TileSize := 64;
   FMaxCLODTriangles := 65536;
   FCLODPrecision := 100;
   // FTerrainEngine:=TOGETerrainROAM1Engine.Create;
@@ -427,10 +452,24 @@ begin
   end;
 end;
 
-procedure TOGETerrainRendering.SetHeightDataSource
-  (const Value: TOGEHeightDataSource);
+procedure TOGETerrainRendering.SetHeightDataSource(const Value: TOGEHeightDataSource);
 begin
   FHeightDataSource := Value;
+  FHeightDataSource.FOGETerrainRendering := Self;
+end;
+
+procedure TOGETerrainRendering.SetTileSize(const Value: Integer);
+begin
+  if Value <> FTileSize then
+  begin
+    if Value < 8 then
+      FTileSize := 8
+    else
+      FTileSize := RoundUpToPowerOf2(Value);
+    FinvTileSize := 1 / FTileSize;
+    //ReleaseAllTiles;
+    StructureChanged;
+  end;
 end;
 
 procedure TOGETerrainRendering.SetCLODPrecision(const val: Integer);
@@ -556,7 +595,8 @@ function TOGETerrainRendering.InterpolatedHeight(const p: TVector): Single;
 var
   pLocal: TVector;
 begin
-  if assigned(FHeightDataSource) then
+
+  if Assigned(FHeightDataSource) then
   begin
     pLocal := AbsoluteToLocal(p);
     result := FHeightDataSource.InterpolatedHeight(pLocal[0], pLocal[1],
@@ -568,10 +608,143 @@ end;
 
 // InterpolatedHeight (affine)
 //
-function TOGETerrainRendering.InterpolatedHeight(const p: TAffineVector)
-  : Single;
+function TOGETerrainRendering.InterpolatedHeight(const p: TAffineVector) : Single;
 begin
   result := InterpolatedHeight(PointMake(p));
+end;
+
+
+{ TOGEHeightDataSource }
+
+function GetTileIndex(X, Y: Integer): String;
+begin
+  result := 'T_' + inttostr(X) + '_' + inttostr(Y);
+end;
+
+
+constructor TOGEHeightDataSource.Create;
+begin
+  FTilesList := THashTable.Create;
+  FTilesCache := TList.Create;
+
+end;
+
+destructor TOGEHeightDataSource.Destroy;
+begin
+  FTilesList.Free;
+  FTilesCache.Free;
+  inherited;
+end;
+
+
+procedure TOGEHeightDataSource.ClearTilesCache;
+begin
+  FTilesCache.Clear
+end;
+
+procedure TOGEHeightDataSource.BuildTilesCache;
+var
+  ii: Integer;
+begin
+  ClearTilesCache;
+  for ii := 0 to FTilesList.Count - 1 do
+  begin
+    FTilesCache.Add(FTilesList.Items[ii]);
+  end;
+end;
+
+procedure TOGEHeightDataSource.MarkDirty(x1, y1, x2, y2: Integer);
+var
+  ii, jj: Integer;
+  TempTile: TOGEHeightMap;
+  TileSize : integer;
+begin
+  TileSize := FOGETerrainRendering.TileSize;
+  for ii := floor(x1 / TileSize) to Ceil(x2 / TileSize) - 1 do
+  begin
+    for jj := floor(y1 / TileSize) to Ceil(y2 / TileSize) - 1 do
+    begin
+      TempTile := GetTile(ii * TileSize, jj * TileSize);
+      if Assigned(TempTile.Renderer) then
+      begin
+        TempTile.Renderer.Free;
+        TempTile.Renderer := nil;
+      end;
+      if Assigned(FOnStartPreparingData) then
+        FOnStartPreparingData(TempTile);
+      if TempTile.DataState <> dsReady then
+        RemoveTile(ii * TileSize, jj * TileSize);
+    end;
+  end;
+  BuildTilesCache;
+end;
+
+function TOGEHeightDataSource.InterpolatedHeight(X, Y: Single;
+  tileSize: Integer): Single;
+var
+  i: Integer;
+  hd, foundHd: TOGEHeightMap;
+begin
+  try
+    // first, lookup data list to find if aHeightData contains our point
+    foundHd := nil;
+    for i := 0 to FTilesList.Count - 1 do
+    begin
+      hd := TOGEHeightMap(FTilesList.Items[i]);
+      if (hd.XLeft <= X) and (hd.YTop <= Y) and (hd.XLeft + hd.Size - 1 > X)
+        and (hd.YTop + hd.Size - 1 > Y) then
+      begin
+        foundHd := hd;
+        Break;
+      end;
+    end;
+  finally
+  end;
+  { if (foundHd=nil) then begin
+    // not found, request one... slowest mode (should be avoided)
+    if tileSize>1 then
+    foundHd:=GetData(Round(x/(tileSize-1)-0.5)*(tileSize-1),
+    Round(y/(tileSize-1)-0.5)*(tileSize-1), tileSize, hdtDefault)
+    else begin
+    Result:=DefaultHeight;
+    Exit;
+    end;
+    end else begin
+    // request it using "standard" way (takes care of threads)
+    foundHd:=GetData(foundHd.XLeft, foundHd.YTop, foundHd.Size, foundHd.DataType);
+    end; }
+  result := 0;
+  if Assigned(foundHd) then
+    if foundHd.DataState = dsNone then
+      result := { DefaultHeight } 0
+    else
+      result := foundHd.GetHeight(round(X - foundHd.XLeft),
+        round(Y - foundHd.YTop));
+end;
+
+function TOGEHeightDataSource.GetTile(X, Y: Integer): TOGEHeightMap;
+var
+  TempTile: TOGEHeightMap;
+begin
+  TempTile := nil;
+  if Assigned(FTilesList.Get(GetTileIndex(X, Y))) = false then
+  begin
+    TempTile := TOGEHeightMap.Create(X, Y, FOGETerrainRendering.TileSize + 1);
+    FTilesList.Add(GetTileIndex(X, Y), TempTile);
+  end
+  else
+  begin
+    TempTile := TOGEHeightMap(FTilesList.Get(GetTileIndex(X, Y)));
+  end;
+  result := TempTile;
+end;
+
+procedure TOGEHeightDataSource.RemoveTile(X, Y: Integer);
+begin
+  if Assigned(FTilesList.Get(GetTileIndex(X, Y))) then
+  begin
+    FTilesList.Delete(GetTileIndex(X, Y));
+  end;
 end;
 
 end.

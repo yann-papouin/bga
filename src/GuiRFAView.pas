@@ -278,7 +278,7 @@ implementation
 uses
   DbugIntf, VirtualTreeviewTheme, UAC, ShlObj, DragDropFormats,
   GuiRFASettings,
-  GuiAbout, GuiRAWView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
+  GuiAbout, GuiMapView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
   Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
 var
@@ -2065,7 +2065,7 @@ end;
 procedure TRFAViewForm.FormMouseLeave(Sender: TObject);
 begin
   inherited;
-showmessage('FormMouseLeave');
+
 end;
 
 procedure TRFAViewForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -2300,9 +2300,9 @@ begin
     TerrainFile := ExtractTemporary(TerrainNode);
 
     {$IfDef OPENGL_SUPPORT}
-      RAWViewForm.GetFileByPath := GetFileByPath;
-      RAWViewForm.LoadTerrain(TerrainFile);
-      RAWViewForm.Show;
+      MapViewForm.GetFileByPath := GetFileByPath;
+      MapViewForm.LoadTerrain(TerrainFile);
+      MapViewForm.Show;
     {$Else}
       WarnAboutOpenGL;
     {$EndIf}

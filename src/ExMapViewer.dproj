@@ -63,9 +63,6 @@
 			</DCCReference>
 			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_HashList.pas"/>
 			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_HeightMap.pas"/>
-			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_SOARDemo.pas"/>
-			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainDataSource.pas"/>
-			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainEngine.pas"/>
 			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainRendering.pas"/>
 			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileLodRenderer.pas"/>
 			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileLodVBORenderer.pas"/>

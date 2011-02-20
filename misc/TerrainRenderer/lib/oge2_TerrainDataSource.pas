@@ -68,7 +68,7 @@ constructor TOGEHeightDataSource.Create;
 begin
   FTilesList := THashTable.Create;
   FTilesCache := TList.Create;
-  FTileSize := 64;
+  FTileSize := 512;
 end;
 
 destructor TOGEHeightDataSource.Destroy;

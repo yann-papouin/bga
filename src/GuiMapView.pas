@@ -48,6 +48,8 @@ uses
   GLTexture,
   TB2Item,
   DDSImage,
+  pngimage,
+  jpeg,
   VectorGeometry,
   VectorTypes,
   GLSimpleNavigation,
@@ -70,18 +72,23 @@ uses
   GLCadencer,
   GLRenderContextInfo,
   oge2_TerrainRendering,
-  oge2_TerrainDataSource,
-  oge2_HeightMap;
+  oge2_HeightMap, TB2Dock, TB2Toolbar, ImgList, PngImageList, ActnList, ExtCtrls;
 
 
 type
+
+  TCameraMode =
+  (
+    cm_Terrain,
+    cm_Fly,
+    cm_Top
+  );
 
 
   TMapViewForm = class(TFormCommon)
     Viewer: TGLSceneViewer;
     Scene: TGLScene;
     Camera: TGLCamera;
-    Navigation: TGLSimpleNavigation;
     WaterPlane: TGLPlane;
     CameraTarget: TGLDummyCube;
     StatusBar: TSpTBXStatusBar;
@@ -97,6 +104,21 @@ type
     Cadencer: TGLCadencer;
     GLLightSource1: TGLLightSource;
     GLMaterialLibrary1: TGLMaterialLibrary;
+    GLCube1: TGLCube;
+    Actions: TActionList;
+    ModeCamFly: TAction;
+    ModeCamTerrain: TAction;
+    ModeCamTop: TAction;
+    Images: TPngImageList;
+    ToolDock: TSpTBXDock;
+    ToolbarViewMode: TSpTBXToolbar;
+    SpTBXItem1: TSpTBXItem;
+    SpTBXItem5: TSpTBXItem;
+    SpTBXItem4: TSpTBXItem;
+    SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem;
+    TBSeparatorItem3: TTBSeparatorItem;
+    FPSLabel: TSpTBXLabelItem;
+    FPSCounter: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
@@ -108,7 +130,12 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormDeactivate(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure ModeCamFlyExecute(Sender: TObject);
+    procedure ModeCamTerrainExecute(Sender: TObject);
+    procedure ModeCamTopExecute(Sender: TObject);
+    procedure FPSCounterTimer(Sender: TObject);
   private
+    FCameraMode : TCameraMode;
     v: TAffineVector;
     M: TPoint;
 
@@ -134,6 +161,9 @@ type
     FWireFrame: boolean;
     FRestrict: boolean;
     { Déclarations privées }
+
+    FPreviousPosition : integer;
+    FCamHeightOffset : Single;
 
     procedure BattlefieldHDSStartPreparingData(heightData: TOGEHeightMap);
 
@@ -185,6 +215,7 @@ implementation
 {$R *.dfm}
 
 uses
+  Types,
   Math,
   DbugIntf,
   StringFunction,
@@ -215,10 +246,10 @@ begin
 
   TerrainData := TOGEHeightDataSource.Create;
   TerrainRenderer.HeightDataSource := TerrainData;
-  TerrainRenderer.MaterialLibrary := GLMaterialLibrary1;
+  TerrainRenderer.MaterialLibrary := GLMaterialLibrary;
   TerrainRenderer.lodType := tlodIllyriumVBO;
   TerrainRenderer.DrawTextured := true;
-  TerrainRenderer.DrawWireframe := true;
+  TerrainRenderer.DrawWireframe := false;
   TerrainData.OnStartPreparingData := BattlefieldHDSStartPreparingData;// HDSPreparingData;
   //TerrainData.MarkDirty(-200, -200, 200, 200);
 
@@ -254,9 +285,12 @@ var
   i :integer;
   MaterialOptions : TMaterialOptions;
 begin
+(*
   inherited;
    case Key of
-        'X','x' :
+    'W','w' : TerrainRenderer.DrawWireframe := not TerrainRenderer.DrawWireframe;
+
+    'X','x' :
       for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
       begin
         MaterialOptions := GLMaterialLibrary.Materials[i].Material.MaterialOptions;
@@ -268,10 +302,19 @@ begin
         GLMaterialLibrary.Materials[i].Material.MaterialOptions := MaterialOptions;
         TerrainRenderer.Material.MaterialOptions := MaterialOptions;
       end;
+
    end;
+   *)
 end;
 
 
+
+procedure TMapViewForm.FPSCounterTimer(Sender: TObject);
+begin
+  inherited;
+  FPSLabel.Caption := Format('%.2f FPS',[Viewer.FramesPerSecond]);
+  Viewer.ResetPerformanceMonitor;
+end;
 
 procedure TMapViewForm.LoadTerrain(Data: TStream);
 var
@@ -323,7 +366,7 @@ begin
 
 end;
 
-{.$DEFINE RAWVIEW_DRAW_NAME}
+{$DEFINE RAWVIEW_DRAW_NAME}
 
 procedure TMapViewForm.LoadTerrain(Filename: string);
 var
@@ -356,24 +399,33 @@ begin
     Stream := TFileStream.Create(Filename, fmOpenRead);
     LoadTerrain(Stream);
     Stream.Free;
- (*
+
+
+    TextureFile := 'C:\Users\Yann\Documents\RAD Studio\Projets\BGA\misc\checkerboard2.jpg';
+    if FileExists(TextureFile) then
+    begin
+      LibMaterial := GLMaterialLibrary.AddTextureMaterial('Default', TextureFile);
+      LibMaterial.Material.FrontProperties.Emission.Color := clrWhite;
+    end;
+
     DetailFile := GetFileByPath(Self, DetailBaseName);
     if FileExists(DetailFile) then
     begin
       DetailMaterial := GLMaterialLibrary.AddTextureMaterial('Details', DetailFile);
-      DetailMaterial.Material.MaterialOptions := [moNoLighting];
-      DetailMaterial.Material.Texture.ImageBrightness := 2;
+     // DetailMaterial.Material.MaterialOptions := [moNoLighting];
+      DetailMaterial.Material.FrontProperties.Emission.Color := clrWhite;
+     // DetailMaterial.Material.Texture.ImageBrightness := 2;
       DetailMaterial.Material.Texture.TextureMode := tmModulate;
       DetailMaterial.TextureScale.X := Sqrt(MapSize);
       DetailMaterial.TextureScale.Y := Sqrt(MapSize);
     end;
-*)
+
     for Row := 0 to TexturePart - 1 do
       for Col := 0 to TexturePart - 1 do
       begin
         TextureName := Format('%s%.2dx%.2d.dds', [TextureBaseName, Col, Row]);
-        // SendDebug(TextureName);
         TextureFile := GetFileByPath(Self, TextureName);
+        //SendDebug(TextureFile);
 
         if FileExists(TextureFile) then
         begin
@@ -388,13 +440,17 @@ begin
             FLastCol := Col + TextureOffset.Y;
 
           UseTexture := true;
-          (*
-          LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
-          LibMaterial.Material.MaterialOptions := [moNoLighting];
 
+          LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
+          LibMaterial.Material.FrontProperties.Emission.Color := clrWhite;
+          SendDebugFmt('%s added',[LibMaterial.Name]);
+          //LibMaterial.Material.MaterialOptions := [moNoLighting];
+
+          (*
           if Assigned(DetailMaterial) then
             LibMaterial.Texture2Name := DetailMaterial.Name;
             *)
+
 
 {$IFDEF RAWVIEW_DRAW_NAME}
           Bmp := TBitmap.Create;
@@ -419,11 +475,11 @@ begin
     begin
       Stream := TFileStream.Create(HeightMapFile, fmOpenRead);
       LoadHeightmap(Stream);
-      (*
+
       TerrainRenderer.Scale.X := FRawStep;
       TerrainRenderer.Scale.Y := FRawStep;
       TerrainRenderer.Scale.Z := FRawStep;
-      *)
+
       Stream.Free;
     end;
 
@@ -435,10 +491,25 @@ end;
 
 
 
+procedure TMapViewForm.ModeCamFlyExecute(Sender: TObject);
+begin
+  FCameraMode := cm_Fly;
+end;
+
+procedure TMapViewForm.ModeCamTerrainExecute(Sender: TObject);
+begin
+  FCameraMode := cm_Terrain;
+end;
+
+procedure TMapViewForm.ModeCamTopExecute(Sender: TObject);
+begin
+  FCameraMode := cm_Top;
+end;
+
 procedure TMapViewForm.InvalidateTerrain;
 begin
   CalcTerrainRange;
-  TerrainData.MarkDirty(0, 0, 1024, 1024);
+  TerrainData.MarkDirty(0, 0, MapSize-1, MapSize-1);
  // BattlefieldHDS.MarkDirty;
 end;
 
@@ -453,13 +524,13 @@ end;
 
 procedure TMapViewForm.CalcCameraPosition;
 begin
-  CameraTarget.Position.X := 0;
-  CameraTarget.Position.Z := 100;
-  CameraTarget.Position.Y := 0;
+  CameraTarget.Position.X := WorldSize/2;
+  CameraTarget.Position.Y := 100;
+  CameraTarget.Position.Z := WorldSize/2;
 
-  Camera.Position.X := 0;
+  Camera.Position.X := 0.2;
+  Camera.Position.Y := 0;
   Camera.Position.Z := 0;
-  Camera.Position.Y := WaterLevel*2;
 end;
 
 procedure TMapViewForm.CalcTerrainRange;
@@ -473,6 +544,9 @@ begin
   FRangeMin.Y := 0;
   FRangeMax.X := (FWorldSize);
   FRangeMax.Y := (FWorldSize);
+
+
+   TerrainRenderer.TileSize := FWorldSize div TexturePart;
 (*
   if FRestrict then
   begin
@@ -522,6 +596,9 @@ var
   Position: Integer;
   i, j, n: Integer;
   offset: TTexPoint;
+  LibMaterial : TGLLibMaterial;
+
+  XStream, YStream : Double;
 
   MaxTileSize, OffsetModulo, TileSize: Integer;
   TextureScale: Extended;
@@ -535,6 +612,7 @@ begin
   end;
   *)
 
+
   heightData.DataState := dsPreparing;
   heightData.Allocate;
   //heightData.Allocate(HdsType);
@@ -544,8 +622,12 @@ begin
   TileSize := TerrainRenderer.TileSize;
   TextureScale := TerrainRenderer.TileSize / MaxTileSize;
 
-  heightData.MaterialName := 'LibMaterial';
-(*
+  heightData.MaterialName := 'Default';
+
+  GLCube1.Material.MaterialLibrary := GLMaterialLibrary1;
+  GLCube1.Material.LibMaterialName := 'Default';
+
+
   i := (heightData.XLeft div MaxTileSize);
   j := (heightData.YTop div MaxTileSize);
   if (i < OffsetModulo) and (j < OffsetModulo) then
@@ -556,11 +638,18 @@ begin
       heightData.MaterialName := Format('%s%.2dx%.2d.dds', [TextureBaseName, i-TextureOffset.X, j-TextureOffset.Y]);
 
       // Auto remove material if it doesn't exists
-      if GLMaterialLibrary.Materials.GetLibMaterialByName(heightData.MaterialName) = nil then
-        heightData.MaterialName := '';
+      LibMaterial := GLMaterialLibrary.Materials.GetLibMaterialByName(heightData.MaterialName);
+      if LibMaterial = nil then
+      begin
+        SendDebugFmt('%s not found',[heightData.MaterialName]);
+        heightData.MaterialName := 'Default';
+      end;
+
     end;
 
-    //heightData.TextureCoordinatesMode := tcmLocal;
+
+
+   // heightData.TextureCoordinatesMode := tcmLocal;
     n := (heightData.XLeft div TileSize) mod OffsetModulo;
     offset.S := n * TextureScale;
     n := (heightData.YTop div TileSize) mod OffsetModulo;
@@ -569,24 +658,44 @@ begin
     TextureScale := TextureScale;// - 0.0025;
     //heightData.TextureCoordinatesScale := TexPointMake(TextureScale, TextureScale);
 
+    if LibMaterial <> nil then
+    begin
+      LibMaterial.TextureOffset.AsAffineVector := AffineVectorMake(0 + offset.S, 1 + offset.T, 0);
+      //LibMaterial.TextureScale.AsAffineVector := AffineVectorMake(TextureScale * offset.S, -TextureScale * offset.T, TextureScale);
+      //LibMaterial.TextureScale.X := 1.015; // en Z
+    end;
   end;
-*)
+
+
   for Y := heightData.YTop to heightData.YTop + heightData.Size - 1 do
   begin
-    //RasterLine := heightData.SingleRaster[Y - heightData.YTop];
+
     for X := heightData.XLeft to heightData.XLeft + heightData.Size - 1 do
     begin
       if (Y < FWorldSize) and (X < FWorldSize) then
       begin
-        Position := X*2 + Y*2 * (FWorldSize div FRawStep);
+        XStream := X / 4;
+        YStream := Y / 4;
+
+        Position := X + Y * (WorldSize) div 4;
         //Position := X*2 + Y*2;
+
+        Position := Position*2; // Because the word position is at N*2
         FBuffer.Seek(Position, soFromBeginning);
         FBuffer.Read(RawValue, 2);
 
-        Z := RawValue * (FMapHeightScale/2) * 1/FRawStep;
+        if (X<>heightData.XLeft) and (Y<>heightData.YTop) then
+          Assert(Position - FPreviousPosition = 2);
+
+        FPreviousPosition := Position;
+
+        Z := RawValue * (FMapHeightScale/2) /FRawStep;
       end
-      else
+        else
+      begin
         Z := 0;
+        Assert(true);
+      end;
 
         heightData.SetHeight(X- heightData.XLeft,Y- heightData.YTop, Round(Z));
 
@@ -601,24 +710,128 @@ end;
 
 
 procedure TMapViewForm.CadencerProgress(Sender: TObject; const deltaTime, newTime: Double);
+const
+  SLIDE_SPEED = 1/6 ;
+  MOVE_SPEED = 35;
+  RUN_SPEED = 200;
 var
    speed : Single;
+   CamHeight : Single;
+   CamPosition : TAffineVector;
+   TargetVector : TVector;
+   StrafeVector : TVector;
+   RaiseVector : TVector;
 begin
    // handle keypresses
-  if IsKeyDown(VK_SHIFT) then
-    speed:=5*deltaTime
-  else speed:=deltaTime;
-  with Camera.Position do
+
+  if FCameraMode = cm_Fly then
   begin
-    if IsKeyDown(VK_RIGHT) then
-       CameraTarget.Translate(Z*speed, 0, -X*speed);
-    if IsKeyDown(VK_LEFT) then
-       CameraTarget.Translate(-Z*speed, 0, X*speed);
-    if IsKeyDown(VK_UP) then
-       CameraTarget.Translate(-X*speed, 0, -Z*speed);
-    if IsKeyDown(VK_DOWN) then
-       CameraTarget.Translate(X*speed, 0, Z*speed);
+    FCamHeightOffset := 0;
+    TargetVector := Camera.AbsoluteVectorToTarget;
+
+    if IsKeyDown(VK_SHIFT) then
+    begin
+      TargetVector := VectorScale(TargetVector, RUN_SPEED * deltaTime);
+      RaiseVector := VectorScale(YHmgVector, RUN_SPEED * deltaTime);
+    end
+      else
+    begin
+      TargetVector := VectorScale(TargetVector, MOVE_SPEED * deltaTime);
+      RaiseVector := VectorScale(YHmgVector, MOVE_SPEED * deltaTime);
+    end;
+
+
+    if IsKeyDown('D') or IsKeyDown('Q') then
+    begin
+       StrafeVector := TargetVector;
+       RotateVector(StrafeVector, YVector, PI/2);
+       StrafeVector[1] := 0;
+
+       if IsKeyDown('D') then
+        CameraTarget.Position.AsVector := VectorAdd(CameraTarget.Position.AsVector, StrafeVector);
+
+       if IsKeyDown('Q') then
+        CameraTarget.Position.AsVector := VectorSubtract(CameraTarget.Position.AsVector, StrafeVector);
+    end;
+
+
+    if IsKeyDown(VK_SPACE) or IsKeyDown('C') then
+    begin
+
+
+       if IsKeyDown(VK_SPACE) then
+        CameraTarget.Position.AsVector := VectorAdd(CameraTarget.Position.AsVector, RaiseVector);
+
+       if IsKeyDown('C') then
+        CameraTarget.Position.AsVector := VectorSubtract(CameraTarget.Position.AsVector, RaiseVector);
+    end;
+
+    if IsKeyDown('Z') then
+       CameraTarget.Position.AsVector := VectorAdd(CameraTarget.Position.AsVector, TargetVector);
+
+    if IsKeyDown('S') then
+       CameraTarget.Position.AsVector := VectorSubtract(CameraTarget.Position.AsVector, TargetVector);
   end;
+
+
+  if FCameraMode = cm_Terrain then
+  begin
+
+    if IsKeyDown(VK_SHIFT) then
+      speed:=(RUN_SPEED+FCamHeightOffset)*deltaTime
+    else
+      speed:=(MOVE_SPEED+FCamHeightOffset)*deltaTime;
+
+    with Camera.Position do
+    begin
+      if IsKeyDown('D') then
+         CameraTarget.Translate(Z*speed, 0, -X*speed);
+      if IsKeyDown('Q') then
+         CameraTarget.Translate(-Z*speed, 0, X*speed);
+      if IsKeyDown('Z') then
+         CameraTarget.Translate(-X*speed, 0, -Z*speed);
+      if IsKeyDown('S') then
+         CameraTarget.Translate(X*speed, 0, Z*speed);
+
+      if IsKeyDown(VK_SPACE) then
+      begin
+         FCamHeightOffset := FCamHeightOffset + 1;
+      end;
+
+      if IsKeyDown('C') then
+      begin
+        FCamHeightOffset := FCamHeightOffset - 1;
+        if FCamHeightOffset < 0 then
+         FCamHeightOffset := 0;
+      end;
+
+    end;
+
+  end;
+
+
+  if FCamHeightOffset > 0 then
+    FCamHeightOffset := FCamHeightOffset - 0.25;
+
+  CamHeight := TerrainRenderer.InterpolatedHeight(CameraTarget.AbsoluteAffinePosition) + 2 + FCamHeightOffset;
+
+  case CompareValue(CameraTarget.Position.Y, CamHeight, 0.05) of
+    EqualsValue:
+    begin
+      Exit;
+    end;
+    LessThanValue:
+    begin
+      CameraTarget.Position.Y := CameraTarget.Position.Y + abs(CameraTarget.Position.Y - CamHeight)* SLIDE_SPEED;
+    end;
+    GreaterThanValue:
+    begin
+      if FCameraMode = cm_Terrain then
+        CameraTarget.Position.Y := CameraTarget.Position.Y - abs(CameraTarget.Position.Y - CamHeight)* SLIDE_SPEED;
+    end;
+  end;
+
+
 end;
 
 
@@ -643,7 +856,7 @@ begin
   for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
   begin
     GLMaterialLibrary.Materials[i].Material.PolygonMode := PolygonMode;
-    //TerrainRenderer.Material.PolygonMode := TPolygonMode(PolygonMode);
+    TerrainRenderer.Material.PolygonMode := TPolygonMode(PolygonMode);
   end;
 end;
 
@@ -666,12 +879,14 @@ end;
 procedure TMapViewForm.ViewerDblClick(Sender: TObject);
 begin
   inherited;
+  FCamHeightOffset := 0;
   CameraTarget.AbsoluteAffinePosition := v;
 end;
 
 procedure TMapViewForm.ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   inherited;
+  Viewer.SetFocus;
   M.X := X;
   M.Y := Y;
 end;
@@ -691,10 +906,17 @@ begin
     Coo3D := Scene.CurrentBuffer.OrthoScreenToWorld(X, Y);
     v := Scene.CurrentBuffer.PixelRayToWorld(X, Y);
 
-    XLabel.Caption := Format('X=%.2f', [v[0]]);
+    XLabel.Caption := Format('X=%.2f', [v[2]]);
     YLabel.Caption := Format('Y=%.2f', [v[1]]);
-    ZLabel.Caption := Format('Z=%.2f', [v[2]]);
+    ZLabel.Caption := Format('Z=%.2f', [v[0]]);
   end;
+
+   if (ssRight in Shift) then
+   begin
+    Camera.MoveAroundTarget((M.Y-Y)*0.5, (M.X-X)*0.5);
+    M.X := X;
+    M.Y := Y;
+   end;
 
   FMouseMoveMutex := false;
 end;
