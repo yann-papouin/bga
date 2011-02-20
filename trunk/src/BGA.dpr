@@ -59,7 +59,12 @@ uses
   FileTM in 'GLSceneExt\FileTM.pas',
   TypesTM in 'GLSceneExt\TypesTM.pas',
   GuiWait in 'GuiWait.pas' {WaitForm},
-  GuiRAWView in 'GuiRAWView.pas' {RAWViewForm};
+  oge2_HashList in '..\misc\TerrainRenderer\lib\oge2_HashList.pas',
+  oge2_HeightMap in '..\misc\TerrainRenderer\lib\oge2_HeightMap.pas',
+  oge2_TerrainRendering in '..\misc\TerrainRenderer\lib\oge2_TerrainRendering.pas',
+  oge2_TerrainTileLodRenderer in '..\misc\TerrainRenderer\lib\oge2_TerrainTileLodRenderer.pas',
+  oge2_TerrainTileLodVBORenderer in '..\misc\TerrainRenderer\lib\oge2_TerrainTileLodVBORenderer.pas',
+  oge2_TerrainTileRender in '..\misc\TerrainRenderer\lib\oge2_TerrainTileRender.pas';
 
 {$R *.res}
 
@@ -82,7 +87,7 @@ begin
     WaitForm.BeginWait;
 
     Application.CreateForm(TRFAViewForm, RFAViewForm);
-    WaitForm.IncProgress();
+  WaitForm.IncProgress();
 
     Application.CreateForm(TRFASettingsForm, RFASettingsForm);
     WaitForm.IncProgress();
@@ -113,9 +118,6 @@ begin
 
   {$IfDef OPENGL_SUPPORT}
     Application.CreateForm(TMapViewForm, MapViewForm);
-    WaitForm.IncProgress();
-
-    Application.CreateForm(TRAWViewForm, RAWViewForm);
     WaitForm.IncProgress();
 
     Application.CreateForm(TSMViewForm, SMViewForm);

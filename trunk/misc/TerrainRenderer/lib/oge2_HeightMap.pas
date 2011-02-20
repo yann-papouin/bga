@@ -97,8 +97,9 @@ end;
 
 function TOGEHeightMap.GetHeight(X, Y: Integer): THeight;
 begin
+  Result := 0;
   if FDataSize > 0 then
-    if (X < Size) and (Y < Size) then
+    if (X >= 0) and (Y >= 0) and (X < Size) and (Y < Size) then
       result := SmallIntRaster^[Y]^[X];
 end;
 

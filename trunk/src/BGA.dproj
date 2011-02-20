@@ -119,9 +119,12 @@
 			<DCCReference Include="GuiWait.pas">
 				<Form>WaitForm</Form>
 			</DCCReference>
-			<DCCReference Include="GuiRAWView.pas">
-				<Form>RAWViewForm</Form>
-			</DCCReference>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_HashList.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_HeightMap.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainRendering.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileLodRenderer.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileLodVBORenderer.pas"/>
+			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileRender.pas"/>
 			<None Include="BGA.inc"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
