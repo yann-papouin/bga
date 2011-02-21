@@ -35,9 +35,15 @@ implementation
 
 { TOGEHeightMapLODVBORender }
 
+uses
+  DbugIntf;
+
 procedure TOGEHeightMapLODVBORender.BuildQuadTree;
+const
+  RATIO_HEIGHT = 128;
+
 var
-  i, j, k: Integer;
+  ind: Integer;
   Vertex: TVertex;
 
   X, Y, Z :Single;
@@ -56,179 +62,75 @@ var
     TexCoords[ind][1] := 1 - tV;
   end;
 
-const
-  RATIO_HEIGHT = 128;
+  procedure ExAddVertex( Xi, Yj : Integer);
+  begin
+    X := HeightData.XLeft + Xi;
+    Y := HeightData.YTop  + Yj;
+    Z := HeightData.GetHeight(Xi, Yj) / RATIO_HEIGHT;
+
+    U := Xi / UVDiv;
+    V := Yj / UVDiv;
+
+    Inc(ind);
+    AddVertex(ind, X, Y, Z, U, V);
+  end;
+
 var
-  ind: Integer;
+
+  i, j, k: Integer;
+
 begin
   VerticlesCount := (HeightData.Size * 2) * (HeightData.Size - 1);
   SetLength(VertexCoords, VerticlesCount);
   SetLength(TexCoords, VerticlesCount);
 
   ind := -1;
-  (*
-  with HeightData do
-  begin
-    for j := 0 to HeightData.Size - 2 do
-    begin
-      if j mod 2 = 0 then
-      begin
-        for i := 0 to HeightData.Size - 1 do
-        begin
-          Inc(ind);
-          AddVertex(ind, XLeft + i, YTop + j, HeightData.GetHeight(i, j) / RATIO_HEIGHT, i / (HeightData.Size), j / (HeightData.Size));
-          Inc(ind);
-          AddVertex(ind, XLeft + i, YTop + j + 1, HeightData.GetHeight(i, j + 1) / RATIO_HEIGHT, i / (HeightData.Size), (j + 1) / (HeightData.Size));
-        end;
-      end
-        else
-      begin
-        for i := HeightData.Size - 1 downto 0 do
-        begin
-          Inc(ind);
-          AddVertex(ind, XLeft + i, YTop + j + 1, HeightData.GetHeight(i, j + 1) / RATIO_HEIGHT, i / (HeightData.Size), (j + 1) / (HeightData.Size));
-          Inc(ind);
-          AddVertex(ind, XLeft + i, YTop + j, HeightData.GetHeight(i, j) / RATIO_HEIGHT, i / (HeightData.Size), j / (HeightData.Size));
-        end;
-      end;
-    end;
-  end;
-  *)
 
   UVDiv := HeightData.Size; // HeightData.Size-1;
-{
-  with HeightData do
+
+  for i := 0 to HeightData.Size - 2 do
   begin
-    for j := 0 to HeightData.Size - 2 do
+
+    if i mod 2 = 0 then
+    begin
+      for j := 0 to HeightData.Size - 1 do
+      begin
+        ExAddVertex(i,j);
+        ExAddVertex(i+1,j);
+      end
+    end
+     else
+    begin
+      for j := HeightData.Size - 1 downto 0 do
+      begin
+        ExAddVertex(i+1,j);
+        ExAddVertex(i,j);
+      end;
+    end;
+
+  end;
+
+(*
+  for j := 0 to HeightData.Size - 2 do
+  begin
+    if j mod 2 = 0 then
     begin
       for i := 0 to HeightData.Size - 1 do
       begin
-
-        if (j mod 2 = 0) and (i mod 2 = 0) then
-        begin
-          X := XLeft +i;
-          Y := YTop  +j;
-          Z := HeightData.GetHeight(i, j) / RATIO_HEIGHT;
-
-          U := i / UVDiv;
-          V := j / UVDiv;
-
-          Inc(ind);
-          AddVertex(ind, X, Y, Z, U, V);
-
-
-          X := XLeft +i;
-          Y := YTop  +j+1;
-          Z := HeightData.GetHeight(i, j+1) / RATIO_HEIGHT;
-
-          U := i     / UVDiv;
-          V := (j+1) / UVDiv;
-
-          Inc(ind);
-          AddVertex(ind, X, Y, Z, U, V);
-
-          X := XLeft +i+1;
-          Y := YTop  +j+1;
-          Z := HeightData.GetHeight(i+1, j+1) / RATIO_HEIGHT;
-
-          U := (i+1) / UVDiv;
-          V := (j+1) / UVDiv;
-
-          Inc(ind);
-          AddVertex(ind, X, Y, Z, U, V);
-
-          X := XLeft +i+1;
-          Y := YTop  +j;
-          Z := HeightData.GetHeight(i+1, j) / RATIO_HEIGHT;
-
-          U := (i+1) / UVDiv;
-          V := j / UVDiv;
-
-          Inc(ind);
-          AddVertex(ind, X, Y, Z, U, V);
-
-        end;
-
+        ExAddVertex(i,j);
+        ExAddVertex(i,j+1);
       end;
-    end;
-  end;
-}
-
-  with HeightData do
-  begin
-    for j := 0 to HeightData.Size - 2 do
+    end
+      else
     begin
-      if j mod 2 = 0 then
+      for i := HeightData.Size - 1 downto 0 do
       begin
-        for i := 0 to HeightData.Size - 1 do
-        begin
-
-          X := XLeft +i;
-          Y := YTop  +j;
-          Z := HeightData.GetHeight(i, j) / RATIO_HEIGHT;
-
-          U := i / UVDiv;
-          V := j / UVDiv;
-
-          Inc(ind);
-          AddVertex(ind, X, Y, Z, U, V);
-
-
-          X := XLeft +i;
-          Y := YTop  +j+1;
-          Z := HeightData.GetHeight(i, j+1) / RATIO_HEIGHT;
-
-          U := i     / UVDiv;
-          V := (j+1) / UVDiv;
-
-          Inc(ind);
-          AddVertex(ind, X, Y, Z, U, V);
-
-          (*
-          Inc(ind);
-          AddVertex(ind, XLeft + i, YTop + j, HeightData.GetHeight(i, j) / RATIO_HEIGHT, i / (HeightData.Size), j / (HeightData.Size));
-          Inc(ind);
-          AddVertex(ind, XLeft + i, YTop + j + 1, HeightData.GetHeight(i, j + 1) / RATIO_HEIGHT, i / (HeightData.Size), (j + 1) / (HeightData.Size));
-          *)
-        end;
-      end
-        else
-      begin
-        for i := HeightData.Size - 1 downto 0 do
-        begin
-
-          X := XLeft +i;
-          Y := YTop  +j+1;
-          Z := HeightData.GetHeight(i, j+1) / RATIO_HEIGHT;
-
-          U := i     / UVDiv;
-          V := (j+1) / UVDiv;
-
-          Inc(ind);
-          AddVertex(ind, X, Y, Z, U, V);
-
-          X := XLeft +i;
-          Y := YTop  +j;
-          Z := HeightData.GetHeight(i, j) / RATIO_HEIGHT;
-
-          U := i / UVDiv;
-          V := j / UVDiv;
-
-          Inc(ind);
-          AddVertex(ind, X, Y, Z, U, V);
-
-
-          (*
-          Inc(ind);
-          AddVertex(ind, XLeft + i, YTop + j + 1, HeightData.GetHeight(i, j + 1) / RATIO_HEIGHT, i / (HeightData.Size), (j + 1) / (HeightData.Size));
-          Inc(ind);
-          AddVertex(ind, XLeft + i, YTop + j, HeightData.GetHeight(i, j) / RATIO_HEIGHT, i / (HeightData.Size), j / (HeightData.Size));
-          *)
-        end;
+        ExAddVertex(i,j+1);
+        ExAddVertex(i,j);
       end;
     end;
   end;
-
+*)
 
   GL.BindBuffer(GL_ARRAY_BUFFER, FVertexHandle);
   GL.BufferData(GL_ARRAY_BUFFER, VerticlesCount * 3 * 4, VertexCoords, GL_STATIC_DRAW);
