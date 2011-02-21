@@ -28,8 +28,7 @@ type
     Constructor Create(aOwner: TOGEHeightMap); override;
     Destructor Destroy; override;
     Procedure BuildQuadTree; override;
-    procedure RenderQuadTree(RenderTextures, RenderWireframe: Boolean);
-      override;
+    procedure RenderQuadTree(RenderTextures, RenderWireframe: Boolean); override;
   end;
 
 implementation
@@ -38,19 +37,27 @@ implementation
 
 procedure TOGEHeightMapLODVBORender.BuildQuadTree;
 var
-  ii, jj, kk: Integer;
+  i, j, k: Integer;
   Vertex: TVertex;
 
-  procedure AddVertex(ind: Integer; X, Y, Z, TX, TY: Single);
+  X, Y, Z :Single;
+  U, V : Single;
+
+  UVDiv : Single;
+
+  procedure AddVertex(ind: Integer; vX, vY, vZ, tU, tV: Single);
   begin
-    Vertex[0] := X;
-    Vertex[1] := Y;
-    Vertex[2] := Z;
+    Vertex[0] := vX;
+    Vertex[1] := vY;
+    Vertex[2] := vZ;
+
     VertexCoords[ind] := Vertex;
-    TexCoords[ind][0] := TX;
-    TexCoords[ind][1] := 1 - TY;
+    TexCoords[ind][0] := tU;
+    TexCoords[ind][1] := 1 - tV;
   end;
 
+const
+  RATIO_HEIGHT = 128;
 var
   ind: Integer;
 begin
@@ -59,47 +66,174 @@ begin
   SetLength(TexCoords, VerticlesCount);
 
   ind := -1;
+  (*
   with HeightData do
   begin
-    for jj := 0 to HeightData.Size - 2 do
+    for j := 0 to HeightData.Size - 2 do
     begin
-      if jj mod 2 = 0 then
+      if j mod 2 = 0 then
       begin
-        for ii := 0 to HeightData.Size - 1 do
+        for i := 0 to HeightData.Size - 1 do
         begin
-          ind := ind + 1;
-          AddVertex(ind, XLeft + ii, YTop + jj,
-            HeightData.GetHeight(ii, jj) / 128, ii / (HeightData.Size),
-            jj / (HeightData.Size));
-          ind := ind + 1;
-          AddVertex(ind, XLeft + ii, YTop + jj + 1,
-            HeightData.GetHeight(ii, jj + 1) / 128, ii / (HeightData.Size),
-            (jj + 1) / (HeightData.Size));
+          Inc(ind);
+          AddVertex(ind, XLeft + i, YTop + j, HeightData.GetHeight(i, j) / RATIO_HEIGHT, i / (HeightData.Size), j / (HeightData.Size));
+          Inc(ind);
+          AddVertex(ind, XLeft + i, YTop + j + 1, HeightData.GetHeight(i, j + 1) / RATIO_HEIGHT, i / (HeightData.Size), (j + 1) / (HeightData.Size));
         end;
       end
-      else
+        else
       begin
-        for ii := HeightData.Size - 1 downto 0 do
+        for i := HeightData.Size - 1 downto 0 do
         begin
-          ind := ind + 1;
-          AddVertex(ind, XLeft + ii, YTop + jj + 1,
-            HeightData.GetHeight(ii, jj + 1) / 128, ii / (HeightData.Size),
-            (jj + 1) / (HeightData.Size));
-          ind := ind + 1;
-          AddVertex(ind, XLeft + ii, YTop + jj,
-            HeightData.GetHeight(ii, jj) / 128, ii / (HeightData.Size),
-            jj / (HeightData.Size));
+          Inc(ind);
+          AddVertex(ind, XLeft + i, YTop + j + 1, HeightData.GetHeight(i, j + 1) / RATIO_HEIGHT, i / (HeightData.Size), (j + 1) / (HeightData.Size));
+          Inc(ind);
+          AddVertex(ind, XLeft + i, YTop + j, HeightData.GetHeight(i, j) / RATIO_HEIGHT, i / (HeightData.Size), j / (HeightData.Size));
+        end;
+      end;
+    end;
+  end;
+  *)
+
+  UVDiv := HeightData.Size; // HeightData.Size-1;
+{
+  with HeightData do
+  begin
+    for j := 0 to HeightData.Size - 2 do
+    begin
+      for i := 0 to HeightData.Size - 1 do
+      begin
+
+        if (j mod 2 = 0) and (i mod 2 = 0) then
+        begin
+          X := XLeft +i;
+          Y := YTop  +j;
+          Z := HeightData.GetHeight(i, j) / RATIO_HEIGHT;
+
+          U := i / UVDiv;
+          V := j / UVDiv;
+
+          Inc(ind);
+          AddVertex(ind, X, Y, Z, U, V);
+
+
+          X := XLeft +i;
+          Y := YTop  +j+1;
+          Z := HeightData.GetHeight(i, j+1) / RATIO_HEIGHT;
+
+          U := i     / UVDiv;
+          V := (j+1) / UVDiv;
+
+          Inc(ind);
+          AddVertex(ind, X, Y, Z, U, V);
+
+          X := XLeft +i+1;
+          Y := YTop  +j+1;
+          Z := HeightData.GetHeight(i+1, j+1) / RATIO_HEIGHT;
+
+          U := (i+1) / UVDiv;
+          V := (j+1) / UVDiv;
+
+          Inc(ind);
+          AddVertex(ind, X, Y, Z, U, V);
+
+          X := XLeft +i+1;
+          Y := YTop  +j;
+          Z := HeightData.GetHeight(i+1, j) / RATIO_HEIGHT;
+
+          U := (i+1) / UVDiv;
+          V := j / UVDiv;
+
+          Inc(ind);
+          AddVertex(ind, X, Y, Z, U, V);
+
+        end;
+
+      end;
+    end;
+  end;
+}
+
+  with HeightData do
+  begin
+    for j := 0 to HeightData.Size - 2 do
+    begin
+      if j mod 2 = 0 then
+      begin
+        for i := 0 to HeightData.Size - 1 do
+        begin
+
+          X := XLeft +i;
+          Y := YTop  +j;
+          Z := HeightData.GetHeight(i, j) / RATIO_HEIGHT;
+
+          U := i / UVDiv;
+          V := j / UVDiv;
+
+          Inc(ind);
+          AddVertex(ind, X, Y, Z, U, V);
+
+
+          X := XLeft +i;
+          Y := YTop  +j+1;
+          Z := HeightData.GetHeight(i, j+1) / RATIO_HEIGHT;
+
+          U := i     / UVDiv;
+          V := (j+1) / UVDiv;
+
+          Inc(ind);
+          AddVertex(ind, X, Y, Z, U, V);
+
+          (*
+          Inc(ind);
+          AddVertex(ind, XLeft + i, YTop + j, HeightData.GetHeight(i, j) / RATIO_HEIGHT, i / (HeightData.Size), j / (HeightData.Size));
+          Inc(ind);
+          AddVertex(ind, XLeft + i, YTop + j + 1, HeightData.GetHeight(i, j + 1) / RATIO_HEIGHT, i / (HeightData.Size), (j + 1) / (HeightData.Size));
+          *)
+        end;
+      end
+        else
+      begin
+        for i := HeightData.Size - 1 downto 0 do
+        begin
+
+          X := XLeft +i;
+          Y := YTop  +j+1;
+          Z := HeightData.GetHeight(i, j+1) / RATIO_HEIGHT;
+
+          U := i     / UVDiv;
+          V := (j+1) / UVDiv;
+
+          Inc(ind);
+          AddVertex(ind, X, Y, Z, U, V);
+
+          X := XLeft +i;
+          Y := YTop  +j;
+          Z := HeightData.GetHeight(i, j) / RATIO_HEIGHT;
+
+          U := i / UVDiv;
+          V := j / UVDiv;
+
+          Inc(ind);
+          AddVertex(ind, X, Y, Z, U, V);
+
+
+          (*
+          Inc(ind);
+          AddVertex(ind, XLeft + i, YTop + j + 1, HeightData.GetHeight(i, j + 1) / RATIO_HEIGHT, i / (HeightData.Size), (j + 1) / (HeightData.Size));
+          Inc(ind);
+          AddVertex(ind, XLeft + i, YTop + j, HeightData.GetHeight(i, j) / RATIO_HEIGHT, i / (HeightData.Size), j / (HeightData.Size));
+          *)
         end;
       end;
     end;
   end;
 
+
   GL.BindBuffer(GL_ARRAY_BUFFER, FVertexHandle);
-  GL.BufferData(GL_ARRAY_BUFFER, VerticlesCount * 3 * 4, VertexCoords,
-    GL_STATIC_DRAW);
+  GL.BufferData(GL_ARRAY_BUFFER, VerticlesCount * 3 * 4, VertexCoords, GL_STATIC_DRAW);
   GL.BindBuffer(GL_ARRAY_BUFFER, FTexCoordsHandle);
-  GL.BufferData(GL_ARRAY_BUFFER, VerticlesCount * 2 * 4, TexCoords,
-    GL_STATIC_DRAW);
+  GL.BufferData(GL_ARRAY_BUFFER, VerticlesCount * 2 * 4, TexCoords, GL_STATIC_DRAW);
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
   ClearQuadTree;
 end;
@@ -131,6 +265,7 @@ end;
 procedure TOGEHeightMapLODVBORender.RenderQuadTree(RenderTextures, RenderWireframe: Boolean);
 begin
 
+
   if RenderTextures then
   begin
     GL.Enable(GL_TEXTURE_2D);
@@ -143,26 +278,27 @@ begin
   GL.BindBuffer(GL_ARRAY_BUFFER, FVertexHandle);
   GL.EnableClientState(GL_VERTEX_ARRAY);
   GL.VertexPointer(3, GL_FLOAT, 0, 0);
-
   GL.DrawArrays(GL_TRIANGLE_STRIP, 0, VerticlesCount);
-
   GL.DisableClientState(GL_VERTEX_ARRAY);
 
   if RenderTextures then
   begin
     GL.DisableClientState(GL_TEXTURE_COORD_ARRAY);
   end;
-
+(*
   if RenderWireframe then
   begin
 
     GL.Disable(GL_TEXTURE_2D);
-    GL.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    GL.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     GL.Enable(GL_LINE_SMOOTH);
-    GL.Color4f(1, 1, 1, 1);
+    GL.Color4f(1, 0, 0, 0);
+    GL.EnableClientState(GL_VERTEX_ARRAY);
+    GL.VertexPointer(3, GL_FLOAT, 0, 0);
     GL.DrawArrays(GL_TRIANGLE_STRIP, 0, VerticlesCount);
+    GL.DisableClientState(GL_VERTEX_ARRAY);
   end;
-
+*)
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 end;
 

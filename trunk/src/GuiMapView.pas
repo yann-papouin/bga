@@ -103,7 +103,6 @@ type
     GLInfos: TGLHUDText;
     Cadencer: TGLCadencer;
     GLLightSource1: TGLLightSource;
-    GLMaterialLibrary1: TGLMaterialLibrary;
     GLCube1: TGLCube;
     Actions: TActionList;
     ModeCamFly: TAction;
@@ -119,6 +118,7 @@ type
     TBSeparatorItem3: TTBSeparatorItem;
     FPSLabel: TSpTBXLabelItem;
     FPSCounter: TTimer;
+    SpTBXSeparatorItem1: TSpTBXSeparatorItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
@@ -249,7 +249,7 @@ begin
   TerrainRenderer.MaterialLibrary := GLMaterialLibrary;
   TerrainRenderer.lodType := tlodIllyriumVBO;
   TerrainRenderer.DrawTextured := true;
-  TerrainRenderer.DrawWireframe := false;
+  TerrainRenderer.DrawWireframe := true;
   TerrainData.OnStartPreparingData := BattlefieldHDSStartPreparingData;// HDSPreparingData;
   //TerrainData.MarkDirty(-200, -200, 200, 200);
 
@@ -401,12 +401,16 @@ begin
     Stream.Free;
 
 
-    TextureFile := 'C:\Users\Yann\Documents\RAD Studio\Projets\BGA\misc\checkerboard2.jpg';
+    TextureFile := 'C:\Users\Yann\Documents\RAD Studio\Projets\BGA\misc\stripe2.png';
     if FileExists(TextureFile) then
     begin
       LibMaterial := GLMaterialLibrary.AddTextureMaterial('Default', TextureFile);
       LibMaterial.Material.FrontProperties.Emission.Color := clrWhite;
+      LibMaterial.TextureScale.X := 100;
+      LibMaterial.TextureScale.Y := 100;
     end;
+
+{$IFDEF RAWVIEW_LOAD_TEXTURE}
 
     DetailFile := GetFileByPath(Self, DetailBaseName);
     if FileExists(DetailFile) then
@@ -452,6 +456,7 @@ begin
             *)
 
 
+
 {$IFDEF RAWVIEW_DRAW_NAME}
           Bmp := TBitmap.Create;
           Bmp.PixelFormat := pf24bit;
@@ -469,6 +474,7 @@ begin
         end;
 
       end;
+{$ENDIF}
 
     HeightMapFile := GetFileByPath(Self, HeightMap);
     if FileExists(HeightMapFile) then
@@ -509,7 +515,8 @@ end;
 procedure TMapViewForm.InvalidateTerrain;
 begin
   CalcTerrainRange;
-  TerrainData.MarkDirty(0, 0, MapSize-1, MapSize-1);
+  //TerrainData.MarkDirty(0, 0, MapSize-1, MapSize-1);
+  TerrainData.MarkDirty(0, 0, 128-1, 128-1);
  // BattlefieldHDS.MarkDirty;
 end;
 
@@ -524,9 +531,16 @@ end;
 
 procedure TMapViewForm.CalcCameraPosition;
 begin
+
   CameraTarget.Position.X := WorldSize/2;
   CameraTarget.Position.Y := 100;
   CameraTarget.Position.Z := WorldSize/2;
+
+
+  CameraTarget.Position.X := 256;
+  CameraTarget.Position.Y := 100;
+  CameraTarget.Position.Z := 256;
+
 
   Camera.Position.X := 0.2;
   Camera.Position.Y := 0;
@@ -592,13 +606,10 @@ var
   X: Integer;
   Z: Single;
   RawValue: Word;
-  RasterLine: PRasterArray;
   Position: Integer;
   i, j, n: Integer;
   offset: TTexPoint;
   LibMaterial : TGLLibMaterial;
-
-  XStream, YStream : Double;
 
   MaxTileSize, OffsetModulo, TileSize: Integer;
   TextureScale: Extended;
@@ -623,9 +634,6 @@ begin
   TextureScale := TerrainRenderer.TileSize / MaxTileSize;
 
   heightData.MaterialName := 'Default';
-
-  GLCube1.Material.MaterialLibrary := GLMaterialLibrary1;
-  GLCube1.Material.LibMaterialName := 'Default';
 
 
   i := (heightData.XLeft div MaxTileSize);
@@ -674,9 +682,6 @@ begin
     begin
       if (Y < FWorldSize) and (X < FWorldSize) then
       begin
-        XStream := X / 4;
-        YStream := Y / 4;
-
         Position := X + Y * (WorldSize) div 4;
         //Position := X*2 + Y*2;
 
@@ -715,9 +720,8 @@ const
   MOVE_SPEED = 35;
   RUN_SPEED = 200;
 var
-   speed : Single;
+   Speed : Single;
    CamHeight : Single;
-   CamPosition : TAffineVector;
    TargetVector : TVector;
    StrafeVector : TVector;
    RaiseVector : TVector;

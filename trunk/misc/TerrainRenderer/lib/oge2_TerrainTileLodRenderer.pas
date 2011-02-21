@@ -35,19 +35,17 @@ implementation
 
 procedure TOGEHeightMapLODRender.BuildQuadTree;
 var
-  ii, jj, kk: Integer;
+  i, j, k: Integer;
   Vertex: TVertex;
 
   procedure AddVertex(ind: Integer; X, Y, Z, TX, TY: Single);
   begin
-    // new(Vertex);
     Vertex[0] := X;
     Vertex[1] := Y;
     Vertex[2] := Z;
     VertexCoords[ind] := Vertex;
     TexCoords[ind][0] := TX;
-    TexCoords[ind][1] := TY;
-    // FVertexTree.Add(Vertex);
+    TexCoords[ind][1] := 1 - TY;
   end;
 
 var
@@ -61,34 +59,34 @@ begin
   ind := -1;
   with HeightData do
   begin
-    for jj := 0 to HeightData.Size - 2 do
+    for j := 0 to HeightData.Size - 2 do
     begin
-      if jj mod 2 = 0 then
+      if j mod 2 = 0 then
       begin
-        for ii := 0 to HeightData.Size - 1 do
+        for i := 0 to HeightData.Size - 1 do
         begin
           ind := ind + 1;
-          AddVertex(ind, XLeft + ii, YTop + jj,
-            HeightData.GetHeight(ii, jj) / 128, ii / (HeightData.Size),
-            jj / (HeightData.Size));
+          AddVertex(ind, XLeft + i, YTop + j,
+            HeightData.GetHeight(i, j) / 128, i / (HeightData.Size),
+            j / (HeightData.Size));
           ind := ind + 1;
-          AddVertex(ind, XLeft + ii, YTop + jj + 1,
-            HeightData.GetHeight(ii, jj + 1) / 128, ii / (HeightData.Size),
-            (jj + 1) / (HeightData.Size));
+          AddVertex(ind, XLeft + i, YTop + j + 1,
+            HeightData.GetHeight(i, j + 1) / 128, i / (HeightData.Size),
+            (j + 1) / (HeightData.Size));
         end;
       end
       else
       begin
-        for ii := HeightData.Size - 1 downto 0 do
+        for i := HeightData.Size - 1 downto 0 do
         begin
           ind := ind + 1;
-          AddVertex(ind, XLeft + ii, YTop + jj + 1,
-            HeightData.GetHeight(ii, jj + 1) / 128, ii / (HeightData.Size),
-            (jj + 1) / (HeightData.Size));
+          AddVertex(ind, XLeft + i, YTop + j + 1,
+            HeightData.GetHeight(i, j + 1) / 128, i / (HeightData.Size),
+            (j + 1) / (HeightData.Size));
           ind := ind + 1;
-          AddVertex(ind, XLeft + ii, YTop + jj,
-            HeightData.GetHeight(ii, jj) / 128, ii / (HeightData.Size),
-            jj / (HeightData.Size));
+          AddVertex(ind, XLeft + i, YTop + j,
+            HeightData.GetHeight(i, j) / 128, i / (HeightData.Size),
+            j / (HeightData.Size));
         end;
       end;
     end;
