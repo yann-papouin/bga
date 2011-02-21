@@ -57,7 +57,8 @@ procedure TExMapViewerMainForm.Launch;
 begin
   MapViewForm.GetFileByPath := GetFileByPath;
   MapViewForm.LoadTerrain(ExtractFilePath(Application.ExeName)+'Init\Terrain.con');
-  MapViewForm.Show;
+  MapViewForm.ShowModal;
+  Close;
 end;
 
 function TExMapViewerMainForm.GetFileByPath(Sender: TObject; const VirtualPath: string): string;

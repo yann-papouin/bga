@@ -24,11 +24,10 @@ type
 
   TOGEHeightDataSource = class(TObject)
   private
-    FOGETerrainRendering : TOGETerrainRendering;
+    FOGETerrainRendering: TOGETerrainRendering;
     FTilesList: THashTable;
     FTilesCache: TList;
     FOnStartPreparingData: TOGEDataSourceStartPreparingData;
-    FVisibleDistance: Integer;
     Procedure BuildTilesCache;
     procedure ClearTilesCache;
   public
@@ -38,11 +37,8 @@ type
     function GetTile(X, Y: Integer): TOGEHeightMap;
     procedure RemoveTile(X, Y: Integer);
     function InterpolatedHeight(X, Y: Single; tileSize: Integer): Single;
-  published
     property TilesCache: TList read FTilesCache;
-    property OnStartPreparingData
-      : TOGEDataSourceStartPreparingData read FOnStartPreparingData write
-      FOnStartPreparingData;
+    property OnStartPreparingData: TOGEDataSourceStartPreparingData read FOnStartPreparingData write FOnStartPreparingData;
   end;
 
   TOGETerrainRendering = class(TGLSceneObject)
@@ -52,19 +48,12 @@ type
     FDrawWireFrame: Boolean;
     FinvTileSize: Extended;
     FTileSize: Integer;
-    FMaxCLODTriangles, FCLODPrecision: Integer;
-    //FTerrainEngine: TOGETerrainEngine;
 
-    FQualityDistance: Integer;
-    FLastTriangleCount: Integer;
     FMaterialLibrary: TGLMaterialLibrary;
     procedure SetHeightDataSource(const Value: TOGEHeightDataSource);
     procedure SetDrawTextured(const Value: Boolean);
     procedure SetDrawWireframe(const Value: Boolean);
-    procedure SetCLODPrecision(const val: Integer);
-    procedure RebuildCLOD;
-    function GetPreparedPatch(const tilePos, eyePos: TAffineVector;
-      texFactor: Single): TOGEBaseHeightMapRender;
+    function GetPreparedPatch(const tilePos, eyePos: TAffineVector; texFactor: Single): TOGEBaseHeightMapRender;
     procedure SetTileSize(const Value: Integer);
   public
     lodType: TTerrainLODType;
@@ -72,32 +61,15 @@ type
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
     procedure BuildList(var rci: TRenderContextInfo); override;
-    function RayCastIntersect(const rayStart, rayVector: TVector;
-      intersectPoint: PVector = nil;
-      intersectNormal: PVector = nil): Boolean; override;
+    function RayCastIntersect(const rayStart, rayVector: TVector; intersectPoint: PVector = nil; intersectNormal: PVector = nil): Boolean; override;
     function InterpolatedHeight(const p: TVector): Single; overload;
     function InterpolatedHeight(const p: TAffineVector): Single; overload;
   published
-    property TileSize: Integer read FTileSize write SetTileSize;
-    property HeightDataSource
-      : TOGEHeightDataSource read FHeightDataSource
-      write SetHeightDataSource;
+    property tileSize: Integer read FTileSize write SetTileSize;
+    property HeightDataSource: TOGEHeightDataSource read FHeightDataSource write SetHeightDataSource;
     property DrawTextured: Boolean read FDrawTextured write SetDrawTextured;
     property DrawWireframe: Boolean read FDrawWireFrame write SetDrawWireframe;
-    property MaxCLODTriangles
-      : Integer read FMaxCLODTriangles write FMaxCLODTriangles default
-      65536;
-    property MaterialLibrary
-      : TGLMaterialLibrary read FMaterialLibrary write FMaterialLibrary;
-    // property OcclusionTesselate:TTerrainOcclusionTesselate read FOcclusionTesselate write FOcclusionTesselate default totTesselateIfVisible;
-    { : Precision of CLOD tiles.<p>
-      The lower the value, the higher the precision and triangle count.
-      Large values will result in coarse terrain.<br>
-      high-resolution tiles (closer than QualityDistance) ignore this setting. }
-    property CLODPrecision
-      : Integer read FCLODPrecision write SetCLODPrecision
-      default 100;
-
+    property MaterialLibrary: TGLMaterialLibrary read FMaterialLibrary write FMaterialLibrary;
   end;
 
 implementation
@@ -120,52 +92,40 @@ begin
   self.ShowAxes := true;
   FDrawTextured := true;
   FDrawWireFrame := false;
-  TileSize := 64;
-  FMaxCLODTriangles := 65536;
-  FCLODPrecision := 100;
-  // FTerrainEngine:=TOGETerrainROAM1Engine.Create;
-  FQualityDistance := 64;
-  { FBufferVertices:=TAffineVectorList.Create;
-    FBufferTexPoints:=TTexPointList.Create;
-    FBufferVertexIndices:=TIntegerList.Create;
-    FOcclusionTesselate:=totTesselateIfVisible; }
+  tileSize := 64;
   ObjectStyle := ObjectStyle + [osDirectDraw];
   lodType := tlodIllyriumVBO;
 end;
 
 destructor TOGETerrainRendering.Destroy;
 begin
-  { FBufferVertices.Free;
-    FBufferTexPoints.Free;
-    FBufferVertexIndices.Free;
-    FTerrainEngine.Free; }
   inherited;
 end;
 
-function TOGETerrainRendering.GetPreparedPatch(const tilePos,
-  eyePos: TAffineVector; texFactor: Single): TOGEBaseHeightMapRender;
+function TOGETerrainRendering.GetPreparedPatch(const tilePos, eyePos: TAffineVector; texFactor: Single): TOGEBaseHeightMapRender;
 var
   tile: TOGEHeightMap;
   patch: TOGEBaseHeightMapRender;
   xLeft, yTop: Integer;
 begin
-  xLeft := Round(tilePos[0] * FinvTileSize - 0.5) * TileSize;
-  yTop := Round(tilePos[1] * FinvTileSize - 0.5) * TileSize;
+  xLeft := Round(tilePos[0] * FinvTileSize - 0.5) * tileSize;
+  yTop := Round(tilePos[1] * FinvTileSize - 0.5) * tileSize;
   tile := FHeightDataSource.GetTile(xLeft, yTop);
-  result := nil;
-  if not assigned(tile) then
-    exit;
+
+  Result := nil;
+  if not Assigned(tile) then
+    Exit;
 
   // application.MessageBox(pchar(inttostr(XLeft)+' '+inttostr(YTop)),'');
   // if tile.DataState=hdsNone then begin
   if tile.DataState <> dsReady then
   begin
-    result := nil; // if the tile is still not hdsReady, then skip it
+    Result := nil; // if the tile is still not hdsReady, then skip it
   end
   else
   begin
     patch := TOGEBaseHeightMapRender(tile.Renderer);
-    if not assigned(patch) then
+    if not Assigned(patch) then
     begin
       case lodType of
         tlodNone:
@@ -185,17 +145,13 @@ begin
           end;
       end;
     end;
-    result := patch;
+    Result := patch;
   end;
 end;
 
 procedure TOGETerrainRendering.BuildList(var rci: TRenderContextInfo);
 var
-  Cache: TList;
-  ii: Integer;
-  hd: TOGEHeightMap;
   v: TVector3f;
-  frustum: TFrustum;
 
   procedure ApplyMaterial(fname: String);
   begin
@@ -247,31 +203,21 @@ var
   end;
 
 var
-  Temph, TempW: Single;
-  //frustum2: TFrustumSOAR;
-var
   vEye, vEyeDirection: TVector;
   tilePos, absTilePos, observer: TAffineVector;
   deltaX, nbX, iX: Integer;
   deltaY, nbY, iY: Integer;
-  rpIdxDelta, accumCount: Integer;
-  f, tileRadius, tileGroundRadius, texFactor, tileDist, qDist: Single;
+  f, tileRadius, tileGroundRadius, texFactor: Single;
   rcci: TRenderContextClippingInfo;
-  currentMaterialName: String;
   maxTilePosX, maxTilePosY, minTilePosX, minTilePosY: Single;
-  t_l, t_t, t_r, t_b: Single;
   patch: TOGEBaseHeightMapRender;
   glmat: TGLLibMaterial;
-  nrtiles: Integer;
 begin
-  nrtiles := 0;
   if csDesigning in ComponentState then
-    exit;
+    Exit;
   if FHeightDataSource = nil then
-    exit;
+    Exit;
 
-  TempW := TGLSceneBuffer(rci.buffer).Width;
-  Temph := TGLSceneBuffer(rci.buffer).Height;
   v[0] := rci.cameraPosition[0];
   v[1] := rci.cameraPosition[1];
   v[2] := rci.cameraPosition[2];
@@ -294,48 +240,43 @@ begin
   vEye := VectorTransform(rci.cameraPosition, InvAbsoluteMatrix);
   vEyeDirection := VectorTransform(rci.cameraDirection, InvAbsoluteMatrix);
   SetVector(observer, vEye);
-  vEye[0] := Round(vEye[0] * FinvTileSize - 0.5) * TileSize + TileSize * 0.5;
-  vEye[1] := Round(vEye[1] * FinvTileSize - 0.5) * TileSize + TileSize * 0.5;
-  tileGroundRadius := Sqr(TileSize * 0.5 * Scale.X) + Sqr
-    (TileSize * 0.5 * Scale.Y);
+  vEye[0] := Round(vEye[0] * FinvTileSize - 0.5) * tileSize + tileSize * 0.5;
+  vEye[1] := Round(vEye[1] * FinvTileSize - 0.5) * tileSize + tileSize * 0.5;
+  tileGroundRadius := Sqr(tileSize * 0.5 * Scale.X) + Sqr(tileSize * 0.5 * Scale.Y);
   tileRadius := Sqrt(tileGroundRadius + Sqr(256 * Scale.Z));
   tileGroundRadius := Sqrt(tileGroundRadius);
   // now, we render a quad grid centered on eye position
   SetVector(tilePos, vEye);
   tilePos[2] := 0;
   f := (rci.rcci.farClippingDistance + tileGroundRadius) / Scale.X;
-  f := Round(f * FinvTileSize + 1.0) * TileSize;
+  f := Round(f * FinvTileSize + 1.0) * tileSize;
   maxTilePosX := vEye[0] + f;
   maxTilePosY := vEye[1] + f;
   minTilePosX := vEye[0] - f;
   minTilePosY := vEye[1] - f;
 
   if (maxTilePosX < minTilePosX) or (maxTilePosY < minTilePosY) then
-    exit;
+    Exit;
 
-  nbX := Round((maxTilePosX - minTilePosX) / TileSize);
-  nbY := Round((maxTilePosY - minTilePosY) / TileSize);
-  texFactor := 1 / ( { TilesPerTexture } 1 * TileSize);
+  nbX := Round((maxTilePosX - minTilePosX) / tileSize);
+  nbY := Round((maxTilePosY - minTilePosY) / tileSize);
+  texFactor := 1 / ( { TilesPerTexture } 1 * tileSize);
   rcci := rci.rcci;
-  if QualityDistance > 0 then
-    qDist := QualityDistance + tileRadius * 0.5
-  else
-    qDist := -1;
 
   AbsoluteMatrix; // makes sure it is available
 
   if vEyeDirection[0] >= 0 then
-    deltaX := TileSize
+    deltaX := tileSize
   else
   begin
-    deltaX := -TileSize;
+    deltaX := -tileSize;
     minTilePosX := maxTilePosX;
   end;
   if vEyeDirection[1] >= 0 then
-    deltaY := TileSize
+    deltaY := tileSize
   else
   begin
-    deltaY := -TileSize;
+    deltaY := -tileSize;
     minTilePosY := maxTilePosY;
   end;
 
@@ -353,11 +294,8 @@ begin
       if not IsVolumeClipped(absTilePos, tileRadius, rcci.frustum) then
       begin
         patch := GetPreparedPatch(tilePos, observer, texFactor);
-        tileDist := VectorDistance(PAffineVector(@rcci.origin)^, absTilePos)
-          / 64;
-        if assigned(patch) then
+        if Assigned(patch) then
         begin
-          nrtiles := nrtiles + 1;
           GL.color3f(0, 0, 0);
           case lodType of
             tlodNone:
@@ -372,7 +310,7 @@ begin
                 if FDrawWireFrame then
                 begin
                   GL.PolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                  GL.enable(GL_LINE_SMOOTH);
+                  GL.Enable(GL_LINE_SMOOTH);
                   GL.color4f(1, 1, 1, 1);
                   GL.Begin_(GL_QUADS);
                   TOGEBaseHeightMapRender(patch).RenderQuadTree(false, false);
@@ -383,19 +321,17 @@ begin
               begin
                 GL.FrontFace(GL_CW);
 
-                glmat := MaterialLibrary.LibMaterialByName
-                  (patch.HeightData.MaterialName);
-                if assigned(glmat) then
+                glmat := MaterialLibrary.LibMaterialByName(patch.HeightData.MaterialName);
+                if Assigned(glmat) then
                 begin
                   glmat.Apply(rci);
-                  TOGEBaseHeightMapRender(patch).RenderQuadTree(FDrawTextured,
-                    FDrawWireFrame);
+                  TOGEBaseHeightMapRender(patch).RenderQuadTree(FDrawTextured, FDrawWireFrame);
                   glmat.UnApply(rci);
                 end
                 else
                 begin
-                  TOGEBaseHeightMapRender(patch).RenderQuadTree(false,
-                    FDrawWireFrame);
+
+                  TOGEBaseHeightMapRender(patch).RenderQuadTree(false, FDrawWireFrame);
                 end;
 
                 GL.FrontFace(GL_CCW);
@@ -403,20 +339,16 @@ begin
             tlodIllyriumVBO:
               begin
                 GL.FrontFace(GL_CW);
-                // glmat:=MaterialLibrary.Materials[0];
-                glmat := MaterialLibrary.LibMaterialByName
-                  (patch.HeightData.MaterialName);
-                if assigned(glmat) then
+                glmat := MaterialLibrary.LibMaterialByName(patch.HeightData.MaterialName);
+                if Assigned(glmat) then
                 begin
                   glmat.Apply(rci);
-                  TOGEBaseHeightMapRender(patch).RenderQuadTree(FDrawTextured,
-                    FDrawWireFrame);
+                  TOGEBaseHeightMapRender(patch).RenderQuadTree(FDrawTextured, FDrawWireFrame);
                   glmat.UnApply(rci);
                 end
                 else
                 begin
-                  TOGEBaseHeightMapRender(patch).RenderQuadTree(false,
-                    FDrawWireFrame);
+                  TOGEBaseHeightMapRender(patch).RenderQuadTree(false, FDrawWireFrame);
                 end;
 
                 GL.FrontFace(GL_CCW);
@@ -431,7 +363,7 @@ begin
 
   GL.Disable(GL_COLOR_MATERIAL);
   GL.PopMatrix;
-  // writeln(nrtiles);
+
 end;
 
 procedure TOGETerrainRendering.SetDrawTextured(const Value: Boolean);
@@ -455,7 +387,7 @@ end;
 procedure TOGETerrainRendering.SetHeightDataSource(const Value: TOGEHeightDataSource);
 begin
   FHeightDataSource := Value;
-  FHeightDataSource.FOGETerrainRendering := Self;
+  FHeightDataSource.FOGETerrainRendering := self;
 end;
 
 procedure TOGETerrainRendering.SetTileSize(const Value: Integer);
@@ -467,43 +399,12 @@ begin
     else
       FTileSize := RoundUpToPowerOf2(Value);
     FinvTileSize := 1 / FTileSize;
-    //ReleaseAllTiles;
+    // ReleaseAllTiles;
     StructureChanged;
   end;
 end;
 
-procedure TOGETerrainRendering.SetCLODPrecision(const val: Integer);
-begin
-  if val <> FCLODPrecision then
-  begin
-    FCLODPrecision := val;
-    if FCLODPrecision < 1 then
-      FCLODPrecision := 1;
-    RebuildCLOD;
-  end;
-end;
-
-procedure TOGETerrainRendering.RebuildCLOD;
-var
-  i, k: Integer;
-  hd: TOGEHeightMap;
-begin
-  // drop all ROAM data (CLOD has changed, rebuild required)
-  { for i:=0 to cTilesHashSize do with FTilesHash[i] do begin
-    for k:=Count-1 downto 0 do begin
-    hd:=THeightData(List^[k]);
-    if Assigned(hd.ObjectTag) then begin
-    (hd.ObjectTag as TGLROAMPatch).Free;
-    hd.ObjectTag:=nil;
-    end;
-    end;
-    Clear;
-    end; }
-end;
-
-function TOGETerrainRendering.RayCastIntersect(const rayStart,
-  rayVector: TVector; intersectPoint: PVector = nil;
-  intersectNormal: PVector = nil): Boolean;
+function TOGETerrainRendering.RayCastIntersect(const rayStart, rayVector: TVector; intersectPoint: PVector = nil; intersectNormal: PVector = nil): Boolean;
 var
   p1, d, p2, p3: TVector;
   step, i, h, minH, maxH, p1height: Single;
@@ -511,15 +412,14 @@ var
   failSafe: Integer;
   AbsX, AbsY, AbsZ: TVector;
 begin
-  result := false;
-  if assigned(HeightDataSource) then
+  Result := false;
+  if Assigned(HeightDataSource) then
   begin
     step := (Scale.X + Scale.Y); // Initial step size guess
     i := step;
     d := VectorNormalize(rayVector);
     AbsZ := VectorNormalize(LocalToAbsolute(ZHMGVector));
-    startedAbove := ((InterpolatedHeight(rayStart) - VectorDotProduct(rayStart,
-          AbsZ)) < 0);
+    startedAbove := ((InterpolatedHeight(rayStart) - VectorDotProduct(rayStart, AbsZ)) < 0);
     maxH := Scale.Z * 256;
     minH := -Scale.Z * 256;
     failSafe := 0;
@@ -530,7 +430,7 @@ begin
       p1height := VectorDotProduct(AbsZ, p1);
       if Abs(h - p1height) < 0.1 then
       begin // Need a tolerance variable here (how close is good enough?)
-        result := true;
+        Result := true;
         Break;
       end
       else
@@ -557,35 +457,30 @@ begin
       if VectorDotProduct(AbsZ, d) < 0 then
       begin
         if h < minH then
-          exit
+          Exit
       end
       else if h > maxH then
-        exit;
+        Exit;
     end;
 
-    if result then
+    if Result then
     begin
-      p1 := VectorAdd(p1, VectorScale(AbsZ,
-          InterpolatedHeight(p1) - VectorDotProduct(p1, AbsZ)));
-      if assigned(intersectPoint) then
+      p1 := VectorAdd(p1, VectorScale(AbsZ, InterpolatedHeight(p1) - VectorDotProduct(p1, AbsZ)));
+      if Assigned(intersectPoint) then
         intersectPoint^ := p1;
 
       // Calc Normal
-      if assigned(intersectNormal) then
+      if Assigned(intersectNormal) then
       begin
         // Get 2 nearby points for cross-product
         AbsX := VectorNormalize(LocalToAbsolute(XHMGVector));
         AbsY := VectorNormalize(LocalToAbsolute(YHMGVector));
         p2 := VectorAdd(p1, VectorScale(AbsX, 0.1));
-        p2 := VectorAdd(p2, VectorScale(AbsZ,
-            InterpolatedHeight(p2) - VectorDotProduct(p2, AbsZ)));
+        p2 := VectorAdd(p2, VectorScale(AbsZ, InterpolatedHeight(p2) - VectorDotProduct(p2, AbsZ)));
         p3 := VectorAdd(p1, VectorScale(AbsY, 0.1));
-        p3 := VectorAdd(p3, VectorScale(AbsZ,
-            InterpolatedHeight(p3) - VectorDotProduct(p3, AbsZ)));
+        p3 := VectorAdd(p3, VectorScale(AbsZ, InterpolatedHeight(p3) - VectorDotProduct(p3, AbsZ)));
 
-        intersectNormal^ := VectorNormalize
-          (VectorCrossProduct(VectorSubtract(p1, p2),
-            VectorSubtract(p3, p1)));
+        intersectNormal^ := VectorNormalize(VectorCrossProduct(VectorSubtract(p1, p2), VectorSubtract(p3, p1)));
       end;
     end;
   end;
@@ -599,28 +494,25 @@ begin
   if Assigned(FHeightDataSource) then
   begin
     pLocal := AbsoluteToLocal(p);
-    result := FHeightDataSource.InterpolatedHeight(pLocal[0], pLocal[1],
-      FTileSize + 1) * Scale.Z * (1 / 128);
+    Result := FHeightDataSource.InterpolatedHeight(pLocal[0], pLocal[1], FTileSize + 1) * Scale.Z * (1 / 128);
   end
   else
-    result := 0;
+    Result := 0;
 end;
 
 // InterpolatedHeight (affine)
 //
-function TOGETerrainRendering.InterpolatedHeight(const p: TAffineVector) : Single;
+function TOGETerrainRendering.InterpolatedHeight(const p: TAffineVector): Single;
 begin
-  result := InterpolatedHeight(PointMake(p));
+  Result := InterpolatedHeight(PointMake(p));
 end;
-
 
 { TOGEHeightDataSource }
 
 function GetTileIndex(X, Y: Integer): String;
 begin
-  result := 'T_' + inttostr(X) + '_' + inttostr(Y);
+  Result := 'T_' + inttostr(X) + '_' + inttostr(Y);
 end;
-
 
 constructor TOGEHeightDataSource.Create;
 begin
@@ -635,7 +527,6 @@ begin
   FTilesCache.Free;
   inherited;
 end;
-
 
 procedure TOGEHeightDataSource.ClearTilesCache;
 begin
@@ -655,16 +546,16 @@ end;
 
 procedure TOGEHeightDataSource.MarkDirty(x1, y1, x2, y2: Integer);
 var
-  ii, jj: Integer;
+  i, j: Integer;
   TempTile: TOGEHeightMap;
-  TileSize : integer;
+  tileSize: Integer;
 begin
-  TileSize := FOGETerrainRendering.TileSize;
-  for ii := floor(x1 / TileSize) to Ceil(x2 / TileSize) - 1 do
+  tileSize := FOGETerrainRendering.tileSize;
+  for i := floor(x1 / tileSize) to Ceil(x2 / tileSize) - 1 do
   begin
-    for jj := floor(y1 / TileSize) to Ceil(y2 / TileSize) - 1 do
+    for j := floor(y1 / tileSize) to Ceil(y2 / tileSize) - 1 do
     begin
-      TempTile := GetTile(ii * TileSize, jj * TileSize);
+      TempTile := GetTile(i * tileSize, j * tileSize);
       if Assigned(TempTile.Renderer) then
       begin
         TempTile.Renderer.Free;
@@ -673,14 +564,13 @@ begin
       if Assigned(FOnStartPreparingData) then
         FOnStartPreparingData(TempTile);
       if TempTile.DataState <> dsReady then
-        RemoveTile(ii * TileSize, jj * TileSize);
+        RemoveTile(i * tileSize, j * tileSize);
     end;
   end;
   BuildTilesCache;
 end;
 
-function TOGEHeightDataSource.InterpolatedHeight(X, Y: Single;
-  tileSize: Integer): Single;
+function TOGEHeightDataSource.InterpolatedHeight(X, Y: Single; tileSize: Integer): Single;
 var
   i: Integer;
   hd, foundHd: TOGEHeightMap;
@@ -691,8 +581,7 @@ begin
     for i := 0 to FTilesList.Count - 1 do
     begin
       hd := TOGEHeightMap(FTilesList.Items[i]);
-      if (hd.XLeft <= X) and (hd.YTop <= Y) and (hd.XLeft + hd.Size - 1 > X)
-        and (hd.YTop + hd.Size - 1 > Y) then
+      if (hd.xLeft <= X) and (hd.yTop <= Y) and (hd.xLeft + hd.Size - 1 > X) and (hd.yTop + hd.Size - 1 > Y) then
       begin
         foundHd := hd;
         Break;
@@ -713,30 +602,28 @@ begin
     // request it using "standard" way (takes care of threads)
     foundHd:=GetData(foundHd.XLeft, foundHd.YTop, foundHd.Size, foundHd.DataType);
     end; }
-  result := 0;
+  Result := 0;
   if Assigned(foundHd) then
     if foundHd.DataState = dsNone then
-      result := { DefaultHeight } 0
+      Result := { DefaultHeight } 0
     else
-      result := foundHd.GetHeight(round(X - foundHd.XLeft),
-        round(Y - foundHd.YTop));
+      Result := foundHd.GetHeight(Round(X - foundHd.xLeft), Round(Y - foundHd.yTop));
 end;
 
 function TOGEHeightDataSource.GetTile(X, Y: Integer): TOGEHeightMap;
 var
   TempTile: TOGEHeightMap;
 begin
-  TempTile := nil;
   if Assigned(FTilesList.Get(GetTileIndex(X, Y))) = false then
   begin
-    TempTile := TOGEHeightMap.Create(X, Y, FOGETerrainRendering.TileSize + 1);
+    TempTile := TOGEHeightMap.Create(X, Y, FOGETerrainRendering.tileSize + 1);
     FTilesList.Add(GetTileIndex(X, Y), TempTile);
   end
   else
   begin
     TempTile := TOGEHeightMap(FTilesList.Get(GetTileIndex(X, Y)));
   end;
-  result := TempTile;
+  Result := TempTile;
 end;
 
 procedure TOGEHeightDataSource.RemoveTile(X, Y: Integer);
