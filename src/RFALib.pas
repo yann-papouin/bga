@@ -71,12 +71,13 @@ type
     FCount: integer;
     FOnProgress: TRFAProgress;
     FIndexedDataSize: integer;
-    FUseCompression: boolean;
+    FCompressed: boolean;
     procedure SetOnReadEntry(const Value: TRFAReadEntry);
 
     function ReadHeader : boolean;
     function GetDataSize: LongWord;
     function GetElementQuantity: LongWord;
+    function GetCompressed : boolean;
     procedure SetDataSize(const Value: LongWord);
     procedure SetElementQuantity(const Value: LongWord);
 
@@ -93,7 +94,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    function New(Filename: string): integer;
+    function New(Filename: string; Compressed : boolean): integer;
     function Open(Filename: string; OpenReadOnly : Boolean = false): TRFAOpenResult;
 
     procedure DecompressToStream(outputstream: TStream; Offset, Size: int64; silent: boolean = true);
@@ -114,7 +115,7 @@ type
     property IndexedDataSize : Integer read FIndexedDataSize;
     property Fragmentation : Integer read GetFragmentation;
 
-    property UseCompression : boolean read FUseCompression;
+    property Compressed : boolean read FCompressed;
     property ReadOnly : Boolean read FReadOnly;
 
     property OnReadEntry: TRFAReadEntry read FOnReadEntry write SetOnReadEntry;
@@ -142,6 +143,7 @@ const
   HEADER_SIZE = 28;
   ENTRY_SIZE = 24;
   DWORD_SIZE = 4;
+  QWORD_SIZE = 8;
   INIT_DATA_SIZE = $9C;
   SEGMENT_HEADER_SIZE = DWORD_SIZE*3;
   BUFFER_SIZE = 8192;
@@ -149,12 +151,23 @@ const
   VERSION_HEADER = 'Refractor2 FlatArchive 1.1  ';
   LZO1X_1_MEM_COMPRESS = 16384 * 4;
 
+
+  COMPRESSION_ON_HEADER: array[0..3] of Byte =
+  (
+    $01, $00, $00, $00
+  );
+
+  COMPRESSION_OFF_HEADER: array[0..3] of Byte =
+  (
+    $00, $00, $00, $00
+  );
+
   { Following is a magic checksum, apparently applied by winRFA, if someone
   knowns how it works, please send me an explanation }
 
-  MAGIC_CHECKSUM: array[0..151] of Byte =
+  MAGIC_CHECKSUM: array[0..147] of Byte =
   (
-    $01, $00, $00, $00, $63, $EC, $95, $BF, $FE, $7B, $09, $3C, $3A, $F0, $72,
+    $63, $EC, $95, $BF, $FE, $7B, $09, $3C, $3A, $F0, $72,
     $EE, $A4, $72, $E7, $D9, $3F, $CC, $99, $C0, $D3, $71, $C1, $46, $89, $BD,
     $D7, $53, $B5, $7E, $05, $B9, $F3, $B3, $DB, $18, $75, $94, $44, $FF, $9B,
     $D2, $B9, $53, $C4, $1F, $B4, $F5, $65, $F1, $68, $9F, $58, $83, $AF, $0F,
@@ -263,7 +276,6 @@ constructor TRFAFile.Create;
 begin
   inherited;
   FLargeBuf := TMemoryStream.Create;
-  FUseCompression := false;
   Release;
 end;
 
@@ -284,14 +296,14 @@ begin
 
   FHandle := nil;
   FReadOnly := False;
-  FUseCompression := False;
+  FCompressed := False;
   FIndexedDataSize := 0;
   FCount := 0;
   FFilepath := EmptyStr;
 end;
 
 
-function TRFAFile.New(Filename: string): integer;
+function TRFAFile.New(Filename: string; Compressed : boolean): integer;
 var
   Value : longword;
 begin
@@ -312,6 +324,18 @@ begin
   begin
     FHandle.Size := INIT_DATA_SIZE + DWORD_SIZE;
     DataSize := INIT_DATA_SIZE;
+
+    if Compressed then
+    begin
+      FHandle.Write(COMPRESSION_ON_HEADER, Length(COMPRESSION_ON_HEADER));
+      FCompressed := true;
+    end
+      else
+    begin
+      FHandle.Write(COMPRESSION_OFF_HEADER, Length(COMPRESSION_OFF_HEADER));
+      FCompressed := false;
+    end;
+
     FHandle.Write(MAGIC_CHECKSUM, Length(MAGIC_CHECKSUM));
 
     ElementQuantity := 0;
@@ -366,6 +390,7 @@ begin
   if Assigned(FHandle) then
   begin
     IsRetail := ReadHeader;
+    FCompressed := GetCompressed;
     FReadOnly := OpenReadOnly;
     FCount := ElementQuantity;
     FIndexedDataSize := 0;
@@ -398,7 +423,7 @@ begin
           else
           begin
             FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, COMPRESSED_DATA, ENT.csize);
-            FUseCompression := true;
+            //FCompressed := true;
           end;
         end
           else
@@ -1034,6 +1059,7 @@ begin
   DataSize := CurrentSize + Result.size;
 end;
 
+
 procedure TRFAFile.UpdateEntry(FullPath: AnsiString; NewOffset, NewUcSize, NewCSize: int64);
 var
   ENT: RFA_Entry;
@@ -1131,6 +1157,16 @@ procedure TRFAFile.SetElementQuantity(const Value: LongWord);
 begin
   FHandle.Seek(DataSize, soBeginning);  // Jump segment
   FHandle.Write(Value, DWORD_SIZE);     // write element quantity (32bits)
+end;
+
+
+function TRFAFile.GetCompressed: boolean;
+var
+  CompressionHeader : DWord;
+begin
+  GetDataSize;
+  FHandle.Read(CompressionHeader, DWORD_SIZE);
+  Result := CompressionHeader > 0;
 end;
 
 function TRFAFile.GetFragmentation: Integer;
