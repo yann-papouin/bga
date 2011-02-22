@@ -87,7 +87,7 @@ begin
   ind := -1;
 
   UVDiv := HeightData.Size; // HeightData.Size-1;
-
+(*
   for i := 0 to HeightData.Size - 2 do
   begin
 
@@ -109,28 +109,53 @@ begin
     end;
 
   end;
+  *)
 
-(*
-  for j := 0 to HeightData.Size - 2 do
+  if HeightData.XLeft = 64 then
   begin
-    if j mod 2 = 0 then
+    for j := 0 to HeightData.Size - 2 do
     begin
-      for i := 0 to HeightData.Size - 1 do
+      if j mod 2 = 0 then
       begin
-        ExAddVertex(i,j);
-        ExAddVertex(i,j+1);
-      end;
-    end
-      else
-    begin
-      for i := HeightData.Size - 1 downto 0 do
+        for i := 0 to HeightData.Size - 1 do
+        begin
+          ExAddVertex(i,j);
+          ExAddVertex(i,j+1);
+        end;
+      end
+        else
       begin
-        ExAddVertex(i,j+1);
-        ExAddVertex(i,j);
+        for i := HeightData.Size - 1 downto 0 do
+        begin
+          ExAddVertex(i,j+1);
+          ExAddVertex(i,j);
+        end;
       end;
     end;
-  end;
-*)
+  end
+    else
+  begin
+    for j := 0 to HeightData.Size - 2 do
+    begin
+      if j mod 2 = 0 then
+      begin
+        for i := 0 to HeightData.Size - 1 do
+        begin
+          ExAddVertex(i,j+1);
+          ExAddVertex(i,j);
+        end;
+      end
+        else
+      begin
+        for i := HeightData.Size - 1 downto 0 do
+        begin
+          ExAddVertex(i,j);
+          ExAddVertex(i,j+1);
+        end;
+      end;
+    end;
+  end ;
+
 
   GL.BindBuffer(GL_ARRAY_BUFFER, FVertexHandle);
   GL.BufferData(GL_ARRAY_BUFFER, VerticlesCount * 3 * 4, VertexCoords, GL_STATIC_DRAW);

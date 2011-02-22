@@ -218,7 +218,6 @@ type
       var Handled: Boolean);
     procedure RFAListMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure FormMouseLeave(Sender: TObject);
     procedure RFAListMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure DropEmptySourceFeedback(Sender: TObject; Effect: Integer;
@@ -837,7 +836,7 @@ begin
 
             ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
             Size := ExternalFile.Size;
-            InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, FArchive.UseCompression);
+            InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, FArchive.Compressed);
             ShiftData(InsertResult, shRight, Node);
             ExternalFile.Free;
 
@@ -846,7 +845,7 @@ begin
             Exclude(Data.Status, fsExternal);
             Data.Size := Size;
             Data.Offset := InsertResult.offset;
-            Data.Compressed := FArchive.UseCompression;
+            Data.Compressed := FArchive.Compressed;
             Data.CompSize := InsertResult.size;
             Data.ExternalMD5 := MD5FromFile(Data.ExternalFilePath);
             RFAList.InvalidateNode(Node);
@@ -870,7 +869,7 @@ begin
           begin
             ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
             Size := ExternalFile.Size;
-            InsertResult := FArchive.InsertFile(ExternalFile, FArchive.UseCompression);
+            InsertResult := FArchive.InsertFile(ExternalFile, FArchive.Compressed);
             ShiftData(InsertResult, shRight, Node);
             ExternalFile.Free;
 
@@ -882,7 +881,7 @@ begin
             Exclude(Data.Status, fsEntry);
             Data.Size := Size;
             Data.Offset := InsertResult.offset;
-            Data.Compressed := FArchive.UseCompression;
+            Data.Compressed := FArchive.Compressed;
             Data.CompSize := InsertResult.size;
             Data.ExternalFilePath := EmptyStr;
             Data.ExternalMD5 := EmptyStr;
@@ -929,13 +928,15 @@ begin
         repeat
           TmpFilename := ExtractFilePath(Path) + RandomString('333333') + '.tmp';
         until not FileExists(TmpFilename);
-        NewResult := TmpArchive.New(TmpFilename);
-        TmpUseCompression := FArchive.UseCompression;
+
+
+        TmpUseCompression := FArchive.Compressed;
+        NewResult := TmpArchive.New(TmpFilename, TmpUseCompression);
       end
       else
       begin
-        NewResult := TmpArchive.New(Path);
         TmpUseCompression := RFASettingsForm.UseCompression.Checked;
+        NewResult := TmpArchive.New(Path, TmpUseCompression);
       end;
 
       if NewResult < 0 then
@@ -1097,6 +1098,10 @@ begin
   begin
     ArchiveSize.Visible := true;
     ArchiveSize.Caption := Format('Archive = %s',[SizeToStr(FArchive.DataSize)]);
+
+    if FArchive.Compressed then
+      ArchiveSize.Caption := ArchiveSize.Caption + ' (c)';
+
 
     Fragmentation.Visible := true;
     Fragmentation.Caption := Format('Fragmentation = %s',[SizeToStr(FArchive.Fragmentation)]);
@@ -2062,12 +2067,6 @@ begin
 end;
 
 
-procedure TRFAViewForm.FormMouseLeave(Sender: TObject);
-begin
-  inherited;
-
-end;
-
 procedure TRFAViewForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 var
   Result : TModalResult;
@@ -2291,6 +2290,9 @@ var
 begin
   if not tbMenuBar.Enabled then
     Exit;
+
+  ShowMessage('RAW Preview', 'Preview is disabled for this version, please wait for an update');
+  Exit;
 
   TerrainNode := FindFileByName('Terrain.con');
 

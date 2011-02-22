@@ -70,6 +70,10 @@ uses
 
 {$I BGA.inc}
 
+{$IfDef GLS_LOGGING}
+
+{$EndIf}
+
 begin
   // ReportMemoryLeaksOnShutdown := DebugHook <> 0;
 
