@@ -374,12 +374,13 @@ begin
           if Child <> Node then
           begin
             ChildData := RFAList.GetNodeData(Child);
-            if ChildData.W32Name = Data.W32Name then
-            begin
-              Include(Data.Status, fsConflict);
-              ConflictFound := true;
-              Break;
-            end;
+            if not (fsDelete in ChildData.Status) then
+              if (ChildData.W32Name = Data.W32Name) then
+              begin
+                Include(Data.Status, fsConflict);
+                ConflictFound := true;
+                Break;
+              end;
           end;
           Child := RFAList.GetNextSibling(Child);
         end;
@@ -907,6 +908,7 @@ begin
             Data.RFAFileHandle.DeleteEntry(Data.EntryName);
             Data.EntryName := BuildEntryNameFromTree(Node);
             Data.RFAFileHandle.InsertEntry(Data.EntryName, Data.offset, Data.Size, Data.CompSize, 0);
+            Exclude(Data.Status, fsEntry);
           end;
 
           TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);

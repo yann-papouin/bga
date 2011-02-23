@@ -18,8 +18,13 @@ inherited MapViewForm: TMapViewForm
     Height = 513
     Camera = Camera
     PostRender = ViewerPostRender
-    Buffer.BackgroundColor = clWhite
+    Buffer.FogEnvironment.FogColor.Color = {FFFE7E3FF1F0703FD4D3533F0000803F}
+    Buffer.FogEnvironment.FogStart = 50.000000000000000000
+    Buffer.FogEnvironment.FogEnd = 200.000000000000000000
+    Buffer.BackgroundColor = 13889790
+    Buffer.AmbientColor.Color = {0000803E0000803E0000803E0000803F}
     Buffer.FaceCulling = False
+    Buffer.FogEnable = True
     FieldOfView = 137.578231811523400000
     Align = alClient
     OnDblClick = ViewerDblClick
