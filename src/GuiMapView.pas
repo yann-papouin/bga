@@ -46,10 +46,12 @@ uses
   GLObjects,
   GLColor,
   GLTexture,
+  GLGraphics,
   TB2Item,
   DDSImage,
   pngimage,
   jpeg,
+  GLTextureFormat,
   VectorGeometry,
   VectorTypes,
   GLSimpleNavigation,
@@ -366,7 +368,9 @@ begin
 
 end;
 
-{$DEFINE RAWVIEW_DRAW_NAME}
+{$DEFINE RAWVIEW_LOAD_TEXTURE}
+{.$DEFINE RAWVIEW_DRAW_NAME}
+
 
 procedure TMapViewForm.LoadTerrain(Filename: string);
 var
@@ -408,6 +412,9 @@ begin
       LibMaterial.Material.FrontProperties.Emission.Color := clrWhite;
       LibMaterial.TextureScale.X := 100;
       LibMaterial.TextureScale.Y := 100;
+      LibMaterial.Material.Texture.TextureMode := tmModulate;
+    //  LibMaterial.Material.Texture.TextureFormat := tfLuminance;
+      LibMaterial.Material.Texture.Compression := tcStandard;
     end;
 
 {$IFDEF RAWVIEW_LOAD_TEXTURE}
@@ -416,12 +423,18 @@ begin
     if FileExists(DetailFile) then
     begin
       DetailMaterial := GLMaterialLibrary.AddTextureMaterial('Details', DetailFile);
-     // DetailMaterial.Material.MaterialOptions := [moNoLighting];
+      (*
+      DetailMaterial.Material.MaterialOptions := [moNoLighting];
       DetailMaterial.Material.FrontProperties.Emission.Color := clrWhite;
+      DetailMaterial.Material.FrontProperties.Ambient.Color := clrWhite;
+      DetailMaterial.Material.FrontProperties.Diffuse.Color := clrWhite;
+      *)
      // DetailMaterial.Material.Texture.ImageBrightness := 2;
+     DetailMaterial.Material.Texture.TextureFormat := tfLuminance;
       DetailMaterial.Material.Texture.TextureMode := tmModulate;
-      DetailMaterial.TextureScale.X := Sqrt(MapSize);
-      DetailMaterial.TextureScale.Y := Sqrt(MapSize);
+
+      DetailMaterial.TextureScale.X := 16;
+      DetailMaterial.TextureScale.Y := 16;
     end;
 
     for Row := 0 to TexturePart - 1 do
@@ -447,14 +460,18 @@ begin
 
           LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
           LibMaterial.Material.FrontProperties.Emission.Color := clrWhite;
+          //LibMaterial.Material.Texture.Compression := tcNone;
+
+          //LibMaterial.Material.Texture.TextureMode := tmReplace;
+          LibMaterial.Material.Texture.FilteringQuality := tfAnisotropic;
+          LibMaterial.Material.Texture.MinFilter := miLinearMipmapNearest;
+          LibMaterial.Material.Texture.MagFilter := maLinear;
+          LibMaterial.Material.Texture.ImageGamma := 2;
           SendDebugFmt('%s added',[LibMaterial.Name]);
           //LibMaterial.Material.MaterialOptions := [moNoLighting];
 
-          (*
-          if Assigned(DetailMaterial) then
-            LibMaterial.Texture2Name := DetailMaterial.Name;
-            *)
 
+        //  if Assigned(DetailMaterial) then LibMaterial.Texture2Name := DetailMaterial.Name;
 
 
 {$IFDEF RAWVIEW_DRAW_NAME}
@@ -515,8 +532,8 @@ end;
 procedure TMapViewForm.InvalidateTerrain;
 begin
   CalcTerrainRange;
-  //TerrainData.MarkDirty(0, 0, MapSize-1, MapSize-1);
-  TerrainData.MarkDirty(0, 0, 128-1, 128-1);
+  TerrainData.MarkDirty(0, 0, MapSize-1, MapSize-1);
+ //TerrainData.MarkDirty(0, 0, 128-1, 128-1);
  // BattlefieldHDS.MarkDirty;
 end;
 
@@ -536,11 +553,11 @@ begin
   CameraTarget.Position.Y := 100;
   CameraTarget.Position.Z := WorldSize/2;
 
-
+(*
   CameraTarget.Position.X := 256;
   CameraTarget.Position.Y := 100;
   CameraTarget.Position.Z := 256;
-
+*)
 
   Camera.Position.X := 0.2;
   Camera.Position.Y := 0;

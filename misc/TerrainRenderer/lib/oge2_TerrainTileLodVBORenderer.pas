@@ -36,7 +36,10 @@ implementation
 { TOGEHeightMapLODVBORender }
 
 uses
-  DbugIntf;
+  Sysutils, DbugIntf;
+
+{$Define TRIANGLE_RENDERING}
+{.$Define TRIANGLE_STRIP_RENDERING}
 
 procedure TOGEHeightMapLODVBORender.BuildQuadTree;
 const
@@ -72,6 +75,7 @@ var
     V := Yj / UVDiv;
 
     Inc(ind);
+    Assert(ind < VerticlesCount, Format('ExAddVertex error with %d >= %d',[ind, VerticlesCount]) );
     AddVertex(ind, X, Y, Z, U, V);
   end;
 
@@ -80,83 +84,78 @@ var
   i, j, k: Integer;
 
 begin
-  VerticlesCount := (HeightData.Size * 2) * (HeightData.Size - 1);
+ //
+  {$IfDef TRIANGLE_RENDERING}
+  VerticlesCount := ((HeightData.Size-1) * 2) * ((HeightData.Size-1) * 2) + ((HeightData.Size-1)*(HeightData.Size-1) * 2);
+  {$EndIf}
+
+  {$IfDef TRIANGLE_STRIP_RENDERING}
+  VerticlesCount := (HeightData.Size * 2) * (HeightData.Size - 1)*2;
+  {$EndIf}
+
   SetLength(VertexCoords, VerticlesCount);
   SetLength(TexCoords, VerticlesCount);
 
   ind := -1;
 
-  UVDiv := HeightData.Size; // HeightData.Size-1;
-(*
-  for i := 0 to HeightData.Size - 2 do
+  UVDiv := HeightData.Size-1;
+
+  {$IfDef TRIANGLE_RENDERING}
+
+  for j := 0 to HeightData.Size - 1 - 1 do
   begin
+    for i := 0 to HeightData.Size - 1 - 1 do
+    begin
+      ExAddVertex(i,j);
+      ExAddVertex(i,j+1);
+      ExAddVertex(i+1,j+1);
 
-    if i mod 2 = 0 then
-    begin
-      for j := 0 to HeightData.Size - 1 do
-      begin
-        ExAddVertex(i,j);
-        ExAddVertex(i+1,j);
-      end
-    end
-     else
-    begin
-      for j := HeightData.Size - 1 downto 0 do
-      begin
-        ExAddVertex(i+1,j);
-        ExAddVertex(i,j);
-      end;
+      ExAddVertex(i,j);
+      ExAddVertex(i+1,j+1);
+      ExAddVertex(i+1,j);
     end;
-
   end;
-  *)
 
-  if HeightData.XLeft = 64 then
+  {$EndIf}
+
+  {$IfDef TRIANGLE_STRIP_RENDERING}
+
+  for j := 0 to HeightData.Size - 2 do
   begin
-    for j := 0 to HeightData.Size - 2 do
+    for i := 0 to HeightData.Size - 2 do
     begin
-      if j mod 2 = 0 then
+      ExAddVertex(i,j);
+      ExAddVertex(i,j+1);
+      ExAddVertex(i+1,j+1);
+      ExAddVertex(i+1,j);
+    end;
+  end;
+(*
+  for j := 0 to HeightData.Size - 2 do
+  begin
+    if j mod 2 = 0 then
+    begin
+      for i := 0 to HeightData.Size - 1 do
       begin
-        for i := 0 to HeightData.Size - 1 do
-        begin
-          ExAddVertex(i,j);
-          ExAddVertex(i,j+1);
-        end;
-      end
-        else
+        ExAddVertex(i,j);
+        ExAddVertex(i,j+1);
+      end;
+    end
+      else
+    begin
+      for i := HeightData.Size - 1 downto 0 do
       begin
-        for i := HeightData.Size - 1 downto 0 do
-        begin
-          ExAddVertex(i,j+1);
-          ExAddVertex(i,j);
-        end;
+        ExAddVertex(i,j+1);
+        ExAddVertex(i,j);
       end;
     end;
-  end
-    else
-  begin
-    for j := 0 to HeightData.Size - 2 do
-    begin
-      if j mod 2 = 0 then
-      begin
-        for i := 0 to HeightData.Size - 1 do
-        begin
-          ExAddVertex(i,j+1);
-          ExAddVertex(i,j);
-        end;
-      end
-        else
-      begin
-        for i := HeightData.Size - 1 downto 0 do
-        begin
-          ExAddVertex(i,j);
-          ExAddVertex(i,j+1);
-        end;
-      end;
-    end;
-  end ;
-
-
+  end;
+*)
+  {$EndIf}
+ (*
+  if ind > 0 then
+    Assert(ind = VerticlesCount-1, Format('ExAddVertex error with %d > %d',[VerticlesCount, ind+1]) );
+ *)
   GL.BindBuffer(GL_ARRAY_BUFFER, FVertexHandle);
   GL.BufferData(GL_ARRAY_BUFFER, VerticlesCount * 3 * 4, VertexCoords, GL_STATIC_DRAW);
   GL.BindBuffer(GL_ARRAY_BUFFER, FTexCoordsHandle);
@@ -200,13 +199,36 @@ begin
     GL.EnableClientState(GL_TEXTURE_COORD_ARRAY);
     GL.BindBuffer(GL_ARRAY_BUFFER, FTexCoordsHandle);
     GL.TexCoordPointer(2, GL_FLOAT, 0, 0);
+
+    GL.ClientActiveTexture(GL_TEXTURE1);
+    GL.EnableClientState(GL_TEXTURE_COORD_ARRAY);
+    GL.BindBuffer(GL_ARRAY_BUFFER, FTexCoordsHandle);
+    GL.TexCoordPointer(2, GL_FLOAT, 0, 0);
+
+   // GL.ActiveTexture(GL_TEXTURE1);
+  //  GL.Enable(GL_TEXTURE_2D);
   end;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, FVertexHandle);
   GL.EnableClientState(GL_VERTEX_ARRAY);
   GL.VertexPointer(3, GL_FLOAT, 0, 0);
+
+
+  {$IfDef TRIANGLE_RENDERING}
+  GL.DrawArrays(GL_TRIANGLES, 0, VerticlesCount);
+  {$EndIf}
+
+  {$IfDef TRIANGLE_STRIP_RENDERING}
   GL.DrawArrays(GL_TRIANGLE_STRIP, 0, VerticlesCount);
+  {$EndIf}
+
   GL.DisableClientState(GL_VERTEX_ARRAY);
+
+//  GL.Disable(GL_TEXTURE_2D);
+ // GL.ActiveTexture(GL_TEXTURE0);
+
+ // GL.Disable(GL_TEXTURE_2D);
+
 
   if RenderTextures then
   begin
