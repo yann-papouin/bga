@@ -195,6 +195,7 @@ begin
   if RenderTextures then
   begin
     GL.Enable(GL_TEXTURE_2D);
+
     GL.PolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     GL.EnableClientState(GL_TEXTURE_COORD_ARRAY);
     GL.BindBuffer(GL_ARRAY_BUFFER, FTexCoordsHandle);
@@ -205,14 +206,11 @@ begin
     GL.BindBuffer(GL_ARRAY_BUFFER, FTexCoordsHandle);
     GL.TexCoordPointer(2, GL_FLOAT, 0, 0);
 
-   // GL.ActiveTexture(GL_TEXTURE1);
-  //  GL.Enable(GL_TEXTURE_2D);
   end;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, FVertexHandle);
   GL.EnableClientState(GL_VERTEX_ARRAY);
   GL.VertexPointer(3, GL_FLOAT, 0, 0);
-
 
   {$IfDef TRIANGLE_RENDERING}
   GL.DrawArrays(GL_TRIANGLES, 0, VerticlesCount);
