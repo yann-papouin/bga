@@ -2293,8 +2293,10 @@ begin
   if not tbMenuBar.Enabled then
     Exit;
 
+  (*
   ShowMessage('RAW Preview', 'Preview is disabled for this version, please wait for an update');
   Exit;
+  *)
 
   TerrainNode := FindFileByName('Terrain.con');
 

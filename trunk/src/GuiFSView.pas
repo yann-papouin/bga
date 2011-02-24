@@ -37,6 +37,41 @@ type
     Path: string;
   end;
 
+  TFSViewForm = class;
+
+  TSyncState =
+  (
+    ssWaiting,
+    ssStopping,
+    ssWorking
+  );
+
+  TSyncThread = class(TThread)
+  private
+    FMutex : boolean;
+    FPassCount : integer;
+    FUpdatePass : integer;
+    FArchiveID : integer;
+    FSQL : TStringList;
+    FOwner : TFSViewForm;
+    FDataset: TSqlitePassDataset;
+
+    FTextAction : string;
+    FTextFilename : string;
+    FTextStatus : string;
+    FImageStatus : integer;
+    FAnimScan : boolean;
+    FAnimStore : boolean;
+  protected
+    procedure Execute; override;
+    procedure SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
+
+  public
+    State : TSyncState;
+    constructor Create(CreateSuspended:boolean);
+    destructor Destroy; override;
+  end;
+
 
   TFSViewForm = class(TFormCommon)
     Actions: TActionList;
@@ -67,19 +102,18 @@ type
     Database: TSqlitePassDatabase;
     Dataset: TSqlitePassDataset;
     SubDataset: TSqlitePassDataset;
-    Sync: TTimer;
     Init: TAction;
     SyncDataset: TSqlitePassDataset;
     SpTBXItem2: TSpTBXItem;
     Active: TAction;
     SyncStatusGroup: TSpTBXGroupBox;
     SyncStatusAction: TSpTBXLabel;
-    SyncProgressBar: TSpTBXProgressBar;
     SyncStatusArchiveName: TSpTBXLabel;
     Delete: TAction;
     SyncAnimScan: TJvGIFAnimator;
     SyncAnimStore: TJvGIFAnimator;
     SyncStatus: TSpTBXLabel;
+    UpdateVCL: TTimer;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -96,23 +130,18 @@ type
     procedure RemoveExecute(Sender: TObject);
     procedure EditExecute(Sender: TObject);
     procedure FilesystemListDblClick(Sender: TObject);
-    procedure SyncTimer(Sender: TObject);
     procedure InitExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ActiveExecute(Sender: TObject);
     procedure FilesystemListStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
     procedure FilesystemListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
+    procedure UpdateVCLTimer(Sender: TObject);
   private
     FActiveIndex : Integer;
-    FArchiveID : integer;
     FSQL : TStringList;
-    FSyncRunning : Boolean;
-    FSyncMutex : boolean;
-    FPassCount : integer;
-    FUpdatePass : integer;
+    FSyncThread : TSyncThread;
     procedure ApplySettingsData(Data: pFilesystemData);
-    procedure SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
-
+    procedure SyncThreadTerminated(Sender : TObject);
     { Déclarations privées }
     procedure SyncStart;
     procedure SyncStop;
@@ -141,12 +170,26 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, GuiWait, AppLib, GuiFSSettings, Resources, IOUtils, Types, StringFunction, TypInfo, MD5Api;
+  DbugIntf,
+  GuiWait,
+  AppLib,
+  CommonLib,
+  GuiFSSettings,
+  Resources,
+  IOUtils,
+  Types,
+  StringFunction,
+  TypInfo,
+  MD5Api;
 
 
 procedure TFSViewForm.FormCreate(Sender: TObject);
 begin
   FSQL := TStringList.Create;
+  FSyncThread := TSyncThread.Create(false);
+  FSyncThread.FOwner := Self;
+  FSyncThread.FDataset := SyncDataset;
+
   FormStorage.RestoreFormPlacement;
 end;
 
@@ -158,6 +201,7 @@ begin
   SyncStop;
 
   Database.Close;
+  FSyncThread.Free;
   FSQL.Free;
   inherited;
 end;
@@ -452,46 +496,29 @@ begin
 end;
 
 
+
 procedure TFSViewForm.SetActiveIndex(const Value: Integer);
 var
-  Status : Boolean;
+  State : TSyncState;
 begin
-  Status := FSyncRunning;
-  if Status then SyncStop;
+  State := FSyncThread.State;
+  if State <> ssWaiting then SyncStop;
   FActiveIndex := Value;
-  if Status then SyncStart;
-  FPassCount := 0;
+  if State <> ssWaiting then SyncStart;
+  FSyncThread.FPassCount := 0;
 end;
 
-procedure TFSViewForm.SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
-var
-  Filename : string;
-  Path : string;
-  Query : string;
-begin
-  SyncProgressBar.Max := Sender.Count;
-  SyncProgressBar.Position := SyncProgressBar.Position+1;
-  Filename := ExtractUnixFileName(Name);
-  Path := ARCHIVE_PATH + ExtractUnixFilePath(Name);
-
-  Query := Format('INSERT INTO "FILE" VALUES(NULL, "%s", "%s", "%d", "%d", "%d", "%d", "%d");', [Filename, Path, Offset, ucSize, Integer(Compressed), cSize, FArchiveID]);
-  FSQL.Add(Query);
-
-  if Sync.Enabled then
-    Application.ProcessMessages;
-end;
 
 procedure TFSViewForm.SyncStart;
 var
   Node: PVirtualNode;
   Data: pFilesystemData;
 begin
-  Assert(not Sync.Enabled, 'Syncing must be started/stopped with Start and Stop');
+  //Assert(not Sync.Enabled, 'Syncing must be started/stopped with Start and Stop');
 
   SyncStatus.Caption := 'Init';
   SyncStatus.ImageIndex := IMG_SYNC_INIT;
 
-  FSyncRunning := true;
   Init.Execute;
 
   // Find active file system
@@ -510,24 +537,33 @@ begin
   if FileExists(Database.Database) then
     Database.Open;
 
-  Sync.Enabled := FSyncRunning;
 
-  SyncAnimScan.Animate := FSyncRunning;
-  SyncAnimStore.Animate := FSyncRunning;
-  SyncAnimScan.Visible := true;
+  SyncStatusGroup.Visible := True;
+  SyncAnimScan.Animate := True;
+  SyncAnimStore.Animate := True;
+  SyncAnimScan.Visible := True;
   SyncAnimStore.Visible := false;
 
-  SyncProgressBar.Visible := False;
-  SyncStatusGroup.Visible := FSyncRunning;
+  FSyncThread.State := ssWorking;
 end;
 
 procedure TFSViewForm.SyncStop;
 begin
-  FSyncRunning := false;
-  SyncAnimScan.Animate := FSyncRunning;
-  SyncAnimStore.Animate := FSyncRunning;
-  SyncStatusGroup.Visible := FSyncRunning;
-  Sync.Enabled := FSyncRunning;
+  if FSyncThread.State <> ssWaiting then
+  begin
+    FSyncThread.State := ssStopping;
+
+    SyncStatus.Caption := 'Stopping';
+    while FSyncThread.State <> ssWaiting do
+    begin
+      Sleep(100);
+    end;
+  end;
+
+
+  SyncAnimScan.Animate := False;
+  SyncAnimStore.Animate := False;
+  SyncStatusGroup.Visible := False;
   SyncDataset.Close;
 
   SyncStatus.Caption := 'Disabled';
@@ -535,161 +571,9 @@ begin
 end;
 
 
-procedure TFSViewForm.SyncTimer(Sender: TObject);
-var
-  Archive : TRFAFile;
-  ArchiveID : integer;
-  ArchiveFilename : string;
-  ArchiveDateTime: TDateTime;
-  ArchiveMD5 : string;
-  FileDateAndTime : TDateTime;
-  FileMD5 : string;
-  FileAgeString : string;
-  Query : string;
-  CommonActionText : string;
-
+procedure TFSViewForm.SyncThreadTerminated(Sender: TObject);
 begin
-  if FSyncMutex or not Sync.Enabled then
-    Exit
-  else
-    FSyncMutex := true;
-
-  try
-    if Database.Connected then
-    begin
-      if not SyncDataset.Active or (SyncDataset.Active and SyncDataset.Eof) then
-      begin
-        Inc(FPassCount);
-        SyncDataset.Close;
-        SyncDataset.SQL.Text := 'SELECT * FROM "ARCHIVE";';
-        SyncDataset.Open;
-      end;
-
-      ArchiveID := SyncDataset.FieldByName('id').AsInteger;
-      ArchiveFilename := FsRelToAbs(SyncDataset.FieldByName('path').AsString + SyncDataset.FieldByName('name').AsString);
-      ArchiveDateTime := SyncDataset.FieldByName('age').AsDateTime;
-      ArchiveMD5 :=  SyncDataset.FieldByName('hash').AsString;
-      CommonActionText := Format(' archive (%d/%d)',[SyncDataset.RecNo+1, SyncDataset.RecordCount]);
-
-      SyncStatusAction.Caption := 'Scanning'+CommonActionText;
-      SyncStatusArchiveName.Caption := ArchiveFilename;
-
-      if FileAge(ArchiveFilename, FileDateAndTime) = true then
-      begin
-        // We need to compare time with an Epsilon due to rounding errors
-        if Abs(FileDateAndTime - ArchiveDateTime) > 0.00001 then
-        begin
-          //SendDebugWarning('Date & Time compare failed');
-          SyncAnimScan.Visible := false;
-          SyncAnimStore.Visible := true;
-          SyncStatusAction.Caption := 'Storing'+ CommonActionText;
-          FUpdatePass := FPassCount;
-
-          SyncStatus.Caption := 'Running';
-          SyncStatus.ImageIndex := IMG_SYNC_RUNNING;
-
-          FileMD5 :=  MD5FromFile(ArchiveFilename);
-          if FileMD5 <> ArchiveMD5 then
-          begin
-            // Updates archives
-            Query := Format('DELETE FROM "FILE" WHERE archive=%d;',[ArchiveID]);
-            Database.Engine.ExecSQL(Query);
-
-            FSQL.Clear;
-            FSQL.Add('BEGIN;');
-            FArchiveID := ArchiveID;
-            Archive := TRFAFile.Create;
-            SendDebugFmt('Reading entries from %d:%s',[SyncDataset.RecNo, SyncDataset.FieldByName('Name').AsString]);
-            Archive.OnReadEntry := SyncReadEntry;
-            SyncProgressBar.Visible := true;
-            SyncProgressBar.Position := 0;
-            if Archive.Open(ArchiveFilename, True) = orReadOnly then
-            begin
-              FSQL.Add('COMMIT;');
-
-              try
-                if Sync.Enabled then
-                  Database.Engine.ExecSQL(FSQL.Text)
-                else
-                begin
-                  FSyncMutex := false;
-                  Exit;
-                end;
-              except
-                on e:Exception do
-                begin
-                  SyncStop;
-                  SendDebugError(e.Message);
-                end;
-              end;
-
-            end;
-            Archive.Free;
-            SyncProgressBar.Visible := false;
-          end;
-
-          FileAgeString := FormatDateTime('YYYY-MM-DD hh:mm:ss', FileDateAndTime);
-          Query := Format('UPDATE "ARCHIVE" SET age="%s", hash="%s" WHERE id=%d;',[FileAgeString, FileMD5, ArchiveID]);
-          Sync.Interval := SYNC_HARDTIME;
-
-          try
-            SendDebug(Query);
-            Database.Engine.ExecSQL(Query);
-          except
-            on e:Exception do
-            begin
-              SyncStop;
-              SendDebugError(e.Message);
-            end;
-          end;
-
-        end
-          else
-        begin
-
-          SyncAnimStore.Visible := false;
-          SyncAnimScan.Visible := true;
-
-          if FPassCount <= 1 then
-            Sync.Interval := SYNC_HARDTIME
-          else
-            Sync.Interval := SYNC_EASYTIME;
-        end;
-      end
-        else
-      begin
-        // File doesn't exists anymore, remove it
-        Query := Format('DELETE FROM "FILE" WHERE archive=%d;',[ArchiveID]);
-        Database.Engine.ExecSQL(Query);
-        Query := Format('DELETE FROM "ARCHIVE" WHERE id=%d;',[ArchiveID]);
-        Database.Engine.ExecSQL(Query);
-      end;
-
-      if (FPassCount > FUpdatePass) and (FPassCount > 1) then
-      begin
-        SyncStatus.Caption := 'Ready';
-        SyncStatus.ImageIndex := IMG_SYNC_READY;
-      end;
-
-      if SyncDataset.Active then
-        SyncDataset.Next;
-
-    end
-      else
-    begin
-      SyncStop;
-      SendDebugWarning('Auto stop synctimer');
-    end;
-
-  except
-    on e:Exception do
-    begin
-      SyncStop;
-      SendDebugError(e.Message);
-    end;
-
-  end;
-  FSyncMutex := false;
+  ShowMessage('SyncThreadTerminated');
 end;
 
 procedure TFSViewForm.ImportExecute(Sender: TObject);
@@ -876,6 +760,235 @@ begin
 end;
 
 
+procedure TFSViewForm.UpdateVCLTimer(Sender: TObject);
+begin
+  inherited;
 
+  if FSyncThread.State = ssWorking then
+  begin
+    SyncStatusAction.Caption := FSyncThread.FTextAction;
+    SyncStatusArchiveName.Caption := FSyncThread.FTextFilename;
+
+    SyncAnimScan.Visible := FSyncThread.FAnimScan;
+    SyncAnimStore.Visible := FSyncThread.FAnimStore;
+
+    SyncStatus.ImageIndex := FSyncThread.FImageStatus;
+    SyncStatus.Caption := FSyncThread.FTextStatus;
+
+  end;
+end;
+
+
+{ TSyncThread }
+
+constructor TSyncThread.Create(CreateSuspended: boolean);
+begin
+  inherited Create(CreateSuspended);
+
+  FreeOnTerminate:=false;
+  Priority:=tpNormal;
+
+  FSQL := TStringList.Create;
+end;
+
+destructor TSyncThread.Destroy;
+begin
+  FSQL.Free;
+  inherited;
+end;
+
+procedure TSyncThread.Execute;
+var
+  Archive : TRFAFile;
+  ArchiveID : integer;
+  ArchiveFilename : string;
+  ArchiveDateTime: TDateTime;
+  ArchiveMD5 : string;
+  FileDateAndTime : TDateTime;
+  FileMD5 : string;
+  FileAgeString : string;
+  Query : string;
+  CommonActionText : string;
+
+begin
+  inherited;
+  repeat
+  Sleep(100); //en millisecondes
+
+  if (State = ssStopping) then
+    State := ssWaiting;
+
+  if (State = ssWorking) and not FMutex then
+  begin
+    FMutex := true;
+
+    try
+      if FDataset.Database.Connected then
+      begin
+        if not FDataset.Active or (FDataset.Active and FDataset.Eof) then
+        begin
+          Inc(FPassCount);
+          FDataset.Close;
+          FDataset.SQL.Text := 'SELECT * FROM "ARCHIVE";';
+          FDataset.Open;
+        end;
+
+        ArchiveID := FDataset.FieldByName('id').AsInteger;
+        ArchiveFilename := FsRelToAbs(FDataset.FieldByName('path').AsString + FDataset.FieldByName('name').AsString);
+        ArchiveDateTime := FDataset.FieldByName('age').AsDateTime;
+        ArchiveMD5 :=  FDataset.FieldByName('hash').AsString;
+        CommonActionText := Format(' archive (%d/%d)',[FDataset.RecNo+1, FDataset.RecordCount]);
+
+        FTextAction := 'Scanning' + CommonActionText;
+        FTextFilename := ArchiveFilename;
+
+        if FileAge(ArchiveFilename, FileDateAndTime) = true then
+        begin
+          // We need to compare time with an Epsilon due to rounding errors
+          if Abs(FileDateAndTime - ArchiveDateTime) > 0.00001 then
+          begin
+            //SendDebugWarning('Date & Time compare failed');
+
+            FAnimScan := false;
+            FAnimStore := true;
+            FTextAction := 'Storing'+ CommonActionText;
+            FUpdatePass := FPassCount;
+
+            FTextStatus := 'Running';
+            FImageStatus := IMG_SYNC_RUNNING;
+
+            FileMD5 :=  MD5FromFile(ArchiveFilename);
+            if FileMD5 <> ArchiveMD5 then
+            begin
+              // Updates archives
+              Query := Format('DELETE FROM "FILE" WHERE archive=%d;',[ArchiveID]);
+              FDataset.Database.Engine.ExecSQL(Query);
+
+              FSQL.Clear;
+              FSQL.Add('BEGIN;');
+              FArchiveID := ArchiveID;
+              Archive := TRFAFile.Create;
+              SendDebugFmt('Reading entries from %d:%s',[FDataset.RecNo, FDataset.FieldByName('Name').AsString]);
+              Archive.OnReadEntry := SyncReadEntry;
+
+              if Archive.Open(ArchiveFilename, True) = orReadOnly then
+              begin
+                FSQL.Add('COMMIT;');
+
+                FDataset.Database.Engine.ExecSQL(FSQL.Text);
+                (*
+                try
+                  if Sync.Enabled then
+                    Database.Engine.ExecSQL(FSQL.Text)
+                  else
+                  begin
+                    FSyncMutex := false;
+                    Exit;
+                  end;
+                except
+                  on e:Exception do
+                  begin
+                    SyncStop;
+                    SendDebugError(e.Message);
+                  end;
+                end;
+                *)
+
+              end;
+              Archive.Free;
+            end;
+
+            FileAgeString := FormatDateTime('YYYY-MM-DD hh:mm:ss', FileDateAndTime);
+            Query := Format('UPDATE "ARCHIVE" SET age="%s", hash="%s" WHERE id=%d;',[FileAgeString, FileMD5, ArchiveID]);
+            //Sync.Interval := SYNC_HARDTIME;
+
+            FDataset.Database.Engine.ExecSQL(Query);
+            (*
+            try
+              SendDebug(Query);
+              Database.Engine.ExecSQL(Query);
+            except
+              on e:Exception do
+              begin
+                SyncStop;
+                SendDebugError(e.Message);
+              end;
+            end;
+            *)
+
+          end
+            else
+          begin
+
+            FAnimStore := false;
+            FAnimScan := true;
+
+            (*
+            if FPassCount <= 1 then
+              Sync.Interval := SYNC_HARDTIME
+            else
+              Sync.Interval := SYNC_EASYTIME;
+            *)
+          end;
+        end
+          else
+        begin
+          // File doesn't exists anymore, remove it
+          Query := Format('DELETE FROM "FILE" WHERE archive=%d;',[ArchiveID]);
+          FDataset.Database.Engine.ExecSQL(Query);
+          Query := Format('DELETE FROM "ARCHIVE" WHERE id=%d;',[ArchiveID]);
+          FDataset.Database.Engine.ExecSQL(Query);
+        end;
+
+        if (FPassCount > FUpdatePass) and (FPassCount > 1) then
+        begin
+          FTextStatus := 'Ready';
+          FImageStatus := IMG_SYNC_READY;
+        end;
+
+        if FDataset.Active then
+          FDataset.Next;
+
+      end
+        else
+      begin
+        State := ssWaiting;
+        FOwner.SyncStop;
+        ///*** SendDebugWarning('Auto stop synctimer');
+      end;
+
+    except
+      on e:Exception do
+      begin
+        State := ssWaiting;
+        FOwner.SyncStop;
+        ///*** SendDebugError(e.Message);
+      end;
+
+    end;
+
+    FMutex := false;
+  end;
+
+  until Terminated;
+
+  SendDebugError('Oups');
+
+end;
+
+
+procedure TSyncThread.SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
+var
+  Filename : string;
+  Path : string;
+  Query : string;
+begin
+  //FProgressMax := Sender.Count;
+  Filename := ExtractUnixFileName(Name);
+  Path := ARCHIVE_PATH + ExtractUnixFilePath(Name);
+
+  Query := Format('INSERT INTO "FILE" VALUES(NULL, "%s", "%s", "%d", "%d", "%d", "%d", "%d");', [Filename, Path, Offset, ucSize, Integer(Compressed), cSize, FArchiveID]);
+  FSQL.Add(Query);
+end;
 
 end.
