@@ -704,7 +704,7 @@ begin
   begin
     // Note that 1 wheel-step induces a WheelDelta of 120,
     // this code adjusts the distance to target with a 10% per wheel-step ratio
-    Camera.AdjustDistanceToTarget(Power(1.1, WheelDelta/120));
+    Camera.AdjustDistanceToTarget(Power(0.9, WheelDelta/120));
   end;
 end;
 

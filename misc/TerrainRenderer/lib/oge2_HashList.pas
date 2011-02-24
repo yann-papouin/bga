@@ -107,10 +107,12 @@ type
 
   longPtr = ^longint;
 
-  { --- Class THashList ---
-  }
+
+  {$ifopt Q+} {$define OverFlowCheck} {$endif} {$Q-}
+  {$ifopt R+} {$define RangeCheck} {$endif} {$R-}
 
   { ----------------------------------------------------------------------------- }
+
 constructor THashList.Create;
 begin
   FdeleteType := dtDelete;
@@ -128,12 +130,14 @@ begin
   FreeMem(Flist, memSize);
 end;
 
+
 { ----------------------------------------------------------------------------- }
 function THashList.Add(const Item: THashItem): integer;
 begin
   Result := Fcount;
   if (Result = Fcapacity) then
     Grow;
+
   Flist^[Result].key := Item.key;
   Flist^[Result].obj := Item.obj;
   Inc(Fcount);
@@ -519,12 +523,19 @@ Function Hash(Str: String): longint;
 Var
   i: integer;
 Begin
+
+
   Result := 1315423911;
   For i := 1 To Length(Str) Do
   Begin
     Result := Result Xor ((Result Shl 5) + Ord(Str[i]) + (Result Shr 2));
   End;
   Result := (Result And $7FFFFFFF);
+
+
 End;
+
+  {$ifdef RangeCheck} {$R+} {$undef RangeCheck} {$endif}
+  {$ifdef OverFlowCheck} {$Q+} {$undef OverFlowCheck} {$endif}
 
 end.

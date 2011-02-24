@@ -349,7 +349,7 @@ begin
 
     HeightMap := strFile + '.raw';
     TextureBaseName := strtexBaseName;
-    DetailBaseName := strdetailTexName {+ '-white' }+ '.dds';
+    DetailBaseName := strdetailTexName + '.dds';
 
     MapSize := Round(flmaterialSize);
     MapHeightScale := flyScale;

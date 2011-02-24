@@ -297,28 +297,6 @@ inherited FSViewForm: TFSViewForm
         Height = 19
         Caption = '---'
       end
-      object SyncProgressBar: TSpTBXProgressBar
-        AlignWithMargins = True
-        Left = 208
-        Top = 24
-        Width = 275
-        Height = 17
-        Margins.Left = 6
-        Margins.Top = 2
-        Margins.Right = 8
-        Margins.Bottom = 2
-        Color = clBtnFace
-        Anchors = [akLeft, akTop, akRight]
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = [fsBold]
-        ParentFont = False
-        CaptionGlow = gldNone
-        CaptionType = pctNone
-        Smooth = True
-      end
       object SyncStatusArchiveName: TSpTBXLabel
         Left = 13
         Top = 46
@@ -501,13 +479,6 @@ inherited FSViewForm: TFSViewForm
     Top = 128
     pParams = ()
   end
-  object Sync: TTimer
-    Enabled = False
-    Interval = 100
-    OnTimer = SyncTimer
-    Left = 24
-    Top = 128
-  end
   object SyncDataset: TSqlitePassDataset
     CalcDisplayedRecordsOnly = False
     Database = Database
@@ -530,5 +501,11 @@ inherited FSViewForm: TFSViewForm
     Left = 56
     Top = 160
     pParams = ()
+  end
+  object UpdateVCL: TTimer
+    Interval = 100
+    OnTimer = UpdateVCLTimer
+    Left = 24
+    Top = 160
   end
 end
