@@ -74,7 +74,8 @@ uses
   GLCadencer,
   GLRenderContextInfo,
   oge2_TerrainRendering,
-  oge2_HeightMap, TB2Dock, TB2Toolbar, ImgList, PngImageList, ActnList, ExtCtrls;
+  oge2_HeightMap, TB2Dock, TB2Toolbar, ImgList, PngImageList, ActnList, ExtCtrls,
+  GLTexCombineShader, GLMultiMaterialShader;
 
 
 type
@@ -99,13 +100,12 @@ type
     XLabel: TSpTBXLabelItem;
     TBSeparatorItem1: TTBSeparatorItem;
     TBSeparatorItem2: TTBSeparatorItem;
-    GLMaterialLibrary: TGLMaterialLibrary;
+    TerrainMaterialLibrary: TGLMaterialLibrary;
     Root: TGLDummyCube;
     WindowsBitmapFont: TGLWindowsBitmapFont;
     GLInfos: TGLHUDText;
     Cadencer: TGLCadencer;
     GLLightSource1: TGLLightSource;
-    GLCube1: TGLCube;
     Actions: TActionList;
     ModeCamFly: TAction;
     ModeCamTerrain: TAction;
@@ -121,6 +121,8 @@ type
     FPSLabel: TSpTBXLabelItem;
     FPSCounter: TTimer;
     SpTBXSeparatorItem1: TSpTBXSeparatorItem;
+    DebugMaterialLibrary: TGLMaterialLibrary;
+    GLTexCombineShader: TGLTexCombineShader;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
@@ -248,7 +250,7 @@ begin
 
   TerrainData := TOGEHeightDataSource.Create;
   TerrainRenderer.HeightDataSource := TerrainData;
-  TerrainRenderer.MaterialLibrary := GLMaterialLibrary;
+  TerrainRenderer.MaterialLibrary := TerrainMaterialLibrary;
   TerrainRenderer.lodType := tlodIllyriumVBO;
   TerrainRenderer.DrawTextured := true;
   TerrainRenderer.DrawWireframe := true;
@@ -347,7 +349,7 @@ begin
 
     HeightMap := strFile + '.raw';
     TextureBaseName := strtexBaseName;
-    DetailBaseName := strdetailTexName + '.dds';
+    DetailBaseName := strdetailTexName {+ '-white' }+ '.dds';
 
     MapSize := Round(flmaterialSize);
     MapHeightScale := flyScale;
@@ -368,6 +370,7 @@ begin
 
 end;
 
+
 {$DEFINE RAWVIEW_LOAD_TEXTURE}
 {.$DEFINE RAWVIEW_DRAW_NAME}
 
@@ -384,7 +387,7 @@ var
 begin
   Assert(Assigned(GetFileByPath));
   Cadencer.Enabled := false;
-  GLMaterialLibrary.Materials.Clear;
+  TerrainMaterialLibrary.Materials.Clear;
   LibMaterial := nil;
   DetailMaterial := nil;
 
@@ -404,17 +407,14 @@ begin
     LoadTerrain(Stream);
     Stream.Free;
 
-
-    TextureFile := 'C:\Users\Yann\Documents\RAD Studio\Projets\BGA\misc\stripe2.png';
-    if FileExists(TextureFile) then
+    LibMaterial := TGLLibMaterial.Create(TerrainMaterialLibrary.Materials);
+    with LibMaterial do
     begin
-      LibMaterial := GLMaterialLibrary.AddTextureMaterial('Default', TextureFile);
-      LibMaterial.Material.FrontProperties.Emission.Color := clrWhite;
-      LibMaterial.TextureScale.X := 100;
-      LibMaterial.TextureScale.Y := 100;
-      LibMaterial.Material.Texture.TextureMode := tmModulate;
-    //  LibMaterial.Material.Texture.TextureFormat := tfLuminance;
-      LibMaterial.Material.Texture.Compression := tcStandard;
+      Material.MaterialLibrary:= DebugMaterialLibrary;
+      Material.LibMaterialName:='Stripe1';
+      Name := 'Default';
+      //Shader := GLTexCombineShader;
+      //LibMaterial.Texture2Name := 'Details';
     end;
 
 {$IFDEF RAWVIEW_LOAD_TEXTURE}
@@ -422,27 +422,17 @@ begin
     DetailFile := GetFileByPath(Self, DetailBaseName);
     if FileExists(DetailFile) then
     begin
-      DetailMaterial := GLMaterialLibrary.AddTextureMaterial('Details', DetailFile);
-      (*
-      DetailMaterial.Material.MaterialOptions := [moNoLighting];
-      DetailMaterial.Material.FrontProperties.Emission.Color := clrWhite;
-      DetailMaterial.Material.FrontProperties.Ambient.Color := clrWhite;
-      DetailMaterial.Material.FrontProperties.Diffuse.Color := clrWhite;
-      *)
-     // DetailMaterial.Material.Texture.ImageBrightness := 2;
-     DetailMaterial.Material.Texture.TextureFormat := tfLuminance;
-      DetailMaterial.Material.Texture.TextureMode := tmModulate;
-
+      DetailMaterial := TerrainMaterialLibrary.AddTextureMaterial('Details', DetailFile);
       DetailMaterial.TextureScale.X := 16;
       DetailMaterial.TextureScale.Y := 16;
     end;
+
 
     for Row := 0 to TexturePart - 1 do
       for Col := 0 to TexturePart - 1 do
       begin
         TextureName := Format('%s%.2dx%.2d.dds', [TextureBaseName, Col, Row]);
         TextureFile := GetFileByPath(Self, TextureName);
-        //SendDebug(TextureFile);
 
         if FileExists(TextureFile) then
         begin
@@ -458,20 +448,13 @@ begin
 
           UseTexture := true;
 
-          LibMaterial := GLMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
+          LibMaterial := TerrainMaterialLibrary.AddTextureMaterial(TextureName, TextureFile);
           LibMaterial.Material.FrontProperties.Emission.Color := clrWhite;
-          //LibMaterial.Material.Texture.Compression := tcNone;
-
-          //LibMaterial.Material.Texture.TextureMode := tmReplace;
-          LibMaterial.Material.Texture.FilteringQuality := tfAnisotropic;
-          LibMaterial.Material.Texture.MinFilter := miLinearMipmapNearest;
-          LibMaterial.Material.Texture.MagFilter := maLinear;
-          LibMaterial.Material.Texture.ImageGamma := 2;
+          LibMaterial.Shader := GLTexCombineShader;
           SendDebugFmt('%s added',[LibMaterial.Name]);
-          //LibMaterial.Material.MaterialOptions := [moNoLighting];
 
-
-        //  if Assigned(DetailMaterial) then LibMaterial.Texture2Name := DetailMaterial.Name;
+          if Assigned(DetailMaterial) then
+            LibMaterial.Texture2Name := DetailMaterial.Name;
 
 
 {$IFDEF RAWVIEW_DRAW_NAME}
@@ -537,6 +520,7 @@ begin
  // BattlefieldHDS.MarkDirty;
 end;
 
+
 procedure TMapViewForm.LoadHeightmap(Data: TStream);
 begin
   FMinZ := MAXWORD;
@@ -578,7 +562,7 @@ begin
 
 
    TerrainRenderer.TileSize := FWorldSize div TexturePart;
-(*
+
   if FRestrict then
   begin
     TileSize := FWorldSize div TexturePart;
@@ -600,7 +584,7 @@ begin
     if FRangeMax.Y > 0 then
       FRangeMax.Y := FRangeMax.Y -1;
   end;
-  *)
+
 
   // Set water plane position and size
 
@@ -663,7 +647,7 @@ begin
       heightData.MaterialName := Format('%s%.2dx%.2d.dds', [TextureBaseName, i-TextureOffset.X, j-TextureOffset.Y]);
 
       // Auto remove material if it doesn't exists
-      LibMaterial := GLMaterialLibrary.Materials.GetLibMaterialByName(heightData.MaterialName);
+      LibMaterial := TerrainMaterialLibrary.Materials.GetLibMaterialByName(heightData.MaterialName);
       if LibMaterial = nil then
       begin
         SendDebugFmt('%s not found',[heightData.MaterialName]);
@@ -671,8 +655,6 @@ begin
       end;
 
     end;
-
-
 
    // heightData.TextureCoordinatesMode := tcmLocal;
     n := (heightData.XLeft div TileSize) mod OffsetModulo;
@@ -874,9 +856,9 @@ begin
   else
     PolygonMode := pmFill;
 
-  for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
+  for i := 0 to TerrainMaterialLibrary.Materials.Count - 1 do
   begin
-    GLMaterialLibrary.Materials[i].Material.PolygonMode := PolygonMode;
+    TerrainMaterialLibrary.Materials[i].Material.PolygonMode := PolygonMode;
     TerrainRenderer.Material.PolygonMode := TPolygonMode(PolygonMode);
   end;
 end;

@@ -24,7 +24,6 @@ inherited MapViewForm: TMapViewForm
     Buffer.BackgroundColor = 13889790
     Buffer.AmbientColor.Color = {0000803E0000803E0000803E0000803F}
     Buffer.FaceCulling = False
-    Buffer.FogEnable = True
     FieldOfView = 137.578231811523400000
     Align = alClient
     OnDblClick = ViewerDblClick
@@ -90,7 +89,7 @@ inherited MapViewForm: TMapViewForm
   end
   object Scene: TGLScene
     Left = 8
-    Top = 104
+    Top = 152
     object CameraTarget: TGLDummyCube
       CubeSize = 1.000000000000000000
       object Camera: TGLCamera
@@ -125,18 +124,10 @@ inherited MapViewForm: TMapViewForm
       Text = 'GLInfos'
       ModulateColor.Color = {B1A8A83EB1A8A83EB1A8A83E0000803F}
     end
-    object GLCube1: TGLCube
-      CubeSize = {000080400000804000008040}
-    end
   end
-  object GLMaterialLibrary: TGLMaterialLibrary
-    Materials = <
-      item
-        Name = 'LibMaterial'
-        Tag = 0
-      end>
+  object TerrainMaterialLibrary: TGLMaterialLibrary
     Left = 8
-    Top = 73
+    Top = 121
   end
   object WindowsBitmapFont: TGLWindowsBitmapFont
     Font.Charset = DEFAULT_CHARSET
@@ -145,7 +136,7 @@ inherited MapViewForm: TMapViewForm
     Font.Name = 'Tahoma'
     Font.Style = []
     Left = 8
-    Top = 136
+    Top = 184
   end
   object Cadencer: TGLCadencer
     Scene = Scene
@@ -153,12 +144,12 @@ inherited MapViewForm: TMapViewForm
     SleepLength = 10
     OnProgress = CadencerProgress
     Left = 8
-    Top = 168
+    Top = 216
   end
   object Actions: TActionList
     Images = Images
     Left = 8
-    Top = 200
+    Top = 248
     object ModeCamFly: TAction
       AutoCheck = True
       Caption = 'Camera Fly mode'
@@ -371,12 +362,71 @@ inherited MapViewForm: TMapViewForm
           078923BE6BF50000000049454E44AE426082}
       end>
     Left = 8
-    Top = 232
+    Top = 280
     Bitmap = {}
   end
   object FPSCounter: TTimer
     OnTimer = FPSCounterTimer
     Left = 8
-    Top = 264
+    Top = 312
+  end
+  object DebugMaterialLibrary: TGLMaterialLibrary
+    Materials = <
+      item
+        Name = 'Stripe1'
+        Material.FrontProperties.Emission.Color = {0000803F0000803F0000803F0000803F}
+        Material.Texture.Image.Picture.Data = {
+          0954506E67496D61676589504E470D0A1A0A0000000D49484452000000280000
+          00280802000000039C2F3A000001B94944415478DABD97E1A7C25018C63BFF67
+          8C18658C18112322C68828234644FFC7181111232262C4883122FA52D7AEDDDD
+          EDDD76CED3D6F3E99CB3F3F86D67EF797958AFD76BA15A2C16B097C1E0D96C06
+          53555505C1D3E914A6F6FB7DF08B4DD384A99AA6C50361B06118307530182463
+          31F0643281A9C3E1303D15008FC76398AAEB7A6685173C1A8D602AE9E502E7DF
+          975F45E7540DCEFC1B2195D44405385D87A22AAFFF327072E70055DEF54270DC
+          5F30F1F4351AFCEEA53095B3871360455160EA7C3EE7DC990577BB5D986A5916
+          FFE67F60599661EA72B914DAFF07EE743A30D5B66D51CB2F58922498BA5AAD00
+          D70FB8DD6EC3D4F57A8D1999E3383075B3D9C05EE6BAEE97BFF5ADF719B3ED76
+          0B38B1FF1A2BAE27B6DBED449D400D274AEE0EDBEFF7424ED1FB9A56BA4FB0C3
+          E1C0EF14EA4D19657A22F33C8FD3C9DF87F3CAF77F763C1E799C1FE686FC223B
+          9D4E95CECF7303013E9FCFE5CE5A720301BE5C2E25CEBA720301F67DBFE8598D
+          B981005FAF57F241BDB981000741905FAD3D3710E0DBED06BC6F91F8CF898561
+          989E37941B08701445C9A4B9DC4080EFF77B3C6A343710E0C7E3D16A3E3710E0
+          E7F3F985DC90D70BC8F6C2A21602F4740000000049454E44AE426082}
+        Material.Texture.Disabled = False
+        Tag = 0
+        TextureScale.Coordinates = {0000C8420000C8420000803F00000000}
+      end
+      item
+        Name = 'Stripe2'
+        Material.FrontProperties.Emission.Color = {0000803F0000803F0000803F0000803F}
+        Material.Texture.Image.Picture.Data = {
+          0954506E67496D61676589504E470D0A1A0A0000000D49484452000000280000
+          00280802000000039C2F3A0000011F4944415478DABDD85912C2200C00D0F624
+          ED795CBB9CD35D6FE1BEFCC793549BD1A9455A4802F00F6F32401288932489B8
+          03664FF6DC980D4BD4B44C98B05065460C73815A7C3832EC4425C3B010A8790B
+          22C00E55020C4B819A69082BD8B96A05C34AA04E3B1737C09E5403EC4FED8361
+          2D5027E673A3877DAB7A183602756C9B1554388CAAC2B015A8235ACE6FE0906A
+          03C34EA00E3915BD86C3AB355C3DD868940EF8FD5A5CDD43C71AE1CE3261A18A
+          11DFE82AFD0C37EAF7EE9061272AC2578A4AC94DAADACE8904D8A18AF0C54EB5
+          AB397A5557EBAC60E72AC267936AEA25FAD4EE1EC6007B520DB03F15E153879A
+          09548B3E5C0FFB56113EFEA9B940B57E5FA9701815E1C38F5A0854E2BBB98143
+          AA08EF512D43FFFDD47078F53D5EE3F6A095DC0776100000000049454E44AE42
+          6082}
+        Material.Texture.Disabled = False
+        Tag = 0
+        TextureScale.Coordinates = {0000C8420000C8420000803F00000000}
+      end>
+    Left = 40
+    Top = 121
+  end
+  object GLTexCombineShader: TGLTexCombineShader
+    Combiners.Strings = (
+      'Tex1:=Tex0+Tex1-0.5;')
+    DesignTimeEnabled = False
+    MaterialLibrary = TerrainMaterialLibrary
+    LibMaterial3Name = 'Tex2'
+    LibMaterial4Name = 'Tex3'
+    Left = 72
+    Top = 121
   end
 end
