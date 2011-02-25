@@ -14,7 +14,8 @@ uses
   MD5Api in 'Lib\MD5Api.pas',
   MD5Core in 'Lib\MD5Core.pas',
   MiniLZO in 'Lib\MiniLZO.pas',
-  GuiWait in 'GuiWait.pas' {WaitForm};
+  GuiWait in 'GuiWait.pas' {WaitForm},
+  GuiSkinDialog in 'GuiSkinDialog.pas' {SkinDialogForm};
 
 {$R *.res}
 
@@ -26,5 +27,6 @@ begin
   Application.CreateForm(TFormCommon, FormCommon);
   Application.CreateForm(TResourcesForm, ResourcesForm);
   Application.CreateForm(TWaitForm, WaitForm);
+  Application.CreateForm(TSkinDialogForm, SkinDialogForm);
   Application.Run;
 end.

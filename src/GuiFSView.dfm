@@ -1,18 +1,19 @@
 inherited FSViewForm: TFSViewForm
   Caption = 'File system View'
-  ClientHeight = 455
+  ClientHeight = 449
   ClientWidth = 511
   Position = poScreenCenter
+  OnClose = FormClose
   OnDestroy = FormDestroy
   ExplicitWidth = 527
-  ExplicitHeight = 493
+  ExplicitHeight = 487
   PixelsPerInch = 96
   TextHeight = 13
   object Background: TSpTBXPanel
     Left = 0
     Top = 0
     Width = 511
-    Height = 455
+    Height = 449
     Caption = 'Background'
     Align = alClient
     Padding.Left = 5
@@ -22,6 +23,7 @@ inherited FSViewForm: TFSViewForm
     TabOrder = 0
     Borders = False
     TBXStyleBackground = True
+    ExplicitHeight = 455
     object SpTBXGroupBox1: TSpTBXGroupBox
       AlignWithMargins = True
       Left = 5
@@ -133,7 +135,7 @@ inherited FSViewForm: TFSViewForm
     object Footer: TSpTBXPanel
       AlignWithMargins = True
       Left = 5
-      Top = 417
+      Top = 411
       Width = 501
       Height = 33
       Margins.Left = 0
@@ -144,6 +146,7 @@ inherited FSViewForm: TFSViewForm
       UseDockManager = True
       TabOrder = 1
       Borders = False
+      ExplicitTop = 417
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 264

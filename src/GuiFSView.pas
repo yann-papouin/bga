@@ -49,6 +49,7 @@ type
   TSyncThread = class(TThread)
   private
     FMutex : boolean;
+    FWaitTime : integer;
     FPassCount : integer;
     FUpdatePass : integer;
     FArchiveID : integer;
@@ -136,6 +137,7 @@ type
     procedure FilesystemListStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
     procedure FilesystemListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
     procedure UpdateVCLTimer(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     FActiveIndex : Integer;
     FSQL : TStringList;
@@ -145,6 +147,7 @@ type
     { Déclarations privées }
     procedure SyncStart;
     procedure SyncStop;
+    procedure PrepareUpdateDatabase;
     procedure SetActiveIndex(const Value: Integer);
   public
     { Déclarations publiques }
@@ -157,8 +160,8 @@ var
 
 const
   FS_SEPARATOR = '|';
-  SYNC_HARDTIME = 5;
-  SYNC_EASYTIME = 400;
+  SYNC_HARDTIME = 20;
+  SYNC_EASYTIME = 200;
 
   IMG_SYNC_STOP = 312;
   IMG_SYNC_INIT = 325;
@@ -175,6 +178,7 @@ uses
   AppLib,
   CommonLib,
   GuiFSSettings,
+  GuiSkinDialog,
   Resources,
   IOUtils,
   Types,
@@ -206,12 +210,21 @@ begin
   inherited;
 end;
 
+
+procedure TFSViewForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  SyncStop;
+end;
+
+
 procedure TFSViewForm.OkExecute(Sender: TObject);
 begin
   FormStorage.SaveFormPlacement;
   ModalResult := mrOk;
   Close;
 end;
+
+
 
 procedure TFSViewForm.CancelExecute(Sender: TObject);
 begin
@@ -227,6 +240,10 @@ var
   Node, NextNode: PVirtualNode;
 begin
   Node := FilesystemList.GetFirstSelected;
+
+  if Node <> nil then
+    SyncStop;
+
   while Node <> nil do
   begin
     NextNode := FilesystemList.GetNextSelected(Node);
@@ -256,8 +273,7 @@ begin
     Database.SQLiteLibrary := GetAppDirectory + 'sqlite3.dll';
 end;
 
-
-procedure TFSViewForm.UpdateExecute(Sender: TObject);
+procedure TFSViewForm.PrepareUpdateDatabase;
 var
   i,j :Integer;
   Order : integer;
@@ -266,8 +282,8 @@ var
   ModPath : string;
   ModID : integer;
   DepID : Integer;
-  Options : TLocateOptions;
-  Node: PVirtualNode;
+  Options : TLocateOptions; 
+  Node : PVirtualNode;
   Data: pFilesystemData;
 
   procedure PrepareInsertAchivesFromPath(Path : string);
@@ -305,9 +321,9 @@ var
   end;
 
 begin
-
   // Find selected file system
   Node := FilesystemList.GetFirstSelected;
+
   if Node = nil then
     Exit;
 
@@ -325,8 +341,9 @@ begin
 
   Options := [loCaseInsensitive, loPartialKey];
 
-  if FileExists(Database.Database) then
-    DeleteFile(Database.Database);
+  if FileExists(Database.Database) and (DebugHook <> 0) then
+    if ShowDialog('Database exists', 'Delete older data and create a new database?', mtInformation, mbYesNo, mbNo, 0)= mrOk then
+      DeleteFile(Database.Database);
 
   if not FileExists(Database.Database) then
   begin
@@ -489,12 +506,16 @@ begin
   end;
 
   Active.Execute;
-  SyncStart;
   WaitForm.IncProgress('Syncing started');
   Sleep(500);
   WaitForm.EndWait;
 end;
 
+
+procedure TFSViewForm.UpdateExecute(Sender: TObject);
+begin
+  PrepareUpdateDatabase;
+end;
 
 
 procedure TFSViewForm.SetActiveIndex(const Value: Integer);
@@ -504,7 +525,7 @@ begin
   State := FSyncThread.State;
   if State <> ssWaiting then SyncStop;
   FActiveIndex := Value;
-  if State <> ssWaiting then SyncStart;
+  SyncStart;
   FSyncThread.FPassCount := 0;
 end;
 
@@ -514,7 +535,7 @@ var
   Node: PVirtualNode;
   Data: pFilesystemData;
 begin
-  //Assert(not Sync.Enabled, 'Syncing must be started/stopped with Start and Stop');
+  Assert(FSyncThread.State = ssWaiting, 'Syncing must be started when not already running');
 
   SyncStatus.Caption := 'Init';
   SyncStatus.ImageIndex := IMG_SYNC_INIT;
@@ -535,14 +556,28 @@ begin
   end;
 
   if FileExists(Database.Database) then
-    Database.Open;
-
+    Database.Open
+  else
+    ShowMessage('Syncing disabled', 'Please run "Update" first to init filesystem database');
 
   SyncStatusGroup.Visible := True;
   SyncAnimScan.Animate := True;
   SyncAnimStore.Animate := True;
   SyncAnimScan.Visible := True;
   SyncAnimStore.Visible := false;
+
+  /// Initialize transition values with current values
+  with FSyncThread do
+  begin
+    FTextAction := SyncStatusAction.Caption;
+    FTextFilename := SyncStatusArchiveName.Caption;
+
+    FAnimScan := SyncAnimScan.Visible;
+    FAnimStore := SyncAnimStore.Visible;
+
+    FImageStatus := SyncStatus.ImageIndex;
+    FTextStatus := SyncStatus.Caption;
+  end;
 
   FSyncThread.State := ssWorking;
 end;
@@ -559,7 +594,6 @@ begin
       Sleep(100);
     end;
   end;
-
 
   SyncAnimScan.Animate := False;
   SyncAnimStore.Animate := False;
@@ -649,7 +683,7 @@ begin
   with TargetCanvas do
   begin
     Pen.Style := psClear;
-    Brush.Color := $00B0FFB0;
+    Brush.Color := $00DDDDDD;
     InflateRect(CellRect,1,1);
     Rectangle(CellRect);
   end;
@@ -712,7 +746,7 @@ begin
   begin
     Node := Sender.GetFirstSelected;
     if Node <> nil then
-    begin
+    begin 
       Active.Enabled := ActiveIndex <> Node.Index;
     end
       else
@@ -756,7 +790,7 @@ begin
     Data.Path := FormStorage.ReadString(IntToStr(i)+':PATH');
   end;
   ActiveIndex := FormStorage.ReadInteger('FilesystemSelected', -1);
-  SyncStart;
+  //SyncStart;
 end;
 
 
@@ -766,16 +800,19 @@ begin
 
   if FSyncThread.State = ssWorking then
   begin
-    SyncStatusAction.Caption := FSyncThread.FTextAction;
-    SyncStatusArchiveName.Caption := FSyncThread.FTextFilename;
+    with FSyncThread do
+    begin
+      SyncStatusAction.Caption := FTextAction;
+      SyncStatusArchiveName.Caption := FTextFilename;
 
-    SyncAnimScan.Visible := FSyncThread.FAnimScan;
-    SyncAnimStore.Visible := FSyncThread.FAnimStore;
+      SyncAnimScan.Visible := FAnimScan;
+      SyncAnimStore.Visible := FAnimStore;
 
-    SyncStatus.ImageIndex := FSyncThread.FImageStatus;
-    SyncStatus.Caption := FSyncThread.FTextStatus;
-
+      SyncStatus.ImageIndex := FImageStatus;
+      SyncStatus.Caption := FTextStatus;
+    end;
   end;
+
 end;
 
 
@@ -789,6 +826,7 @@ begin
   Priority:=tpNormal;
 
   FSQL := TStringList.Create;
+  FWaitTime := SYNC_EASYTIME;
 end;
 
 destructor TSyncThread.Destroy;
@@ -813,7 +851,7 @@ var
 begin
   inherited;
   repeat
-  Sleep(100); //en millisecondes
+  Sleep(FWaitTime); //en millisecondes
 
   if (State = ssStopping) then
     State := ssWaiting;
@@ -821,6 +859,7 @@ begin
   if (State = ssWorking) and not FMutex then
   begin
     FMutex := true;
+
 
     try
       if FDataset.Database.Connected then
@@ -868,54 +907,22 @@ begin
               FSQL.Add('BEGIN;');
               FArchiveID := ArchiveID;
               Archive := TRFAFile.Create;
-              SendDebugFmt('Reading entries from %d:%s',[FDataset.RecNo, FDataset.FieldByName('Name').AsString]);
+              //SendDebugFmt('Reading entries from %d:%s',[FDataset.RecNo, FDataset.FieldByName('Name').AsString]);
               Archive.OnReadEntry := SyncReadEntry;
 
               if Archive.Open(ArchiveFilename, True) = orReadOnly then
               begin
                 FSQL.Add('COMMIT;');
-
                 FDataset.Database.Engine.ExecSQL(FSQL.Text);
-                (*
-                try
-                  if Sync.Enabled then
-                    Database.Engine.ExecSQL(FSQL.Text)
-                  else
-                  begin
-                    FSyncMutex := false;
-                    Exit;
-                  end;
-                except
-                  on e:Exception do
-                  begin
-                    SyncStop;
-                    SendDebugError(e.Message);
-                  end;
-                end;
-                *)
-
               end;
               Archive.Free;
             end;
 
             FileAgeString := FormatDateTime('YYYY-MM-DD hh:mm:ss', FileDateAndTime);
             Query := Format('UPDATE "ARCHIVE" SET age="%s", hash="%s" WHERE id=%d;',[FileAgeString, FileMD5, ArchiveID]);
-            //Sync.Interval := SYNC_HARDTIME;
+            FWaitTime := SYNC_HARDTIME;
 
             FDataset.Database.Engine.ExecSQL(Query);
-            (*
-            try
-              SendDebug(Query);
-              Database.Engine.ExecSQL(Query);
-            except
-              on e:Exception do
-              begin
-                SyncStop;
-                SendDebugError(e.Message);
-              end;
-            end;
-            *)
-
           end
             else
           begin
@@ -923,12 +930,11 @@ begin
             FAnimStore := false;
             FAnimScan := true;
 
-            (*
+
             if FPassCount <= 1 then
-              Sync.Interval := SYNC_HARDTIME
+              FWaitTime := SYNC_HARDTIME
             else
-              Sync.Interval := SYNC_EASYTIME;
-            *)
+              FWaitTime := SYNC_EASYTIME;
           end;
         end
           else
@@ -954,15 +960,14 @@ begin
       begin
         State := ssWaiting;
         FOwner.SyncStop;
-        ///*** SendDebugWarning('Auto stop synctimer');
       end;
 
     except
       on e:Exception do
-      begin
+      begin   
+        SendDebugError(e.Message);
         State := ssWaiting;
         FOwner.SyncStop;
-        ///*** SendDebugError(e.Message);
       end;
 
     end;
@@ -971,9 +976,6 @@ begin
   end;
 
   until Terminated;
-
-  SendDebugError('Oups');
-
 end;
 
 
@@ -983,7 +985,7 @@ var
   Path : string;
   Query : string;
 begin
-  //FProgressMax := Sender.Count;
+  //Sender.Count;
   Filename := ExtractUnixFileName(Name);
   Path := ARCHIVE_PATH + ExtractUnixFilePath(Name);
 
