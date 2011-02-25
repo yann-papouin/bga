@@ -70,6 +70,9 @@
 			<DCCReference Include="GuiWait.pas">
 				<Form>WaitForm</Form>
 			</DCCReference>
+			<DCCReference Include="GuiSkinDialog.pas">
+				<Form>SkinDialogForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
@@ -281,9 +284,9 @@ csoShowBPLs=1
 csoShowBorlandThreads=1
 csoShowWindowsThreads=1
 csoDoNotStoreProcNames=0
-boPauseBorlandThreads=1
+boPauseBorlandThreads=0
 boDoNotPauseMainThread=0
-boPauseWindowsThreads=1
+boPauseWindowsThreads=0
 boUseMainModuleOptions=1
 boCopyLogInCaseOfError=1
 boSaveCompressedCopyInCaseOfError=0
