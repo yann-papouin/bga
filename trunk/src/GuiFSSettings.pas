@@ -73,6 +73,12 @@ type
     destructor Destroy; override;
   end;
 
+  (*
+  TFSListMods     = procedure(Sender: TObject; Name: string; Path: string; ID: integer) of object;
+  TFSListArchives = procedure(Sender: TObject; Name: string; Path: string; ID: integer) of object;
+  TFSListFiles    = procedure(Sender: TObject; Name: string; Path: string; ID: integer) of object;
+  *)
+  TFSList = procedure(Sender: TObject; Name: string; Path: string; ID: integer) of object;
 
   TFSSettingsForm = class(TFormCommon)
     Actions: TActionList;
@@ -115,6 +121,7 @@ type
     SyncAnimStore: TJvGIFAnimator;
     SyncStatus: TSpTBXLabel;
     UpdateVCL: TTimer;
+    ApplicationRun: TAction;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -138,10 +145,16 @@ type
     procedure FilesystemListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
     procedure UpdateVCLTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure ApplicationRunExecute(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
   private
     FActiveIndex : Integer;
     FSQL : TStringList;
     FSyncThread : TSyncThread;
+    FOnChange: TNotifyEvent;
+    FOnListMods: TFSList;
+    FOnListArchives: TFSList;
+    FOnListFiles: TFSList;
     procedure ApplySettingsData(Data: pFilesystemData);
     { Déclarations privées }
     procedure SyncStart;
@@ -150,7 +163,16 @@ type
     procedure SetActiveIndex(const Value: Integer);
   public
     { Déclarations publiques }
-    property ActiveIndex : Integer read FActiveIndex write SetActiveIndex;
+    procedure ListMods;
+    procedure ListArchives(ModID : integer);
+    procedure ListFiles(ModID : integer);
+
+    property OnChange: TNotifyEvent read FOnChange write FOnChange;
+    property OnListMods: TFSList read FOnListMods write FOnListMods;
+    property OnListArchives: TFSList read FOnListArchives write FOnListArchives;
+    property OnListFiles: TFSList read FOnListFiles write FOnListFiles;
+
+    property ActiveIndex: Integer read FActiveIndex write SetActiveIndex;
   end;
 
 
@@ -192,8 +214,6 @@ begin
   FSyncThread := TSyncThread.Create(false);
   FSyncThread.FOwner := Self;
   FSyncThread.FDataset := SyncDataset;
-
-  FormStorage.RestoreFormPlacement;
 end;
 
 
@@ -209,10 +229,21 @@ begin
   inherited;
 end;
 
-
 procedure TFSSettingsForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   SyncStop;
+end;
+
+procedure TFSSettingsForm.FormActivate(Sender: TObject);
+begin
+  inherited;
+  ApplicationRun.Execute;
+end;
+
+procedure TFSSettingsForm.ApplicationRunExecute(Sender: TObject);
+begin
+  ApplicationRun.Enabled := false;
+  FormStorage.RestoreFormPlacement;
 end;
 
 
@@ -271,6 +302,7 @@ begin
   if Database.SQLiteLibrary = EmptyStr then
     Database.SQLiteLibrary := GetAppDirectory + 'sqlite3.dll';
 end;
+
 
 procedure TFSSettingsForm.PrepareUpdateDatabase;
 var
@@ -504,6 +536,7 @@ begin
     end;
   end;
 
+  Active.Enabled := true;
   Active.Execute;
   WaitForm.IncProgress('Syncing started');
   Sleep(500);
@@ -524,6 +557,10 @@ begin
   State := FSyncThread.State;
   if State <> ssWaiting then SyncStop;
   FActiveIndex := Value;
+
+  if Assigned(OnChange) then
+    OnChange(Self);
+
   SyncStart;
   FSyncThread.FPassCount := 0;
 end;
@@ -533,6 +570,7 @@ procedure TFSSettingsForm.SyncStart;
 var
   Node: PVirtualNode;
   Data: pFilesystemData;
+  WarnMsg : string;
 begin
   Assert(FSyncThread.State = ssWaiting, 'Syncing must be started when not already running');
 
@@ -554,10 +592,17 @@ begin
     Node := FilesystemList.GetNext(Node);
   end;
 
-  if FileExists(Database.Database) then
-    Database.Open
-  else
-    ShowMessage('Syncing disabled', 'Please run "Update" first to init filesystem database');
+  if Database.Database <> EmptyStr then
+  begin
+    if FileExists(Database.Database) then
+      Database.Open
+    else
+    begin
+      WarnMsg := 'Please run "Update" first to init the filesystem database named ';
+      WarnMsg := WarnMsg + ExtractFileName(Database.Database);
+      ShowMessage('Syncing disabled', WarnMsg);
+    end;
+  end;
 
   SyncStatusGroup.Visible := True;
   SyncAnimScan.Animate := True;
@@ -590,7 +635,7 @@ begin
     SyncStatus.Caption := 'Stopping';
     while FSyncThread.State <> ssWaiting do
     begin
-      Sleep(100);
+      // Wait here for the thread to finish //Sleep(100);
     end;
   end;
 
@@ -740,12 +785,10 @@ begin
   if tsChangePending in Leave then
   begin
     Node := Sender.GetFirstSelected;
-    if Node <> nil then
-    begin 
-      Active.Enabled := ActiveIndex <> Node.Index;
-    end
-      else
-    Active.Enabled := False;
+    Active.Enabled := (Node <> nil) and (ActiveIndex <> Node.Index);
+    Remove.Enabled := (Node <> nil);
+    Edit.Enabled   := (Node <> nil);
+    Update.Enabled := (Node <> nil);
   end;
 end;
 
@@ -803,6 +846,75 @@ begin
 
       SyncStatus.ImageIndex := FImageStatus;
       SyncStatus.Caption := FTextStatus;
+    end;
+  end;
+
+end;
+
+
+procedure TFSSettingsForm.ListMods;
+var
+  ID: integer;
+  Name, Path: string;
+begin
+  // Open database if settings are correct
+  if FileExists(Database.Database) then
+  begin
+    Database.Connected := true;
+    if Database.Connected then
+    begin
+      Dataset.Close;
+      Dataset.SQL.Text := 'SELECT * FROM "MOD";';
+      Dataset.Open;
+
+      while not Dataset.Eof do
+      begin
+        ID := Dataset.FieldByName('id').AsInteger;
+        Name := Dataset.FieldByName('name').AsString;
+        Path := Dataset.FieldByName('path').AsString;
+
+        if Assigned(OnListMods) then
+          OnListMods(Self, Name, Path, ID);
+
+        Dataset.Next;
+      end;
+    end;
+  end;
+
+end;
+
+procedure TFSSettingsForm.ListArchives(ModID : integer);
+begin
+  if Assigned(OnListArchives) then
+    OnListArchives(Self, 'Name', 'Path', -1);
+end;
+
+procedure TFSSettingsForm.ListFiles(ModID : integer);
+var
+  ID: integer;
+  Name, Path: string;
+begin
+  // Open database if settings are correct
+  if FileExists(Database.Database) then
+  begin
+    Database.Connected := true;
+    if Database.Connected then
+    begin
+      Dataset.Close;
+      Dataset.SQL.Text := Format('SELECT file.id, file.filename, file.path FROM mod, archive, file WHERE mod.id = %d AND file.archive = archive.id AND archive.mod = mod.id ;',[ModID]);
+      Dataset.Open;
+
+      while not Dataset.Eof do
+      begin
+        ID := Dataset.FieldByName('id').AsInteger;
+        Name := Dataset.FieldByName('filename').AsString;
+        Path := Dataset.FieldByName('path').AsString;
+
+        if Assigned(OnListFiles) then
+          OnListFiles(Self, Name, Path, ID);
+
+        Dataset.Next;
+      end;
     end;
   end;
 

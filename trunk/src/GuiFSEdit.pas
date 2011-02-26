@@ -57,6 +57,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ModsClick(Sender: TObject);
+    procedure FilesystemNameChange(Sender: TObject);
   private
     function SearchBattleField: boolean;
     { Déclarations privées }
@@ -101,6 +102,11 @@ begin
 end;
 
 
+procedure TFSEditForm.FilesystemNameChange(Sender: TObject);
+begin
+  FilesystemName.Text := ChangeFileExt(FilesystemName.Text,'.db');
+end;
+
 procedure TFSEditForm.FormCreate(Sender: TObject);
 begin
   ModEntries := TModEntryList.Create;
@@ -114,6 +120,9 @@ end;
 procedure TFSEditForm.FormShow(Sender: TObject);
 begin
   SearchBattleField;
+
+  if FilesystemName.Text = EmptyStr then
+    FilesystemName.Text := 'BGA';
 end;
 
 
@@ -166,8 +175,6 @@ begin
 end;
 
 
-
-
 procedure TFSEditForm.ModsClick(Sender: TObject);
 var
   ModEntry : TBattlefieldModEntry;
@@ -180,7 +187,6 @@ begin
 end;
 
 
-
 procedure TFSEditForm.OkExecute(Sender: TObject);
 begin
   if ValidFilename(FilesystemName.Text) then
@@ -191,8 +197,6 @@ begin
         ShowError('Already exists', 'This file system name already exists, please choose a unique name')
       else
       begin
-        // File system data will be stored in name.fsdata
-        // File system settings will be stored in name.fsheader
         ModalResult := mrOk;
       end
     end

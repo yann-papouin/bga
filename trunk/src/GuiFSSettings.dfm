@@ -3,6 +3,7 @@ inherited FSSettingsForm: TFSSettingsForm
   ClientHeight = 449
   ClientWidth = 511
   Position = poScreenCenter
+  OnActivate = FormActivate
   OnClose = FormClose
   OnDestroy = FormDestroy
   ExplicitWidth = 527
@@ -362,6 +363,10 @@ inherited FSSettingsForm: TFSSettingsForm
     object Delete: TAction
       Caption = 'Delete'
       ImageIndex = 268
+    end
+    object ApplicationRun: TAction
+      Caption = 'ApplicationRun'
+      OnExecute = ApplicationRunExecute
     end
   end
   object FormStorage: TJvFormStorage

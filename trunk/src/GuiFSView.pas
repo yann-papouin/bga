@@ -31,9 +31,8 @@ uses
   Graphics,
   Controls,
   Forms,
-  SyncObjs,
   Dialogs,
-  GuiFormCommon,
+  GuiRFACommon,
   ActnList,
   SpTBXControls,
   StdCtrls,
@@ -44,37 +43,34 @@ uses
   TB2Item,
   TB2Dock,
   TB2Toolbar,
-  FSLib,
-  JvComponentBase,
-  JvFormPlacement,
-  RFALib,
-  JvAppStorage,
-  JvAppRegistryStorage,
-  Grids,
-  DBGrids,
-  JvExDBGrids,
-  JvDBGrid,
-  JvExControls,
-  JvAnimatedImage,
-  JvGIFCtrl;
+  FSLib;
 
 type
 
-  TFSViewForm = class(TFormCommon)
-    Actions: TActionList;
-    Cancel: TAction;
-    Ok: TAction;
-    Background: TSpTBXPanel;
+  TFSViewForm = class(TRFACommonForm)
+    Panel2: TPanel;
+    SpTBXButton2: TSpTBXButton;
+    Load: TAction;
+    ModList: TSpTBXComboBox;
+    SpTBXLabel2: TSpTBXLabel;
+    TopDock: TSpTBXDock;
     Footer: TSpTBXPanel;
     ButtonOk: TSpTBXButton;
     ButtonCancel: TSpTBXButton;
-    procedure CancelExecute(Sender: TObject);
+    Ok: TAction;
+    Cancel: TAction;
+    SpTBXButton3: TSpTBXButton;
+    Settings: TAction;
     procedure OkExecute(Sender: TObject);
+    procedure CancelExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure SettingsExecute(Sender: TObject);
   private
     { Déclarations privées }
+    procedure FileSystemChange(Sender: TObject);
+    procedure ListMods(Sender: TObject; Name, Path: string; ID: integer);
+    procedure ListArchives(Sender: TObject; Name, Path: string; ID: integer);
+    procedure ListFiles(Sender: TObject; Name, Path: string; ID: integer);
   public
     { Déclarations publiques }
   end;
@@ -87,35 +83,12 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf,
-  GuiWait,
-  AppLib,
-  CommonLib,
-  GuiSkinDialog,
+  GuiFSSettings,
   Resources,
   IOUtils,
-  Types,
-  StringFunction,
-  TypInfo,
-  MD5Api;
+  Types;
 
-procedure TFSViewForm.FormCreate(Sender: TObject);
-begin
-  inherited;
-  //
-end;
 
-procedure TFSViewForm.FormDestroy(Sender: TObject);
-begin
-  //
-  inherited;
-end;
-
-procedure TFSViewForm.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  inherited;
-  //
-end;
 
 procedure TFSViewForm.OkExecute(Sender: TObject);
 begin
@@ -124,11 +97,57 @@ begin
   Close;
 end;
 
+
 procedure TFSViewForm.CancelExecute(Sender: TObject);
 begin
   // FormStorage.RestoreFormPlacement;
   ModalResult := mrCancel;
   Close;
+end;
+
+procedure TFSViewForm.SettingsExecute(Sender: TObject);
+begin
+  FSSettingsForm.ShowModal;
+end;
+
+procedure TFSViewForm.FileSystemChange(Sender: TObject);
+begin
+  ModList.Clear;
+  FSSettingsForm.ListMods;
+end;
+
+procedure TFSViewForm.FormCreate(Sender: TObject);
+begin
+  inherited;
+  FSSettingsForm.OnChange := FileSystemChange;
+  FSSettingsForm.OnListMods := ListMods;
+  FSSettingsForm.OnListArchives := ListArchives;
+  FSSettingsForm.OnListFiles := ListFiles;
+end;
+
+procedure TFSViewForm.ListMods(Sender: TObject; Name, Path: string; ID: integer);
+begin
+  ModList.Items.Add(Name);
+end;
+
+
+(*
+procedure TFSViewForm.ModsClick(Sender: TObject);
+begin
+  Files.Clear;
+  FSSettingsForm.ListFiles(1);
+  Files.Lines.Add('Ok');
+end;
+*)
+
+procedure TFSViewForm.ListArchives(Sender: TObject; Name, Path: string; ID: integer);
+begin
+
+end;
+
+procedure TFSViewForm.ListFiles(Sender: TObject; Name, Path: string; ID: integer);
+begin
+  //Files.Lines.Add(Name);
 end;
 
 end.

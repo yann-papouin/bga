@@ -73,6 +73,12 @@
 			<DCCReference Include="GuiSkinDialog.pas">
 				<Form>SkinDialogForm</Form>
 			</DCCReference>
+			<DCCReference Include="GuiRFACommon.pas">
+				<Form>RFACommonForm</Form>
+			</DCCReference>
+			<DCCReference Include="GuiFSView.pas">
+				<Form>FSViewForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
