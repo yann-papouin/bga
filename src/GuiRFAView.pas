@@ -1235,7 +1235,7 @@ procedure TRFAViewForm.EditWithOSExecute(Sender: TObject);
 var
   Node: PVirtualNode;
   Data : pFse;
-  Filepath, ExternalApp, Extension : string;
+  Filepath : string;
 begin
   Node := RFAList.GetFirstSelected;
   if Node <> nil then
@@ -1482,7 +1482,7 @@ end;
 procedure TRFAViewForm.RebuildRecentList;
 var
   MenuItem : TSpTBXItem;
-  i,j :Integer;
+  i :Integer;
 begin
   RecentMenu.Clear;
   for i := 0 to RecentList.Lines.Count - 1 do
@@ -2199,6 +2199,8 @@ var
   Node : pVirtualNode;
   Data : pFse;
 begin
+
+  Data := nil;
   Node := RFAList.GetFirstSelected;
   while Node <> nil do
   begin

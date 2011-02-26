@@ -202,9 +202,10 @@ end;
 
 function ShowIdeWarning(Msg : string; AdvMsg : string = '') : TModalResult;
 begin
+  Result := mrNone;
   if DebugHook <> 0 then
   begin
-    ShowWarning(Msg, AdvMsg);
+    Result := ShowWarning(Msg, AdvMsg);
   end
     else
   SendDebugWarning(AdvMsg);
@@ -212,9 +213,10 @@ end;
 
 function ShowIdeError(Msg : string; AdvMsg : string = '') : TModalResult;
 begin
+  Result := mrNone;
   if DebugHook <> 0 then
   begin
-    ShowError(Msg, AdvMsg);
+    Result := ShowError(Msg, AdvMsg);
   end
     else
   SendDebugError(AdvMsg);
@@ -222,9 +224,10 @@ end;
 
 function ShowIdeMessage(Msg : string; AdvMsg : string = '') : TModalResult;
 begin
+  Result := mrNone;
   if DebugHook <> 0 then
   begin
-    ShowMessage(Msg, AdvMsg);
+    Result := ShowMessage(Msg, AdvMsg);
   end
     else
   SendDebug(AdvMsg);

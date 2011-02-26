@@ -112,9 +112,7 @@ var
   LatestEntry : TUpdateEntry;
 
   i: integer;
-  VersionList : TStringList;
-  DownloadLine : integer;
-  URL, Revision : string;
+  Revision : string;
   SourceCode : string;
 begin
   HtmlDoc := TXMLDocument.Create(Self);

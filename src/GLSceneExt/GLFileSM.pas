@@ -94,17 +94,13 @@ procedure TGLSMVectorFile.LoadFromStream(aStream: TStream);
 var
    i, j, k : Integer;
    id : array[0..2] of Integer;
-   idc : Integer;
    SMFile : TFileSM;
    ColMesh : TGLSMColMeshObject;
    MatMesh : TGLSMMatMeshObject;
-   TexPoint : TTexPoint;
    TexPoint3 : TTexPoint3;
    MatVert : TMatrix3f;
-   ColNorm : TVector3f;
    MatNorm : TMatrix3f;
    FaceGroup : TFGVertexNormalTexIndexList;
-   Color : TGLColor;
 begin
 
   SMFile:=TFileSM.Create;

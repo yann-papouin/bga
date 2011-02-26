@@ -304,8 +304,6 @@ end;
 
 
 function TRFAFile.New(Filename: string; Compressed : boolean): integer;
-var
-  Value : longword;
 begin
   Result := -1;
   Release;
@@ -360,6 +358,7 @@ var
   IsRetail: boolean;
 begin
   Release;
+  Result := orFailed;
 
   if not OpenReadOnly then
   try
@@ -595,7 +594,6 @@ var
   LzoResult : integer;
   SegmentCounter : longword;
   Buf : TMemoryStream;
-  PreviousPos : integer;
   {$IfDef USE_BUFFER}
   i, BufferCount, FlakedBuffer: Integer;
   {$EndIf}

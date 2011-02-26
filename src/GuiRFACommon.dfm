@@ -201,10 +201,9 @@ inherited RFACommonForm: TRFACommonForm
       OnExecute = SearchStopExecute
     end
   end
-  object Search: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = SearchTimer
+  object UpdateVCL: TTimer
+    Interval = 50
+    OnTimer = UpdateVCLTimer
     Left = 8
     Top = 64
   end

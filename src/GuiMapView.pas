@@ -129,7 +129,6 @@ type
     procedure ViewerPostRender(Sender: TObject);
     procedure ViewerDblClick(Sender: TObject);
     procedure ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure FormKeyPress(Sender: TObject; var Key: Char);
     procedure CadencerProgress(Sender: TObject; const deltaTime, newTime: Double);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormDeactivate(Sender: TObject);
@@ -238,9 +237,6 @@ begin
 end;
 
 procedure TMapViewForm.FormCreate(Sender: TObject);
-var
-  Key : Char;
-  Color : TColorVector;
 begin
   inherited;
   FMapSize := -1;
@@ -283,35 +279,6 @@ procedure TMapViewForm.FormDestroy(Sender: TObject);
 begin
   FBuffer.Free;
 end;
-
-procedure TMapViewForm.FormKeyPress(Sender: TObject; var Key: Char);
-var
-  i :integer;
-  MaterialOptions : TMaterialOptions;
-begin
-(*
-  inherited;
-   case Key of
-    'W','w' : TerrainRenderer.DrawWireframe := not TerrainRenderer.DrawWireframe;
-
-    'X','x' :
-      for i := 0 to GLMaterialLibrary.Materials.Count - 1 do
-      begin
-        MaterialOptions := GLMaterialLibrary.Materials[i].Material.MaterialOptions;
-        if moNoLighting in MaterialOptions then
-          Exclude(MaterialOptions, moNoLighting)
-        else
-          Include(MaterialOptions, moNoLighting);
-
-        GLMaterialLibrary.Materials[i].Material.MaterialOptions := MaterialOptions;
-        TerrainRenderer.Material.MaterialOptions := MaterialOptions;
-      end;
-
-   end;
-   *)
-end;
-
-
 
 procedure TMapViewForm.FPSCounterTimer(Sender: TObject);
 begin
@@ -623,6 +590,7 @@ begin
     Exit;
   end;
   *)
+  LibMaterial := nil;
 
 
   heightData.DataState := dsPreparing;
