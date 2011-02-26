@@ -47,8 +47,8 @@ uses
   GuiRFACommon in 'GuiRFACommon.pas' { RFACommonForm },
   Resources in 'Resources.pas' { ResourcesForm },
   GuiRFAView in 'GuiRFAView.pas' { RFAViewForm },
-  GuiFSView in 'GuiFSView.pas' { FSViewForm },
-  GuiFSSettings in 'GuiFSSettings.pas' { FSSettingsForm },
+  GuiFSSettings in 'GuiFSSettings.pas' {FSSettingsForm},
+  GuiFSEdit in 'GuiFSEdit.pas' {FSEditForm},
   FSLib in 'FSLib.pas',
   VirtualTreeviewTheme in 'Lib\VirtualTreeviewTheme.pas',
   GuiFormCommon in 'GuiFormCommon.pas' { FormCommon },
@@ -64,7 +64,8 @@ uses
   oge2_TerrainRendering in '..\misc\TerrainRenderer\lib\oge2_TerrainRendering.pas',
   oge2_TerrainTileLodRenderer in '..\misc\TerrainRenderer\lib\oge2_TerrainTileLodRenderer.pas',
   oge2_TerrainTileLodVBORenderer in '..\misc\TerrainRenderer\lib\oge2_TerrainTileLodVBORenderer.pas',
-  oge2_TerrainTileRender in '..\misc\TerrainRenderer\lib\oge2_TerrainTileRender.pas';
+  oge2_TerrainTileRender in '..\misc\TerrainRenderer\lib\oge2_TerrainTileRender.pas',
+  GuiFSView in 'GuiFSView.pas' {FSViewForm};
 
 {$R *.res}
 
@@ -91,7 +92,7 @@ begin
     WaitForm.BeginWait;
 
     Application.CreateForm(TRFAViewForm, RFAViewForm);
-  WaitForm.IncProgress();
+    WaitForm.IncProgress();
 
     Application.CreateForm(TRFASettingsForm, RFASettingsForm);
     WaitForm.IncProgress();
@@ -114,10 +115,13 @@ begin
     Application.CreateForm(TResourcesForm, ResourcesForm);
     WaitForm.IncProgress();
 
-    Application.CreateForm(TFSViewForm, FSViewForm);
+    Application.CreateForm(TFSSettingsForm, FSSettingsForm);
     WaitForm.IncProgress();
 
-    Application.CreateForm(TFSSettingsForm, FSSettingsForm);
+    Application.CreateForm(TFSEditForm, FSEditForm);
+    WaitForm.IncProgress();
+
+    Application.CreateForm(TFSViewForm, FSViewForm);
     WaitForm.IncProgress();
 
   {$IfDef OPENGL_SUPPORT}

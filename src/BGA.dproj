@@ -97,11 +97,11 @@
 			<DCCReference Include="GuiRFAView.pas">
 				<Form> RFAViewForm </Form>
 			</DCCReference>
-			<DCCReference Include="GuiFSView.pas">
-				<Form> FSViewForm </Form>
-			</DCCReference>
 			<DCCReference Include="GuiFSSettings.pas">
-				<Form> FSSettingsForm </Form>
+				<Form>FSSettingsForm</Form>
+			</DCCReference>
+			<DCCReference Include="GuiFSEdit.pas">
+				<Form>FSEditForm</Form>
 			</DCCReference>
 			<DCCReference Include="FSLib.pas"/>
 			<DCCReference Include="Lib\VirtualTreeviewTheme.pas"/>
@@ -125,6 +125,9 @@
 			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileLodRenderer.pas"/>
 			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileLodVBORenderer.pas"/>
 			<DCCReference Include="..\misc\TerrainRenderer\lib\oge2_TerrainTileRender.pas"/>
+			<DCCReference Include="GuiFSView.pas">
+				<Form>FSViewForm</Form>
+			</DCCReference>
 			<None Include="BGA.inc"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

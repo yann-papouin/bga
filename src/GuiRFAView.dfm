@@ -166,11 +166,11 @@ inherited RFAViewForm: TRFAViewForm
         end
         object SpTBXSeparatorItem9: TSpTBXSeparatorItem
         end
-        object SpTBXItem1: TSpTBXItem
-          Action = Settings
-        end
         object SpTBXItem23: TSpTBXItem
           Action = Filesystem
+        end
+        object SpTBXItem1: TSpTBXItem
+          Action = Settings
         end
       end
       object SpTBXSubmenuItem1: TSpTBXSubmenuItem
@@ -446,8 +446,9 @@ inherited RFAViewForm: TRFAViewForm
     end
     object Filesystem: TAction
       Category = 'Custom'
-      Caption = 'File system ...'
+      Caption = 'Filesystem ...'
       ImageIndex = 522
+      ShortCut = 122
       Visible = False
       OnExecute = FilesystemExecute
     end
