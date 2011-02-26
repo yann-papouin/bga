@@ -280,9 +280,6 @@ uses
   GuiAbout, GuiMapView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
   Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
-var
-  FLastNode : PVirtualNode;
-
 const
   ASK_BEFORE_RESET = true;
 
@@ -320,7 +317,6 @@ begin
   Data.FileType := ExtensionToType(Data.W32Ext);
   Data.ExternalFilePath := EmptyStr;
 
-  FLastNode := Node;
 end;
 
 
@@ -581,6 +577,7 @@ begin
   end
   else
     OpenDialog.InitialDir := ExtractFilePath(Application.ExeName);
+
 
 end;
 
