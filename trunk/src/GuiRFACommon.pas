@@ -191,8 +191,19 @@ implementation
 {$R *.dfm}
 
 uses
-  DbugIntf, GuiPicView,
-  GuiSMView, GuiSkinDialog, Resources, Masks, Math, StringFunction, CommonLib, AppLib, MD5Api;
+  DbugIntf,
+  {$IfDef PREVIEW_SUPPORT}
+  GuiSMView,
+  GuiPicView,
+  {$EndIf}
+  GuiSkinDialog,
+  Resources,
+  Masks,
+  Math,
+  StringFunction,
+  CommonLib,
+  AppLib,
+  MD5Api;
 
 
 function TRFACommonForm.IsFolder(Name: String) : boolean;
@@ -672,6 +683,8 @@ var
 
 begin
   Result := false;
+  {$IfDef PREVIEW_SUPPORT}
+
   Node := RFAList.GetFirstSelected;
 
   if (Node = nil) or (Node = RFAList.RootNode) then
@@ -711,6 +724,7 @@ begin
       end;
   end;
 
+  {$EndIf}
 end;
 
 procedure TRFACommonForm.PreviewExecute(Sender: TObject);

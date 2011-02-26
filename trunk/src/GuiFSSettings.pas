@@ -556,12 +556,11 @@ begin
   State := FSyncThread.State;
   if State <> ssWaiting then SyncStop;
   FActiveIndex := Value;
+  SyncStart;
+  FSyncThread.FPassCount := 0;
 
   if Assigned(OnChange) then
     OnChange(Self);
-
-  SyncStart;
-  FSyncThread.FPassCount := 0;
 end;
 
 

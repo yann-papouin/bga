@@ -90,6 +90,16 @@ uses
   Types;
 
 
+procedure TFSViewForm.FormCreate(Sender: TObject);
+begin
+  inherited;
+  FSSettingsForm.OnChange := FileSystemChange;
+  FSSettingsForm.OnListMods := ListMods;
+  FSSettingsForm.OnListArchives := ListArchives;
+  FSSettingsForm.OnListFiles := ListFiles;
+
+  FSSettingsForm.ApplicationRun.Execute;
+end;
 
 procedure TFSViewForm.OkExecute(Sender: TObject);
 begin
@@ -97,7 +107,6 @@ begin
   ModalResult := mrOk;
   Close;
 end;
-
 
 procedure TFSViewForm.CancelExecute(Sender: TObject);
 begin
@@ -114,20 +123,9 @@ end;
 procedure TFSViewForm.FileSystemChange(Sender: TObject);
 begin
   ModList.Clear;
+  ModList.Text := EmptyStr;
   FSSettingsForm.ListMods;
 end;
-
-procedure TFSViewForm.FormCreate(Sender: TObject);
-begin
-  inherited;
-  FSSettingsForm.OnChange := FileSystemChange;
-  FSSettingsForm.OnListMods := ListMods;
-  FSSettingsForm.OnListArchives := ListArchives;
-  FSSettingsForm.OnListFiles := ListFiles;
-
-  FSSettingsForm.ApplicationRun.Execute;
-end;
-
 
 procedure TFSViewForm.LoadExecute(Sender: TObject);
 begin
@@ -165,11 +163,14 @@ begin
   //Files.Lines.Add(Name);
 
   W32Path := StringReplace(Name,'/','\',[rfReplaceAll]);
+(*
   BuildTreeFromFullPath(W32Path);
 
   Node := FindPath(W32Path);
   if Node = nil then
     Node := RFAList.RootNode;
+*)
+  Node := RFAList.RootNode;
 
   Node := RFAList.AddChild(Node);
 

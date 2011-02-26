@@ -17,20 +17,22 @@ uses
   GuiWait in 'GuiWait.pas' {WaitForm},
   GuiSkinDialog in 'GuiSkinDialog.pas' {SkinDialogForm},
   GuiRFACommon in 'GuiRFACommon.pas' {RFACommonForm},
-  GuiFSView in 'GuiFSView.pas' {FSViewForm};
+  GuiFSView in 'GuiFSView.pas' {FSViewForm},
+  ExFilesystemViewerMain in 'ExFilesystemViewerMain.pas' {ExFilesystemViewerMainForm};
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TFSSettingsForm, FSSettingsForm);
+  Application.CreateForm(TExFilesystemViewerMainForm, ExFilesystemViewerMainForm);
   Application.CreateForm(TFSEditForm, FSEditForm);
+  Application.CreateForm(TFSSettingsForm, FSSettingsForm);
+  Application.CreateForm(TFSViewForm, FSViewForm);
   Application.CreateForm(TFormCommon, FormCommon);
   Application.CreateForm(TResourcesForm, ResourcesForm);
   Application.CreateForm(TWaitForm, WaitForm);
   Application.CreateForm(TSkinDialogForm, SkinDialogForm);
   Application.CreateForm(TRFACommonForm, RFACommonForm);
-  Application.CreateForm(TFSViewForm, FSViewForm);
   Application.Run;
 end.
