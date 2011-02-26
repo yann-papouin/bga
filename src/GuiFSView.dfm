@@ -120,7 +120,7 @@ inherited FSViewForm: TFSViewForm
         Align = alLeft
         TabOrder = 2
         Images = ResourcesForm.Images16x16
-        ImageIndex = 330
+        ImageIndex = 498
       end
     end
   end
@@ -172,6 +172,7 @@ inherited FSViewForm: TFSViewForm
     object Load: TAction
       Category = 'Custom'
       Caption = 'Load'
+      Enabled = False
       ImageIndex = 318
       OnExecute = LoadExecute
     end
@@ -190,7 +191,7 @@ inherited FSViewForm: TFSViewForm
     object Settings: TAction
       Category = 'Custom'
       Caption = 'Settings'
-      ImageIndex = 330
+      ImageIndex = 498
       OnExecute = SettingsExecute
     end
   end

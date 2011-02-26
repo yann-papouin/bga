@@ -20,6 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_Define>PREVIEW_SUPPORT;$(DCC_Define)</DCC_Define>
 			<DCC_DependencyCheckOutputName>_bin_bga\BGA.exe</DCC_DependencyCheckOutputName>
 			<DCC_DcuOutput>.\_dcu_bga</DCC_DcuOutput>
 			<DCC_ExeOutput>.\_bin_bga</DCC_ExeOutput>

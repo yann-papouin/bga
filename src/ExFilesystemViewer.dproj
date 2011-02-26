@@ -79,6 +79,9 @@
 			<DCCReference Include="GuiFSView.pas">
 				<Form>FSViewForm</Form>
 			</DCCReference>
+			<DCCReference Include="ExFilesystemViewerMain.pas">
+				<Form>ExFilesystemViewerMainForm</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
