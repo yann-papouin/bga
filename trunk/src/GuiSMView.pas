@@ -202,10 +202,9 @@ end;
 
 procedure TSMViewForm.GLDirectRender(Sender: TObject; var rci: TRenderContextInfo);
 var
-  i, j, k, id :integer;
+  i, j, k :integer;
   vA, vB, vC, vP, vL, vM, vN : TAffineVector;
   FaceGroup : TFGVertexNormalTexIndexList;
-  tes : TColorVector;
 begin
 
   with rci.GLStates do
@@ -391,10 +390,8 @@ end;
 
 function TSMViewForm.FindNodeID(ID: integer): PVirtualNode;
 var
-  ColCounter, MeshCounter : integer;
   Node : PVirtualNode;
   Data : pData;
-  i :integer;
 begin
   Result := nil;
   Node := MeshList.GetFirst;
@@ -423,6 +420,7 @@ begin
 
   ColCounter := 0;
   MeshCounter := 0;
+  MatCounter := 0;
 
   FWorldRootNode := MeshList.AddChild(nil);
   Data := MeshList.GetNodeData(FWorldRootNode);
@@ -547,6 +545,7 @@ var
   Path: string;
   LibMaterial : TGLLibMaterial;
 begin
+  Data := nil;
   FreeMesh.MaterialLibrary.Materials.Clear;
   SendDebug(Filename);
   if FileExists(Filename) then
@@ -710,49 +709,3 @@ end;
 
 end.
 
-(*
-
-procedure TForm1.GLSceneViewer1MouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-	// store mouse coordinates when a button went down
-	mdx:=x; mdy:=y;
-end;
-
-procedure TForm1.GLSceneViewer1MouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
-var
-	dx, dy : Integer;
-	v : TVector;
-begin
-	// calculate delta since last move or last mousedown
-	dx:=mdx-x; dy:=mdy-y;
-	mdx:=x; mdy:=y;
-	if ssLeft in Shift then begin
-      if ssShift in Shift then begin
-         // right button with shift rotates the teapot
-         // (rotation happens around camera's axis)
-	   	GLCamera1.RotateObject(Teapot1, dy, dx);
-      end else begin
-   		// right button without shift changes camera angle
-	   	// (we're moving around the parent and target dummycube)
-		   GLCamera1.MoveAroundTarget(dy, dx)
-      end;
-	end else if Shift=[ssRight] then begin
-		// left button moves our target and parent dummycube
-		v:=GLCamera1.ScreenDeltaToVectorXY(dx, -dy,
-							0.12*GLCamera1.DistanceToTarget/GLCamera1.FocalLength);
-		DummyCube1.Position.Translate(v);
-		// notify camera that its position/target has been changed
-		GLCamera1.TransformationChanged;
-	end;
-end;
-
-procedure TForm1.FormMouseWheel(Sender: TObject; Shift: TShiftState;
-  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
-begin
-	// Note that 1 wheel-step induces a WheelDelta of 120,
-	// this code adjusts the distance to target with a 10% per wheel-step ratio
-	GLCamera1.AdjustDistanceToTarget(Power(1.1, WheelDelta/120));
-end;
-*)

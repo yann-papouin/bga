@@ -228,13 +228,11 @@ object SkinDialogForm: TSkinDialogForm
       object Text: TLabel
         Left = 79
         Top = 81
-        Width = 976
-        Height = 115
+        Width = 22
+        Height = 13
         Align = alClient
         Caption = 'Text'
         WordWrap = True
-        ExplicitWidth = 22
-        ExplicitHeight = 13
       end
       object Title: TSpTBXLabel
         Left = 11

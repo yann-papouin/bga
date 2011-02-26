@@ -82,8 +82,6 @@ uses
 function TFSEditForm.SearchBattleField : boolean;
 var
   Reg:TRegistry;
-  FileList : TStringList;
-  i :integer;
 begin
   Result := false;
 

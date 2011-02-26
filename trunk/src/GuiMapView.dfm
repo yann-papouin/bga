@@ -6,7 +6,6 @@ inherited MapViewForm: TMapViewForm
   OnCloseQuery = FormCloseQuery
   OnDestroy = FormDestroy
   OnDeactivate = FormDeactivate
-  OnKeyPress = FormKeyPress
   ExplicitWidth = 1065
   ExplicitHeight = 610
   PixelsPerInch = 96

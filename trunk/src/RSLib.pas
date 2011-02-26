@@ -40,6 +40,7 @@ type
     LightingSpecular : boolean;
     TwoSided : boolean;
     Transparent : boolean;
+    EnvironmentMapping : boolean;
     DepthWrite : boolean;
 	  BlendSrc : TBlendFunction;
 	  BlendDest : TBlendFunction;
@@ -50,7 +51,6 @@ type
   TRsParser = class(TObjectList<TRsResource>)
   private
     FParsed: boolean;
-  published
   public
     constructor Create;
     procedure Parse(Data : TStringList);
@@ -89,7 +89,7 @@ end;
 procedure TRsParser.Parse(Data: TStringList);
 var
   Line, Pos : Integer;
-  Path, BldFun : string;
+  BldFun : string;
   Resource : TRsResource;
 
   SectionSubShader : boolean;
@@ -118,6 +118,9 @@ var
 
 begin
   FParsed := false;
+  TitleSubShader := false;
+  SectionSubShader := false;
+  Resource := nil;
   Clear;
 
   for Line := 0 to Data.Count - 1 do
@@ -154,7 +157,8 @@ begin
 
     if TitleSubShader then
     begin
-      Resource.Name := SFBetween('"', Data[Line]);
+      if Assigned(Resource) then
+        Resource.Name := SFBetween('"', Data[Line]);
     end;
 
     if SectionSubShader then
@@ -209,6 +213,12 @@ begin
       if Pos > 0 then
       begin
         Resource.Transparent := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
+      end;
+
+      Pos := SFUniPos('EnvMap ', Data[Line]);
+      if Pos > 0 then
+      begin
+        Resource.EnvironmentMapping := StrToBoolDef(SFBetweenTwo(' ', ';', Data[Line]), false);
       end;
 
       Pos := SFUniPos('DepthWrite ', Data[Line]);

@@ -606,6 +606,7 @@ procedure BmpToVariant(aBmp : TBitmap; var aVariant:OleVariant);
 var
   Stream : TMemoryStream;
 begin
+  Stream := nil;
   try
      Stream := TMemoryStream.Create;
      aBmp.SaveToStream(Stream);
@@ -619,6 +620,7 @@ procedure VariantToBmp(aValue : OleVariant;var aBmp:TBitmap);
 var
    Stream : TMemoryStream;
 begin
+  Stream := nil;
   try
     Stream := TMemoryStream.Create;
     VariantToStream (aValue,Stream);
@@ -983,9 +985,8 @@ end;
 function DetectWineEnvironment : boolean;
 var
   Reg:TRegistry;
-  FileList : TStringList;
-  i :integer;
 begin
+  Reg := nil;
   Result := False;
   try
     Reg:= TRegistry.Create(KEY_READ);

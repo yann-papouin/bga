@@ -123,7 +123,6 @@ end;
 
 procedure TFileSM.LoadFromStream(aStream: TStream);
 var
-  matnum : Longword;
   SizeOfSection : Longword;
   endOffset : int64;
   ptFace : PSMFace;

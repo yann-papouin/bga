@@ -142,7 +142,6 @@ var
 	Context     : TMD5Context;
   FileSize    : Cardinal;
   Middle      : Cardinal;
-  StartPos    : Pointer;
 
 begin
   if not FileExists(FileName) then

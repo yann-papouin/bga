@@ -87,6 +87,38 @@ type
 
   TEntryStatus = set of TEntryModification;
 
+  TSearchState =
+  (
+    ssWaiting,
+    ssStopping,
+    ssUpdating,
+    ssWorking
+  );
+
+  TSearchResult =
+  (
+    srNone,
+    srYes,
+    srNo,
+    srOk
+  );
+
+  TRFACommonForm = class;
+
+  TSearchThread = class(TThread)
+  private
+    FSearchText: string;
+    FSearchNode : PVirtualNode;
+    FSearchList : TStringList;
+    FOwner : TRFACommonForm;
+  protected
+    procedure Execute; override;
+  public
+    State : TSearchState;
+    constructor Create(CreateSuspended:boolean);
+    destructor Destroy; override;
+  end;
+
 
   TRFACommonForm = class(TFormCommon)
     Actions: TActionList;
@@ -104,7 +136,7 @@ type
     SpTBXLabel1: TSpTBXLabel;
     SpTBXButton1: TSpTBXButton;
     SearchProgressBar: TSpTBXProgressBar;
-    Search: TTimer;
+    UpdateVCL: TTimer;
     procedure CollapseSelectedExecute(Sender: TObject);
     procedure ExpandSelectedExecute(Sender: TObject);
     procedure CollapseAllExecute(Sender: TObject);
@@ -121,20 +153,18 @@ type
     procedure SearchStopExecute(Sender: TObject);
     procedure SearchEditChange(Sender: TObject);
     procedure RFAListHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
-    procedure SearchTimer(Sender: TObject);
+    procedure UpdateVCLTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
-    FSearchText: string;
-    FSearchNode : PVirtualNode;
-    FSearchList : TStringList;
+    FSearchThread : TSearchThread;
     FSortBy : TSortBy;
     FSortDirection : TSortDirection;
     { Déclarations privées }
     function IsFolder(Name: String) : boolean;
     procedure SetSearchText(const Value: string);
+    function GetSearchText: string;
   protected
-    procedure MakePathVisible(Table: TBaseVirtualTree; Node: PVirtualNode; Children : Boolean = false);
     function FindFileByName(Filename: string): PVirtualNode;
     function FindFile(Path: String): PVirtualNode;
     function FindPath(Path: String) : PVirtualNode;
@@ -155,7 +185,7 @@ type
     procedure GoToSelection;
   public
     { Déclarations publiques }
-    property SearchText : string read FSearchText write SetSearchText;
+    property SearchText : string read GetSearchText write SetSearchText;
   end;
 
 
@@ -181,6 +211,8 @@ type
     ExternalFilePath : string[255];
     ExternalMD5 : Ansistring;
     ExternalAge : TDateTime;
+    //
+    SearchResult : TSearchResult;
   end;
 
 var
@@ -206,6 +238,19 @@ uses
   MD5Api;
 
 
+procedure TRFACommonForm.FormCreate(Sender: TObject);
+begin
+  inherited;
+  FSearchThread := TSearchThread.Create(false);
+  FSearchThread.FOwner := Self;
+end;
+
+procedure TRFACommonForm.FormDestroy(Sender: TObject);
+begin
+  FSearchThread.Free;
+  inherited;
+end;
+
 function TRFACommonForm.IsFolder(Name: String) : boolean;
 begin
   result := SFRight(DirDelimiter,Name) <> EmptyStr;
@@ -219,7 +264,6 @@ end;
 function TRFACommonForm.GetFileByPath(Sender: TObject; const VirtualPath: string): string;
 var
   Node: PVirtualNode;
-  Data : pFse;
 begin
   Node := FindFile(VirtualPath);
   if Node <> nil then
@@ -227,6 +271,8 @@ begin
   else
     Result := EmptyStr;
 end;
+
+
 
 function TRFACommonForm.FindPath(Path: String) : PVirtualNode;
 var
@@ -248,6 +294,7 @@ begin
     Node := RFAList.GetNext(Node);
   end;
 end;
+
 
 function TRFACommonForm.FindFile(Path: String) : PVirtualNode;
 var
@@ -278,35 +325,6 @@ begin
     end;
     Node := RFAList.GetNext(Node);
   end;
-end;
-
-procedure TRFACommonForm.FormCreate(Sender: TObject);
-begin
-  inherited;
-  FSearchList := TStringList.Create;
-  FSearchList.Delimiter := ';';
-end;
-
-procedure TRFACommonForm.FormDestroy(Sender: TObject);
-begin
-  inherited;
-  FSearchList.Free;
-end;
-
-
-procedure TRFACommonForm.MakePathVisible(Table : TBaseVirtualTree; Node: PVirtualNode; Children : Boolean = false);
-begin
-  Table.FullyVisible[Node] := True;
-(*
-  repeat
-    if Node = Table.RootNode then
-      Break;
-
-    Table.IsVisible[Node] := true;
-    Table.Expanded[Node] := true;
-    Node := Node.Parent;
-  until False;
-*)
 end;
 
 
@@ -977,6 +995,49 @@ begin
   SearchText := EmptyStr;
 end;
 
+procedure TRFACommonForm.UpdateVCLTimer(Sender: TObject);
+var
+  Data : pFse;
+  Node : PVirtualNode;
+begin
+  if (FSearchThread.State = ssWorking) or (FSearchThread.State = ssUpdating) then
+  begin
+    RFAList.BeginUpdate;
+
+    Node := RFAList.GetFirst(true);
+    while Node <> nil do
+    begin
+      Data := RFAList.GetNodeData(Node);
+
+      if (Data.SearchResult = srYes) then
+      begin
+        RFAList.IsVisible[Node] := True;
+        RFAList.Expanded[Node] := True;
+        SearchProgressBar.Position := SearchProgressBar.Position+1;
+        Data.SearchResult := srOk;
+      end;
+
+      if (Data.SearchResult = srNo) then
+      begin
+        RFAList.IsVisible[Node] := False;
+        SearchProgressBar.Position := SearchProgressBar.Position+1;
+        Data.SearchResult := srOk;
+      end;
+
+      Node := RFAList.GetNext(Node, true);
+    end;
+
+    if (FSearchThread.State = ssUpdating) then
+    begin
+      FSearchThread.State := ssStopping;
+      GoToSelection;
+    end;
+
+    RFAList.EndUpdate;
+  end;
+end;
+
+(*
 procedure TRFACommonForm.SearchTimer(Sender: TObject);
 var
   i, Count : integer;
@@ -1033,38 +1094,62 @@ begin
   if FSearchNode <> nil then
     Search.Enabled := true;
 end;
+*)
+
+function TRFACommonForm.GetSearchText: string;
+begin
+
+end;
 
 procedure TRFACommonForm.SetSearchText(const Value: string);
 var
   Node : pVirtualNode;
+  Data : pFse;
 begin
-  FSearchText := Value;
-  FSearchList.DelimitedText := FSearchText;
+  FSearchThread.State := ssStopping;
+  while FSearchThread.State <> ssWaiting do
+  begin
+    // Wait here;
+  end;
 
-  SearchProgressBar.Position := 0;
-  SearchProgressBar.Max := 0;
+  FSearchThread.FSearchText := Value;
+  FSearchThread.FSearchList.DelimitedText := FSearchThread.FSearchText;
 
   Node := RFAList.GetFirst(true);
   while Node <> nil do
   begin
-    RFAList.IsVisible[Node] := (FSearchText = EmptyStr);
-
-    if RFAList.GetNodeLevel(Node) <= 2 then
-      RFAList.Expanded[Node] := true
-    else
-      RFAList.Expanded[Node] := not (FSearchText = EmptyStr);
-
+    Data := RFAList.GetNodeData(Node);
+    Data.SearchResult := srNone;
     Node := RFAList.GetNext(Node, true);
   end;
 
+  SearchProgressBar.Position := 0;
   SearchProgressBar.Max := RFAList.TotalCount;
-  if (FSearchText <> EmptyStr) then
+
+  if (FSearchThread.FSearchText <> EmptyStr) then
   begin
-    FSearchNode := RFAList.GetFirst;
-    Search.Enabled := true;
+    FSearchThread.FSearchNode := RFAList.GetFirst;
+    FSearchThread.State := ssWorking;
   end
     else
-  GoToSelection;
+  begin
+    Node := RFAList.GetFirst(true);
+    RFAList.BeginUpdate;
+    while Node <> nil do
+    begin
+      RFAList.IsVisible[Node] := (FSearchThread.FSearchText = EmptyStr);
+
+      if RFAList.GetNodeLevel(Node) <= 2 then
+        RFAList.Expanded[Node] := true
+      else
+        RFAList.Expanded[Node] := not (FSearchThread.FSearchText = EmptyStr);
+
+      Node := RFAList.GetNext(Node, true);
+    end;
+    RFAList.EndUpdate;
+    GoToSelection;
+  end;
+
 end;
 
 
@@ -1087,6 +1172,95 @@ end;
 procedure TRFACommonForm.WarnAboutOpenGL;
 begin
   ShowMessage('OpenGL Disabled', '3D rendering disabled for compatibility reasons');
+end;
+
+
+
+{ TSearchThread }
+
+constructor TSearchThread.Create(CreateSuspended: boolean);
+begin
+  inherited Create(CreateSuspended);
+
+  FreeOnTerminate:=false;
+  Priority:=tpNormal;
+
+  FSearchList := TStringList.Create;
+  FSearchList.Delimiter := ';';
+end;
+
+destructor TSearchThread.Destroy;
+begin
+
+  FSearchList.Free;
+  inherited;
+end;
+
+procedure TSearchThread.Execute;
+var
+  Node : PVirtualNode;
+  Data : pFse;
+
+  function LocalMatchesMask(AString : string) : boolean;
+  var
+    i :integer;
+    Mask : string;
+  begin
+    Result := false;
+    for i := 0 to FSearchList.Count - 1 do
+    begin
+      Mask := '*'+trim(FSearchList[i])+'*';
+      if MatchesMask(AString, Mask) then
+      begin
+        Result := true;
+        Break;
+      end;
+    end;
+  end;
+
+begin
+  inherited;
+  repeat
+
+  if (State = ssWaiting) or (State = ssUpdating) then
+    Sleep(100)
+  else
+  if (State = ssStopping) then
+    State := ssWaiting
+  else
+  if (State = ssWorking) and not FOwner.OperationPending then
+  begin
+
+    if (FSearchNode = nil) then
+    begin
+      State := ssUpdating;
+    end
+      else
+    begin
+      Node := FSearchNode;
+      Data := FOwner.RFAList.GetNodeData(Node);
+      if LocalMatchesMask(Data.W32Path) then
+      begin
+        Data.SearchResult := srYes;
+
+        while (Node <> nil) and (Node <> FOwner.RFAList.RootNode)  do
+        begin
+          Data.SearchResult := srYes;
+          Node := Node.Parent;
+          Data := FOwner.RFAList.GetNodeData(Node);
+        end;
+
+      end
+        else
+      begin
+        if Data.SearchResult = srNone then
+          Data.SearchResult := srNo;
+      end;
+      FSearchNode := FOwner.RFAList.GetNext(FSearchNode, true);
+    end;
+  end;
+
+  until Terminated;
 end;
 
 end.
