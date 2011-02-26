@@ -48,11 +48,11 @@
 			<DelphiCompile Include="ExFilesystemViewer.dpr">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
+			<DCCReference Include="GuiFSEdit.pas">
+				<Form>FSEditForm</Form>
+			</DCCReference>
 			<DCCReference Include="GuiFSSettings.pas">
 				<Form>FSSettingsForm</Form>
-			</DCCReference>
-			<DCCReference Include="GuiFSView.pas">
-				<Form>FSViewForm</Form>
 			</DCCReference>
 			<DCCReference Include="GuiFormCommon.pas">
 				<Form>FormCommon</Form>

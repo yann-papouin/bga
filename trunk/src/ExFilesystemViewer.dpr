@@ -3,8 +3,8 @@ program ExFilesystemViewer;
 uses
   ExceptionLog,
   Forms,
+  GuiFSEdit in 'GuiFSEdit.pas' {FSEditForm},
   GuiFSSettings in 'GuiFSSettings.pas' {FSSettingsForm},
-  GuiFSView in 'GuiFSView.pas' {FSViewForm},
   GuiFormCommon in 'GuiFormCommon.pas' {FormCommon},
   AppLib in 'Lib\AppLib.pas',
   CommonLib in 'Lib\CommonLib.pas',
@@ -22,8 +22,8 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TFSViewForm, FSViewForm);
   Application.CreateForm(TFSSettingsForm, FSSettingsForm);
+  Application.CreateForm(TFSEditForm, FSEditForm);
   Application.CreateForm(TFormCommon, FormCommon);
   Application.CreateForm(TResourcesForm, ResourcesForm);
   Application.CreateForm(TWaitForm, WaitForm);
