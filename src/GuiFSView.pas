@@ -48,12 +48,11 @@ uses
 type
 
   TFSViewForm = class(TRFACommonForm)
-    Panel2: TPanel;
+    Panel2: TSpTBXPanel;
     SpTBXButton2: TSpTBXButton;
     Load: TAction;
     ModList: TSpTBXComboBox;
     SpTBXLabel2: TSpTBXLabel;
-    TopDock: TSpTBXDock;
     Footer: TSpTBXPanel;
     ButtonOk: TSpTBXButton;
     ButtonCancel: TSpTBXButton;
@@ -65,6 +64,8 @@ type
     procedure CancelExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure SettingsExecute(Sender: TObject);
+    procedure LoadExecute(Sender: TObject);
+    procedure ModListChange(Sender: TObject);
   private
     { Déclarations privées }
     procedure FileSystemChange(Sender: TObject);
@@ -123,22 +124,32 @@ begin
   FSSettingsForm.OnListMods := ListMods;
   FSSettingsForm.OnListArchives := ListArchives;
   FSSettingsForm.OnListFiles := ListFiles;
+
+  FSSettingsForm.ApplicationRun.Execute;
 end;
+
+
+procedure TFSViewForm.LoadExecute(Sender: TObject);
+begin
+  inherited;
+  RFAList.Clear;
+  RFAList.BeginUpdate;
+  FSSettingsForm.ListFiles(ModList.Tag);
+  RFAList.EndUpdate;
+end;
+
+procedure TFSViewForm.ModListChange(Sender: TObject);
+begin
+  inherited;
+  ModList.Tag := ModList.Items.IndexOf(ModList.Text);
+  Load.Enabled := ModList.Tag > 0;
+end;
+
 
 procedure TFSViewForm.ListMods(Sender: TObject; Name, Path: string; ID: integer);
 begin
   ModList.Items.Add(Name);
 end;
-
-
-(*
-procedure TFSViewForm.ModsClick(Sender: TObject);
-begin
-  Files.Clear;
-  FSSettingsForm.ListFiles(1);
-  Files.Lines.Add('Ok');
-end;
-*)
 
 procedure TFSViewForm.ListArchives(Sender: TObject; Name, Path: string; ID: integer);
 begin
@@ -146,8 +157,37 @@ begin
 end;
 
 procedure TFSViewForm.ListFiles(Sender: TObject; Name, Path: string; ID: integer);
+var
+  Node: PVirtualNode;
+  Data : pFse;
+  W32Path : AnsiString;
 begin
   //Files.Lines.Add(Name);
+
+  W32Path := StringReplace(Name,'/','\',[rfReplaceAll]);
+  BuildTreeFromFullPath(W32Path);
+
+  Node := FindPath(W32Path);
+  if Node = nil then
+    Node := RFAList.RootNode;
+
+  Node := RFAList.AddChild(Node);
+
+  Data := RFAList.GetNodeData(Node);
+  Data.RFAFileHandle := nil;
+  Data.RFAFileName := '';
+
+  Data.EntryName := Name;
+  Data.Offset := 0;
+  Data.Size := 0;
+  Data.Compressed := false;
+  Data.CompSize := 0;
+
+  Data.W32Path := W32Path;
+  Data.W32Name := ExtractFileName(W32Path);
+  Data.W32Ext := ExtractFileExt(LowerCase(W32Path));
+  Data.FileType := ExtensionToType(Data.W32Ext);
+  Data.ExternalFilePath := EmptyStr;
 end;
 
 end.

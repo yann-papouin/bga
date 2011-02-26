@@ -216,7 +216,6 @@ begin
   FSyncThread.FDataset := SyncDataset;
 end;
 
-
 procedure TFSSettingsForm.FormDestroy(Sender: TObject);
 begin
   Ok.Enabled := false;
