@@ -277,7 +277,7 @@ implementation
 uses
   DbugIntf, VirtualTreeviewTheme, UAC, ShlObj, DragDropFormats,
   GuiRFASettings,
-  GuiAbout, GuiMapView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSSettings, SpTBXSkins,
+  GuiAbout, GuiMapView, GuiSMView, GuiBrowsePack, GuiSkinDialog, GuiFSView, SpTBXSkins,
   Resources, Masks, Math, StringFunction, GuiBrowseExtract, CommonLib, AppLib, MD5Api;
 
 var
@@ -2050,7 +2050,7 @@ end;
 
 procedure TRFAViewForm.FilesystemExecute(Sender: TObject);
 begin
-  FSSettingsForm.Showmodal;
+  FSViewForm.Showmodal;
 end;
 
 procedure TRFAViewForm.FormActivate(Sender: TObject);

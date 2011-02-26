@@ -52,6 +52,7 @@ object FSEditForm: TFSEditForm
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 2
+    OnChange = FilesystemNameChange
   end
   object SpTBXLabel2: TSpTBXLabel
     Left = 8
