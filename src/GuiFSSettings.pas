@@ -132,7 +132,6 @@ type
     Database: TSqlitePassDatabase;
     Dataset: TSqlitePassDataset;
     SubDataset: TSqlitePassDataset;
-    Init: TAction;
     SyncDataset: TSqlitePassDataset;
     SpTBXItem2: TSpTBXItem;
     Active: TAction;
@@ -161,7 +160,6 @@ type
     procedure RemoveExecute(Sender: TObject);
     procedure EditExecute(Sender: TObject);
     procedure FilesystemListDblClick(Sender: TObject);
-    procedure InitExecute(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure ActiveExecute(Sender: TObject);
     procedure FilesystemListStateChange(Sender: TBaseVirtualTree; Enter, Leave: TVirtualTreeStates);
@@ -181,6 +179,7 @@ type
     FOnListFiles: TFSListFiles;
     procedure ApplySettingsData(Data: pFilesystemData);
     { Déclarations privées }
+    function SyncInit : boolean;
     procedure SyncStart;
     procedure SyncStop;
     procedure PrepareUpdateDatabase;
@@ -324,18 +323,6 @@ end;
   '[GuidField] GUID, [IntField] INT, [Int64Field] INT64);');
   *)
 
-procedure TFSSettingsForm.InitExecute(Sender: TObject);
-begin
-  // Reset components to empty vars
-  Database.Connected := false;
-  Database.Database := EmptyStr;
-  Current_battlefield_path := EmptyStr;
-
-  if Database.SQLiteLibrary = EmptyStr then
-    Database.SQLiteLibrary := GetAppDirectory + 'sqlite3.dll';
-end;
-
-
 procedure TFSSettingsForm.PrepareUpdateDatabase;
 var
   i,j :Integer;
@@ -391,188 +378,197 @@ begin
     Exit;
 
   SyncStop;
-  WaitForm.BeginWait;
-  WaitForm.IncProgress('Init', 5);
-  Init.Execute;
 
-  if Node <> nil then
+  if SyncInit then
   begin
-    Data := FilesystemList.GetNodeData(Node);
-    Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
-    Database.Database := Current_battlefield_path + Data.Name;
-  end;
+    WaitForm.BeginWait;
+    WaitForm.IncProgress('Init', 5);
 
-  Options := [loCaseInsensitive, loPartialKey];
 
-  if FileExists(Database.Database) and (DebugHook <> 0) then
-    if ShowDialog('Database exists', 'Delete older data and create a new database?', mtInformation, mbYesNo, mbNo, 0)= mrOk then
-      DeleteFile(Database.Database);
-
-  if not FileExists(Database.Database) then
-  begin
-    Database.CreateDatabase(Database.Database, dbtSqlitePass);
-    Database.Open;
-    WaitForm.IncProgress('Creating tables');
-
-    Database.TableDefs.CreateTable
-    (
-      'CREATE TABLE "MOD"' +
-      '(' +
-      '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
-      '"name" BLOB,' +
-      '"path" BLOB' +
-      ');'
-    );
-
-    Database.TableDefs.CreateTable
-    (
-      'CREATE TABLE "DEPENDENCY"' +
-      '(' +
-      '"mod" INTEGER,' +
-      '"depends" INTEGER,' +
-      '"order" INTEGER' +
-      ');'
-    );
-
-    Database.TableDefs.CreateTable
-    (
-      'CREATE TABLE "ARCHIVE"' +
-      '(' +
-      '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
-      '"name" BLOB,' +
-      '"path" BLOB,' +
-      '"age" DATETIME,' +
-      '"hash" BLOB,' +
-      '"mod" INTEGER' +
-      ');'
-    );
-
-    Database.TableDefs.CreateTable
-    (
-      'CREATE TABLE "FILE"' +
-      '(' +
-      '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
-      '"filename" BLOB,' +
-      '"path" BLOB,' +
-      '"offset" INTEGER,' +
-      '"size" INTEGER,' +
-      '"compressed" BOOLEAN,' +
-      '"csize" INTEGER,' +
-      '"archive" INTEGER' +
-      ');'
-    );
-
-    Database.Close;
-  end;
-
-  // Open database if settings are correct
-  if FileExists(Database.Database) then
-  begin
-
-    Database.Connected := true;
-    if Database.Connected then
+    if Node <> nil then
     begin
-      Dataset.Close;
-      Dataset.SQL.Text := 'SELECT * FROM "MOD";';
-      Dataset.Open;
-      WaitForm.IncProgress('Updating MODs');
+      Data := FilesystemList.GetNodeData(Node);
+      Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
+      Database.Database := Current_battlefield_path + Data.Name;
+    end;
 
-      // Find selected file system
-      if Database.Database <> EmptyStr then
+    Options := [loCaseInsensitive, loPartialKey];
+
+    if FileExists(Database.Database) and (DebugHook <> 0) then
+      if ShowDialog('Database exists', 'Delete older data and create a new database?', mtInformation, mbYesNo, mbNo, 0)= mrOk then
+        DeleteFile(Database.Database);
+
+    if not FileExists(Database.Database) then
+    begin
+      Database.CreateDatabase(Database.Database, dbtSqlitePass);
+      Database.Open;
+      WaitForm.IncProgress('Creating tables');
+
+      Database.TableDefs.CreateTable
+      (
+        'CREATE TABLE "MOD"' +
+        '(' +
+        '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
+        '"name" BLOB,' +
+        '"path" BLOB' +
+        ');'
+      );
+
+      Database.TableDefs.CreateTable
+      (
+        'CREATE TABLE "DEPENDENCY"' +
+        '(' +
+        '"mod" INTEGER,' +
+        '"depends" INTEGER,' +
+        '"order" INTEGER' +
+        ');'
+      );
+
+      Database.TableDefs.CreateTable
+      (
+        'CREATE TABLE "ARCHIVE"' +
+        '(' +
+        '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
+        '"name" BLOB,' +
+        '"path" BLOB,' +
+        '"age" DATETIME,' +
+        '"hash" BLOB,' +
+        '"mod" INTEGER' +
+        ');'
+      );
+
+      Database.TableDefs.CreateTable
+      (
+        'CREATE TABLE "FILE"' +
+        '(' +
+        '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
+        '"filename" BLOB,' +
+        '"path" BLOB,' +
+        '"offset" INTEGER,' +
+        '"size" INTEGER,' +
+        '"compressed" BOOLEAN,' +
+        '"csize" INTEGER,' +
+        '"archive" INTEGER' +
+        ');'
+      );
+
+      Database.Close;
+    end;
+
+    // Open database if settings are correct
+    if FileExists(Database.Database) then
+    begin
+
+      Database.Connected := true;
+      if Database.Connected then
       begin
-        FSEditForm.ReadModsInfos(Current_battlefield_path + MOD_DIRECTORY_NAME);
-      end;
-
-      for i:= 0 to FSEditForm.Modentries.Count - 1 do
-      begin
-        ModEntry := FSEditForm.Modentries[i];
-
-        if not Dataset.Locate('name', ModEntry.GameName, Options) then
-        begin
-          Query := Format('INSERT INTO "MOD" VALUES(NULL, "%s", "%s");', [ModEntry.GameName, FsAbsToRel(ModEntry.AbsolutePath)]);
-          Database.Engine.ExecSQL(Query);
-        end;
-      end;
-
-      for i:= 0 to FSEditForm.Modentries.Count - 1 do
-      begin
-        ModEntry := FSEditForm.Modentries[i];
         Dataset.Close;
-        Dataset.SQL.Text := Format('SELECT * FROM "MOD" WHERE path ="%s";',[FsAbsToRel(ModEntry.AbsolutePath)]);
+        Dataset.SQL.Text := 'SELECT * FROM "MOD";';
         Dataset.Open;
+        WaitForm.IncProgress('Updating MODs');
 
-        if Dataset.Locate('name', ModEntry.GameName, Options) then
+        // Find selected file system
+        if Database.Database <> EmptyStr then
         begin
-          Order := 0;
-          ModID := Dataset.FieldByName('id').AsInteger;
+          FSEditForm.ReadModsInfos(Current_battlefield_path + MOD_DIRECTORY_NAME);
+        end;
 
-          // Remove existing dependencies
-          Query := Format('DELETE FROM "DEPENDENCY" WHERE mod=%d;',[ModID]);
-          Database.Engine.ExecSQL(Query);
+        for i:= 0 to FSEditForm.Modentries.Count - 1 do
+        begin
+          ModEntry := FSEditForm.Modentries[i];
 
-          for j := 0 to ModEntry.PathList.Count - 1 do
+          if not Dataset.Locate('name', ModEntry.GameName, Options) then
           begin
+            Query := Format('INSERT INTO "MOD" VALUES(NULL, "%s", "%s");', [ModEntry.GameName, FsAbsToRel(ModEntry.AbsolutePath)]);
+            Database.Engine.ExecSQL(Query);
+          end;
+        end;
+
+        for i:= 0 to FSEditForm.Modentries.Count - 1 do
+        begin
+          ModEntry := FSEditForm.Modentries[i];
+          Dataset.Close;
+          Dataset.SQL.Text := Format('SELECT * FROM "MOD" WHERE path ="%s";',[FsAbsToRel(ModEntry.AbsolutePath)]);
+          Dataset.Open;
+
+          if Dataset.Locate('name', ModEntry.GameName, Options) then
+          begin
+            Order := 0;
+            ModID := Dataset.FieldByName('id').AsInteger;
+
+            // Remove existing dependencies
+            Query := Format('DELETE FROM "DEPENDENCY" WHERE mod=%d;',[ModID]);
+            Database.Engine.ExecSQL(Query);
+
+            for j := 0 to ModEntry.PathList.Count - 1 do
+            begin
+              SubDataset.Close;
+              SubDataset.ParamCheck := true;
+              SubDataset.SQL.Text := Format('SELECT * FROM "MOD" WHERE path LIKE "%%%s%%"',[ModEntry.PathList[j]]);
+              SubDataset.Open;
+
+              while not SubDataset.Eof do
+              begin
+               Inc(Order);
+               DepID := SubDataset.FieldByName('id').AsInteger;
+               Query := Format('INSERT INTO "DEPENDENCY" VALUES(%d, %d, %d);', [ModID, DepID, Order]);
+               Database.Engine.ExecSQL(Query);
+
+               SubDataset.Next;
+              end;
+            end;
+          end
+            else
+          begin
+            SendDebugError('MOD Not found');
+          end;
+
+        end;
+
+        Dataset.Close;
+        Dataset.SQL.Text := 'SELECT * FROM "MOD";';
+        Dataset.Open;
+        while not Dataset.Eof do
+        begin
+          //SendDebugFmt('%d:%s',[Dataset.RecNo, Dataset.FieldByName('Name').AsString]);
+
+          ModID := Dataset.FieldByName('id').AsInteger;
+          ModPath := FsRelToAbs(Dataset.FieldByName('Path').AsString) + IncludeTrailingBackslash(ARCHIVE_DIRECTORY_NAME);
+
+          if DirectoryExists(ModPath) then
+          begin
+            WaitForm.IncProgress('Updating ARCHIVES');
             SubDataset.Close;
             SubDataset.ParamCheck := true;
-            SubDataset.SQL.Text := Format('SELECT * FROM "MOD" WHERE path LIKE "%%%s%%"',[ModEntry.PathList[j]]);
+            SubDataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE mod=:IdAsInteger;';
+            SubDataset.Params.ParamByName('IdAsInteger').Value := IntToStr(ModID);
             SubDataset.Open;
 
-            while not SubDataset.Eof do
-            begin
-             Inc(Order);
-             DepID := SubDataset.FieldByName('id').AsInteger;
-             Query := Format('INSERT INTO "DEPENDENCY" VALUES(%d, %d, %d);', [ModID, DepID, Order]);
-             Database.Engine.ExecSQL(Query);
-
-             SubDataset.Next;
-            end;
+            FSQL.Clear;
+            FSQL.Add('BEGIN;');
+            PrepareInsertAchivesFromPath(ModPath);
+            FSQL.Add('COMMIT;');
+            Database.Engine.ExecSQL(FSQL.Text);
           end;
-        end
-          else
-        begin
-          SendDebugError('MOD Not found');
+
+          Dataset.Next;
         end;
 
+        /// RebuildModDependency
       end;
-
-      Dataset.Close;
-      Dataset.SQL.Text := 'SELECT * FROM "MOD";';
-      Dataset.Open;
-      while not Dataset.Eof do
-      begin
-        //SendDebugFmt('%d:%s',[Dataset.RecNo, Dataset.FieldByName('Name').AsString]);
-
-        ModID := Dataset.FieldByName('id').AsInteger;
-        ModPath := FsRelToAbs(Dataset.FieldByName('Path').AsString) + IncludeTrailingBackslash(ARCHIVE_DIRECTORY_NAME);
-
-        if DirectoryExists(ModPath) then
-        begin
-          WaitForm.IncProgress('Updating ARCHIVES');
-          SubDataset.Close;
-          SubDataset.ParamCheck := true;
-          SubDataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE mod=:IdAsInteger;';
-          SubDataset.Params.ParamByName('IdAsInteger').Value := IntToStr(ModID);
-          SubDataset.Open;
-
-          FSQL.Clear;
-          FSQL.Add('BEGIN;');
-          PrepareInsertAchivesFromPath(ModPath);
-          FSQL.Add('COMMIT;');
-          Database.Engine.ExecSQL(FSQL.Text);
-        end;
-
-        Dataset.Next;
-      end;
-
-      /// RebuildModDependency
     end;
+
+    Active.Enabled := true;
+    Active.Execute;
+    WaitForm.IncProgress('Syncing started');
+    Sleep(500);
+    WaitForm.EndWait;
+  end
+    else
+  begin
+    ShowError('Database engine not found', 'You need the sqlite3.dll library in the same folder than BGA.exe in order to use this feature.');
   end;
 
-  Active.Enabled := true;
-  Active.Execute;
-  WaitForm.IncProgress('Syncing started');
-  Sleep(500);
-  WaitForm.EndWait;
 end;
 
 
@@ -597,6 +593,26 @@ begin
 end;
 
 
+function TFSSettingsForm.SyncInit : boolean;
+var
+  SQLiteDll :string;
+begin
+  Result := false;
+
+  // Reset components to empty vars
+  Database.Connected := false;
+  Database.Database := EmptyStr;
+  Current_battlefield_path := EmptyStr;
+  SQLiteDll := GetAppDirectory + 'sqlite3.dll';
+
+  if FileExists(SQLiteDll) then
+  begin
+    Result := true;
+    if Database.SQLiteLibrary = EmptyStr then
+      Database.SQLiteLibrary := SQLiteDll;
+  end;
+end;
+
 procedure TFSSettingsForm.SyncStart;
 var
   Node: PVirtualNode;
@@ -605,56 +621,63 @@ var
 begin
   Assert(FSyncThread.State = ssWaiting, 'Syncing must be started when not already running');
 
-  SyncStatus.Caption := 'Init';
-  SyncStatus.ImageIndex := IMG_SYNC_INIT;
-
-  Init.Execute;
-
-  // Find active file system
-  Node := FilesystemList.GetFirst;
-  while (Node <> nil) do
+  if SyncInit then
   begin
-    if (Node.Index = ActiveIndex) then
+    SyncStatus.Caption := 'Init';
+    SyncStatus.ImageIndex := IMG_SYNC_INIT;
+
+    // Find active file system
+    Node := FilesystemList.GetFirst;
+    while (Node <> nil) do
     begin
-      Data := FilesystemList.GetNodeData(Node);
-      Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
-      Database.Database := Current_battlefield_path + Data.Name;
+      if (Node.Index = ActiveIndex) then
+      begin
+        Data := FilesystemList.GetNodeData(Node);
+        Current_battlefield_path := IncludeTrailingBackslash(Data.Path);
+        Database.Database := Current_battlefield_path + Data.Name;
+      end;
+      Node := FilesystemList.GetNext(Node);
     end;
-    Node := FilesystemList.GetNext(Node);
-  end;
 
-  if Database.Database <> EmptyStr then
-  begin
-    if FileExists(Database.Database) then
-      Database.Open
+    if Database.Database <> EmptyStr then
+    begin
+      if FileExists(Database.Database) then
+        Database.Open
+      else
+      begin
+        WarnMsg := 'Please run "Update" first to init the filesystem database named ';
+        WarnMsg := WarnMsg + ExtractFileName(Database.Database);
+        ShowMessage('Syncing disabled', WarnMsg);
+      end;
+    end;
+
+    SyncStatusGroup.Visible := True;
+    SyncAnimScan.Animate := True;
+    SyncAnimStore.Animate := True;
+    SyncAnimScan.Visible := True;
+    SyncAnimStore.Visible := false;
+
+    /// Initialize transition values with current values
+    with FSyncThread do
+    begin
+      FTextAction := SyncStatusAction.Caption;
+      FTextFilename := SyncStatusArchiveName.Caption;
+
+      FAnimScan := SyncAnimScan.Visible;
+      FAnimStore := SyncAnimStore.Visible;
+
+      FImageStatus := SyncStatus.ImageIndex;
+      FTextStatus := SyncStatus.Caption;
+    end;
+
+    FSyncThread.State := ssWorking;
+  end
     else
-    begin
-      WarnMsg := 'Please run "Update" first to init the filesystem database named ';
-      WarnMsg := WarnMsg + ExtractFileName(Database.Database);
-      ShowMessage('Syncing disabled', WarnMsg);
-    end;
-  end;
-
-  SyncStatusGroup.Visible := True;
-  SyncAnimScan.Animate := True;
-  SyncAnimStore.Animate := True;
-  SyncAnimScan.Visible := True;
-  SyncAnimStore.Visible := false;
-
-  /// Initialize transition values with current values
-  with FSyncThread do
   begin
-    FTextAction := SyncStatusAction.Caption;
-    FTextFilename := SyncStatusArchiveName.Caption;
-
-    FAnimScan := SyncAnimScan.Visible;
-    FAnimStore := SyncAnimStore.Visible;
-
-    FImageStatus := SyncStatus.ImageIndex;
-    FTextStatus := SyncStatus.Caption;
+    SyncStatus.Caption := 'Engine not found';
+    SyncStatus.ImageIndex := IMG_SYNC_STOP;
   end;
 
-  FSyncThread.State := ssWorking;
 end;
 
 procedure TFSSettingsForm.SyncStop;
