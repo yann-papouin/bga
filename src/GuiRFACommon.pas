@@ -171,7 +171,8 @@ type
     procedure PropagateStatus(Node: PVirtualNode; Status: TEntryModification);
     procedure ExportFile(const Node: PVirtualNode; OutputStream: TStream);
     function BuildEntryNameFromTree(Node : PVirtualNode; SelectionOnly : boolean = false) : string;
-    function BuildTreeFromFullPath(Path: AnsiString) : PVirtualNode;
+    //function BuildTreeFromFullPath(Path: AnsiString) : PVirtualNode;
+    function GetBuildPath(Path : string) : PVirtualNode;
     procedure Sort;
     function IsFile(FileType: TFileType): boolean;
     procedure ExpandSelection(Value: boolean);
@@ -232,6 +233,7 @@ uses
   Resources,
   Masks,
   Math,
+  JclStrings,
   StringFunction,
   CommonLib,
   AppLib,
@@ -327,7 +329,112 @@ begin
   end;
 end;
 
+{.$DEFINE DEBUG_BP}
+{.$DEFINE DEBUG_BP_DETAILS}
 
+function TRFACommonForm.GetBuildPath(Path: string): PVirtualNode;
+var
+  Count: integer;
+  i: integer;
+  Node, Parent, Previous : PVirtualNode;
+  Data,DataDbg : pFse;
+  SegPath, Current : string;
+  Create : boolean;
+begin
+  Result := RFAList.RootNode;
+  Count := StrCharCount(Path, DirDelimiter);
+  Node := nil;
+  Create := false;
+  SegPath := Path;
+
+  {$IfDef DEBUG_BP}
+  SendSeparator;
+  SendDebug(Path);
+  {$EndIf}
+
+  for i := 0 to Count - 2 do
+  begin
+    Current := StrBetween(SegPath, DirDelimiter, DirDelimiter);
+    {$IfDef DEBUG_BP}
+    SendDebug(Current);
+    {$EndIf}
+
+    // If we not tag current (and children) as not existing then search it
+    if not Create then
+    begin
+      Parent := Node;
+
+      if Node = nil then
+        Node := RFAList.GetFirstLevel(0)
+      else
+        Node := RFAList.GetFirstChild(Previous);
+
+      while Node <> nil do
+      begin
+        Data := RFAList.GetNodeData(Node);
+        {$IfDef DEBUG_BP_DETAILS}
+        SendDebugFmt('Acual node = %s',[Data.W32Name]);
+        {$EndIf}
+
+        // We found a match
+        if AnsiCompareText(Current, Data.W32Name) = 0 then
+        begin
+          Previous := Node;
+          Result := Previous;
+          {$IfDef DEBUG_BP_DETAILS}
+          SendDebugFmt('Match found for %s',[Current]);
+          {$EndIf}
+          Break;
+        end;
+
+        // Select the next node in the same level
+        Node := RFAList.GetNextSibling(Node);
+
+        {$IfDef DEBUG_BP_DETAILS}
+        if (Node <> nil) and (Node.Parent <> nil) and (Node.Parent <> RFAList.RootNode) then
+        begin
+          Data :=  RFAList.GetNodeData(Node.Parent);
+          SendDebugFmt('Parent of current is %s',[Data.W32Name]);
+        end;
+        {$EndIf}
+
+        // if we jump a parent node then cancel
+        if (Node <> nil) and (Node.Parent <> Parent) and (Node.Parent <> RFAList.RootNode) then
+        begin
+          Node := nil;
+          SendDebugFmt('Cancel "%s" after a jump',[Current]);
+        end;
+
+      end;
+    end;
+
+    // We didn't find any folder with the same name
+    if Node = nil then
+    begin
+      Create := true;
+
+      {$IfDef DEBUG_BP}
+      SendDebugFmt('No match, create "%s" now',[Current]);
+      {$EndIf}
+
+      Node := RFAList.AddChild(Parent);
+      Data := RFAList.GetNodeData(Node);
+
+      Data.W32Path := SFNLeft(DirDelimiter, Path, i+2);
+      Data.W32Name := Current;
+      Data.FileType := ftFolder;
+
+      Parent := Node;
+      Result := Parent;
+      Node := nil;
+    end;
+
+    SegPath := StrAfter(Current, SegPath);
+  end;
+
+end;
+
+(*
 function TRFACommonForm.BuildTreeFromFullPath(Path: AnsiString) : PVirtualNode;
 var
   PvNode, Node: PVirtualNode;
@@ -373,6 +480,7 @@ begin
   end;
   Result := Node;
 end;
+*)
 
 
 function TRFACommonForm.BuildEntryNameFromTree(Node : PVirtualNode; SelectionOnly : boolean = false) : string;
@@ -716,6 +824,9 @@ begin
       Result := true;
 
       {$IfDef OPENGL_SUPPORT}
+        if not Assigned(SMViewForm) then
+          Application.CreateForm(TSMViewForm, SMViewForm);
+
         SMViewForm.GetFileByPath := GetFileByPath;
         SMViewForm.FreeMesh.MeshObjects.Clear;
         SMViewForm.LoadMaterials(ExtractTemporary(FindRs));
@@ -730,6 +841,9 @@ begin
     begin
       Result := true;
       {$IfDef OPENGL_SUPPORT}
+        if not Assigned(PICViewForm) then
+          Application.CreateForm(TPICViewForm, PICViewForm);
+
         PICViewForm.LoadTexture(ExtractTemporary(Node));
         PICViewForm.Preview;
       {$Else}

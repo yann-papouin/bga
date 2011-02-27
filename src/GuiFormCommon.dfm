@@ -11,6 +11,7 @@ object FormCommon: TFormCommon
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  ShowHint = True
   OnCreate = FormCreate
   OnMouseEnter = FormMouseEnter
   OnMouseLeave = FormMouseLeave

@@ -11,6 +11,7 @@ object ExFilesystemViewerMainForm: TExFilesystemViewerMainForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  ShowHint = True
   OnActivate = FormActivate
   PixelsPerInch = 96
   TextHeight = 13

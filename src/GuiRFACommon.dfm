@@ -73,7 +73,7 @@ inherited RFACommonForm: TRFACommonForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 91
+          Width = 95
           WideText = 'Offset'
         end>
     end

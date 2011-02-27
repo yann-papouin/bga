@@ -29,6 +29,7 @@ uses
 type
   TResourcesForm = class(TForm)
     Images16x16: TPngImageList;
+    procedure FormCreate(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -41,5 +42,10 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TResourcesForm.FormCreate(Sender: TObject);
+begin
+  //WriteComponentResFile('ImageList.dat', Images16x16) ;
+end;
 
 end.

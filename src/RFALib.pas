@@ -347,15 +347,18 @@ begin
   end;
 end;
 
-
+{.$DEFINE USE_ENTRIES_BUFFER}
 
 function TRFAFile.Open(Filename: string; OpenReadOnly : Boolean = false): TRFAOpenResult;
 var
   ENT: RFA_Entry;
   Path: AnsiString;
   i: integer;
-  Position : integer;
   IsRetail: boolean;
+  Bench : integer;
+  {$IfDef USE_ENTRIES_BUFFER}
+  EntryBuffer : TMemoryStream;
+  {$EndIf}
 begin
   Release;
   Result := orFailed;
@@ -398,19 +401,32 @@ begin
       raise Exception.Create('File Count seems too high');
 
     if Assigned(FOnProgress) then
-      FOnProgress(Self, roBegin, FHandle.Size);
+      FOnProgress(Self, roBegin, FCount);
+
+    // Save current time in ms for a future diff
+    Bench := GetTickCount;
+
+    // Use a memory buffer to accelerate entries analysis
+    {$IfDef USE_ENTRIES_BUFFER}
+    EntryBuffer := TMemoryStream.Create;
+    EntryBuffer.CopyFrom(FHandle, FHandle.Size - FHandle.Position);
+    EntryBuffer.Position := 0;
+    {$EndIf}
 
     for i:= 1 to FCount do
     begin
-      Position := FHandle.Position;
-
-      Path := StringFrom(FHandle);      // Read entire Path\Filename
-      FHandle.Read(ENT, ENTRY_SIZE);    // Read rfa entry data (24 bytes);
+      {$IfDef USE_ENTRIES_BUFFER}
+      Path := StringFrom(EntryBuffer);      // Read entire Path\Filename
+      EntryBuffer.Read(ENT, ENTRY_SIZE);    // Read rfa entry data (24 bytes);
+      {$Else}
+      Path := StringFrom(FHandle);          // Read entire Path\Filename
+      FHandle.Read(ENT, ENTRY_SIZE);        // Read rfa entry data (24 bytes);
+      {$EndIf}
 
       FIndexedDataSize := FIndexedDataSize + ENT.csize;
 
       if Assigned(FOnProgress) then
-        FOnProgress(Self, roLoad, FHandle.Position);
+        FOnProgress(Self, roLoad, i);
 
       if Assigned(FOnReadEntry) then
       begin
@@ -420,17 +436,23 @@ begin
           if (ENT.ucsize = ENT.csize) then
             FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, NORMAL_DATA, ENT.ucsize)
           else
-          begin
             FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, COMPRESSED_DATA, ENT.csize);
-            //FCompressed := true;
-          end;
         end
           else
         begin
           FOnReadEntry(Self, Path, ENT.offset, ENT.ucsize, false, 0);
         end;
       end;
+
     end;
+
+    {$IfDef USE_ENTRIES_BUFFER}
+    EntryBuffer.Free;
+    {$EndIf}
+
+    // Show bench results of entries reading
+    Bench := GetTickCount - Bench;
+    SendDebugFmt('Entries read in %dms',[Bench]);
 
     if Assigned(FOnProgress) then
       FOnProgress(Self, roEnd, 0);
