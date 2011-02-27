@@ -18,6 +18,7 @@ inherited FSViewForm: TFSViewForm
       Width = 852
       Height = 329
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme]
+      OnDblClick = RFAListDblClick
       OnGetHint = RFAListGetHint
       ExplicitWidth = 890
       ExplicitHeight = 329

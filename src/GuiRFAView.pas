@@ -537,6 +537,8 @@ end;
 
 
 procedure TRFAViewForm.ApplicationRunExecute(Sender: TObject);
+var
+  Node : PVirtualNode;
 begin
   inherited;
   ApplicationRun.Enabled := false;
@@ -554,8 +556,25 @@ begin
 
   if ParamCount > 0 then
   begin
+    SendDebug(ParamStr(1));
     OpenDialog.FileName := ParamStr(1);
     QuickOpen;
+
+    if ParamCount > 1 then
+    begin
+      SendDebug(ParamStr(2));
+      Node := FindFileByPath(ParamStr(2));
+      if Node <> nil then
+      begin
+        RFAList.Selected[Node] := true;
+        RFAList.FullyVisible[Node] := true;
+        RFAList.ScrollIntoView(Node, true);
+      end
+        else
+      begin
+        SendDebugError('File not found');
+      end;
+    end;
   end
     else
   if RecentMenu.Enabled then

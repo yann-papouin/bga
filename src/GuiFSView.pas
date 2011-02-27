@@ -34,7 +34,7 @@ uses
   Dialogs,
   Generics.Collections,
   GuiRFACommon,
-
+  JclStrings,
   GuiFSSettings,
   ActnList,
   SpTBXControls,
@@ -90,6 +90,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure RFAListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
+    procedure RFAListDblClick(Sender: TObject);
   private
     { Déclarations privées }
     FModList : TModList;
@@ -112,11 +113,11 @@ implementation
 {$R *.dfm}
 
 uses
+  CommonLib,
   DbugIntf,
   Resources,
   IOUtils,
   JclFileUtils,
-  JclStrings,
   StringFunction,
   Types;
 
@@ -144,6 +145,36 @@ begin
   // FormStorage.SaveFormPlacement;
   ModalResult := mrOk;
   Close;
+end;
+
+procedure TFSViewForm.RFAListDblClick(Sender: TObject);
+var
+  Node : PVirtualNode;
+  Data : pFse;
+  ProcInfo : TProcessInformation;
+  Param : string;
+begin
+  inherited;
+
+  Node := RFAList.GetFirstSelected;
+  if Node <> nil then
+  begin
+    Data := RFAList.GetNodeData(Node);
+    if IsFile(Data.FileType) then
+    begin
+      Param := FsRelToAbs(Data.RFAFileName);
+      if FileExists(Param) then
+      begin
+        Param := DblQuotedStr(Param) + ' ' + DblQuotedStr(Data.W32Path);
+        if Exec(Application.ExeName, Param, 0, ProcInfo) then
+        begin
+          //FProcessHandle := ProcInfo.hProcess;
+          //WaitForSingleObject(ProcInfo.hProcess, INFINITE);
+        end;
+      end;
+    end;
+  end;
+
 end;
 
 procedure TFSViewForm.RFAListGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: string);
@@ -248,7 +279,7 @@ var
   Data: pFse;
   W32Path: AnsiString;
 begin
-  FSData.Path := StringReplace(FSData.Path, ARCHIVE_PATH, '/', [rfReplaceAll]);
+  FSData.Path := StringReplace(FSData.Path, ARCHIVE_PATH, '', [rfReplaceAll]);
   W32Path := StringReplace(FSData.Path, '/', '\', [rfReplaceAll]) + FSData.Filename;
 
   Node := GetBuildPath(W32Path);
