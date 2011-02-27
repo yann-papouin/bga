@@ -23,6 +23,8 @@ program BGA;
 uses
   ExceptionLog,
   Forms,
+  Windows,
+  DbugIntf,
   GuiRFASettings in 'GuiRFASettings.pas' { RFASettingsForm },
   AppLib in 'Lib\AppLib.pas',
   CommonLib in 'Lib\CommonLib.pas',
@@ -74,6 +76,8 @@ uses
 {$IfDef GLS_LOGGING}
 
 {$EndIf}
+var
+  Bench : integer;
 
 begin
   // ReportMemoryLeaksOnShutdown := DebugHook <> 0;
@@ -84,62 +88,27 @@ begin
   end
   else
   begin
+    // Save current time in ms for a future diff
+    Bench := GetTickCount;
+
     Application.Initialize;
     Application.MainFormOnTaskbar := True;
     Application.Title := 'BGA : Battlefield 1942 Game Archive Tool';
 
-    WaitForm := TWaitForm.Create(Application);
-    WaitForm.BeginWait;
-
     Application.CreateForm(TRFAViewForm, RFAViewForm);
-    WaitForm.IncProgress();
-
     Application.CreateForm(TRFASettingsForm, RFASettingsForm);
-    WaitForm.IncProgress();
-
-    Application.CreateForm(TAboutForm, AboutForm);
-    WaitForm.IncProgress();
-
     Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
-    WaitForm.IncProgress();
-
     Application.CreateForm(TSkinDialogForm, SkinDialogForm);
-    WaitForm.IncProgress();
-
-    Application.CreateForm(TBrowsePackForm, BrowsePackForm);
-    WaitForm.IncProgress();
-
-    Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
-    WaitForm.IncProgress();
-
-    Application.CreateForm(TResourcesForm, ResourcesForm);
-    WaitForm.IncProgress();
-
     Application.CreateForm(TFSSettingsForm, FSSettingsForm);
-    WaitForm.IncProgress();
-
     Application.CreateForm(TFSEditForm, FSEditForm);
-    WaitForm.IncProgress();
-
     Application.CreateForm(TFSViewForm, FSViewForm);
-    WaitForm.IncProgress();
+    Application.CreateForm(TWaitForm, WaitForm);
 
-  {$IfDef OPENGL_SUPPORT}
-    Application.CreateForm(TMapViewForm, MapViewForm);
-    WaitForm.IncProgress();
-
-    Application.CreateForm(TSMViewForm, SMViewForm);
-    WaitForm.IncProgress();
-
-    Application.CreateForm(TPICViewForm, PICViewForm);
-    WaitForm.IncProgress();
-  {$EndIf}
-
-    WaitForm.EndWait;
+    // Show bench results of entries reading
+    Bench := GetTickCount - Bench;
+    SendDebugFmt('Application loaded in %dms',[Bench]);
 
     Application.Run;
-
-    WaitForm.Free;
   end;
 
 end.

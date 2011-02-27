@@ -12,13 +12,14 @@ inherited FSViewForm: TFSViewForm
     Width = 745
     Height = 400
     ExplicitTop = 42
-    ExplicitWidth = 622
+    ExplicitWidth = 745
     ExplicitHeight = 400
     inherited RFAList: TVirtualStringTree
       Width = 745
       Height = 329
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme]
-      ExplicitWidth = 622
+      OnGetHint = RFAListGetHint
+      ExplicitWidth = 745
       ExplicitHeight = 329
       Columns = <
         item
@@ -56,14 +57,14 @@ inherited FSViewForm: TFSViewForm
       Top = 329
       Width = 745
       ExplicitTop = 329
-      ExplicitWidth = 622
+      ExplicitWidth = 745
       inherited SearchEdit: TSpTBXEdit
         Width = 310
-        ExplicitWidth = 187
+        ExplicitWidth = 310
       end
       inherited SearchProgressBar: TSpTBXProgressBar
         Left = 396
-        ExplicitLeft = 273
+        ExplicitLeft = 396
       end
     end
     object Footer: TSpTBXPanel
@@ -83,7 +84,6 @@ inherited FSViewForm: TFSViewForm
       TabOrder = 2
       Borders = False
       TBXStyleBackground = True
-      ExplicitWidth = 622
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 505
@@ -95,7 +95,6 @@ inherited FSViewForm: TFSViewForm
         TabOrder = 0
         Images = ResourcesForm.Images16x16
         ImageIndex = 1118
-        ExplicitLeft = 382
       end
       object ButtonCancel: TSpTBXButton
         AlignWithMargins = True
@@ -108,7 +107,6 @@ inherited FSViewForm: TFSViewForm
         TabOrder = 1
         Images = ResourcesForm.Images16x16
         ImageIndex = 143
-        ExplicitLeft = 502
       end
       object SpTBXButton3: TSpTBXButton
         AlignWithMargins = True
@@ -133,7 +131,6 @@ inherited FSViewForm: TFSViewForm
     TabOrder = 1
     Borders = False
     TBXStyleBackground = True
-    ExplicitTop = 9
     DesignSize = (
       745
       42)

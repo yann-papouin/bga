@@ -66,12 +66,16 @@ type
     procedure SettingsExecute(Sender: TObject);
     procedure LoadExecute(Sender: TObject);
     procedure ModListChange(Sender: TObject);
+    procedure RFAListGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle;
+      var HintText: string);
   private
     { Déclarations privées }
     procedure FileSystemChange(Sender: TObject);
     procedure ListMods(Sender: TObject; Name, Path: string; ID: integer);
     procedure ListArchives(Sender: TObject; Name, Path: string; ID: integer);
     procedure ListFiles(Sender: TObject; Name, Path: string; ID: integer);
+
   public
     { Déclarations publiques }
   end;
@@ -84,9 +88,13 @@ implementation
 {$R *.dfm}
 
 uses
+  DbugIntf,
   GuiFSSettings,
   Resources,
   IOUtils,
+  JclFileUtils,
+  JclStrings,
+  StringFunction,
   Types;
 
 
@@ -101,11 +109,23 @@ begin
   FSSettingsForm.ApplicationRun.Execute;
 end;
 
+
 procedure TFSViewForm.OkExecute(Sender: TObject);
 begin
   // FormStorage.SaveFormPlacement;
   ModalResult := mrOk;
   Close;
+end;
+
+procedure TFSViewForm.RFAListGetHint(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex;
+  var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: string);
+var
+  Data : pFse;
+  FloatValue : extended;
+begin
+  Data := Sender.GetNodeData(Node);
+  HintText := Data.W32Path;
 end;
 
 procedure TFSViewForm.CancelExecute(Sender: TObject);
@@ -133,6 +153,7 @@ begin
   RFAList.Clear;
   RFAList.BeginUpdate;
   FSSettingsForm.ListFiles(ModList.Tag);
+  Sort;
   RFAList.EndUpdate;
 end;
 
@@ -154,26 +175,19 @@ begin
 
 end;
 
+
 procedure TFSViewForm.ListFiles(Sender: TObject; Name, Path: string; ID: integer);
 var
   Node: PVirtualNode;
   Data : pFse;
   W32Path : AnsiString;
 begin
-  //Files.Lines.Add(Name);
+  Path := StringReplace(Path, ARCHIVE_PATH, '/', [rfReplaceAll]);
+  W32Path := StringReplace(Path,'/','\',[rfReplaceAll]) + Name;
 
-  W32Path := StringReplace(Name,'/','\',[rfReplaceAll]);
-(*
-  BuildTreeFromFullPath(W32Path);
-
-  Node := FindPath(W32Path);
-  if Node = nil then
-    Node := RFAList.RootNode;
-*)
-  Node := RFAList.RootNode;
+  Node := GetBuildPath(W32Path);
 
   Node := RFAList.AddChild(Node);
-
   Data := RFAList.GetNodeData(Node);
   Data.RFAFileHandle := nil;
   Data.RFAFileName := '';

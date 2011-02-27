@@ -449,7 +449,6 @@ inherited RFAViewForm: TRFAViewForm
       Caption = 'Filesystem ...'
       ImageIndex = 522
       ShortCut = 122
-      Visible = False
       OnExecute = FilesystemExecute
     end
     object Revert: TAction

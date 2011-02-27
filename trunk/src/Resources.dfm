@@ -11,6 +11,7 @@ object ResourcesForm: TResourcesForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Images16x16: TPngImageList

@@ -31,7 +31,7 @@ uses
   TB2Toolbar, ExtCtrls, JvFormPlacement, JvAppStorage, JvAppRegistryStorage, Menus,
   JvComponentBase, JvAppInst, DragDrop, DropSource, DragDropFile, StdCtrls,
   SpTBXEditors, SpTBXControls, GuiUpdateManager, ActiveX, RFALib, JclFileUtils, ImgList,
-  PngImageList, DropTarget, DropHandler;
+  PngImageList, DropTarget, DropHandler, JvThread;
 
 type
 
@@ -248,7 +248,7 @@ type
     procedure RemoveEmptyFolders;
     function Reset(Ask : boolean = false) : TModalResult;
     function SaveMap(Path: string; Defrag: boolean = false): boolean;
-    procedure ExtractTo(Directory: string; List: TStringList = nil);
+    procedure ExtractTo(Directory: string; RecreatePath : boolean; List: TStringList = nil);
     procedure ShiftData(ShiftData: TRFAResult; ShiftWay: TShiftWay; IgnoreNode: PVirtualNode = nil);
     procedure SyncAll;
     procedure SyncStart;
@@ -290,15 +290,10 @@ var
   W32Path : AnsiString;
 
 begin
-  TotalProgress(roLoad, PG_AUTO, Sender.Count);
-
+ // TotalProgress(roLoad, PG_AUTO, Sender.Count);
   W32Path := StringReplace(Name,'/','\',[rfReplaceAll]);
-  BuildTreeFromFullPath(W32Path);
 
-  Node := FindPath(W32Path);
-  if Node = nil then
-    Node := RFAList.RootNode;
-
+  Node := GetBuildPath(W32Path);
   Node := RFAList.AddChild(Node);
 
   Data := RFAList.GetNodeData(Node);
@@ -316,7 +311,6 @@ begin
   Data.W32Ext := ExtractFileExt(LowerCase(W32Path));
   Data.FileType := ExtensionToType(Data.W32Ext);
   Data.ExternalFilePath := EmptyStr;
-
 end;
 
 
@@ -578,9 +572,9 @@ begin
   else
     OpenDialog.InitialDir := ExtractFilePath(Application.ExeName);
 
-
+  if not Assigned(ResourcesForm) then
+    Application.CreateForm(TResourcesForm, ResourcesForm);
 end;
-
 
 function TRFAViewForm.Reset(Ask : boolean = false) : TModalResult;
 begin
@@ -626,6 +620,8 @@ end;
 
 
 
+
+
 function TRFAViewForm.LoadMap(Path : string) :boolean;
 var
   Node: PVirtualNode;
@@ -648,7 +644,7 @@ begin
 
   FArchive := TRFAFile.Create;
   FArchive.OnReadEntry := ReadEntry;
-  FArchive.OnProgress := SubProgress;
+  //FArchive.OnProgress := SubProgress;
 
   TotalProgress(roBegin, 0, 0);
 
@@ -1257,14 +1253,17 @@ end;
 
 procedure TRFAViewForm.ExtractSelectedExecute(Sender: TObject);
 begin
+  if not Assigned(BrowseExtractForm) then
+    Application.CreateForm(TBrowseExtractForm, BrowseExtractForm);
+
   if (BrowseExtractForm.ShowModal = mrOk) then
   begin
-    ExtractTo(BrowseExtractForm.Directory);
+    ExtractTo(BrowseExtractForm.Directory, BrowseExtractForm.RecreateFullPath.Checked);
   end;
 end;
 
 
-procedure TRFAViewForm.ExtractTo(Directory: string; List : TStringList = nil);
+procedure TRFAViewForm.ExtractTo(Directory: string; RecreatePath : boolean; List : TStringList = nil);
 var
   Data : pFse;
   Node: PVirtualNode;
@@ -1290,7 +1289,7 @@ begin
 
     if IsFile(Data.FileType) then
     begin
-      if BrowseExtractForm.RecreateFullPath.Checked then
+      if RecreatePath then
         W32Path := Data.W32Path
       else
       begin
@@ -1839,7 +1838,7 @@ begin
       ExternalPath := GetMapTempDirectory + RandomString('333333')
     until not DirectoryExists(ExternalPath);
 
-    ExtractTo(ExternalPath);
+    ExtractTo(ExternalPath, False);
 
     List := TStringList.Create;
     BuildFileList(IncludeTrailingPathDelimiter(ExternalPath)+'*', faAnyFile - faHidden, List);
@@ -2029,7 +2028,6 @@ begin
   // Setup event handler to let a drop target request data from our drop source.
   (DragDataFormatAdapter.DataFormat as TVirtualFileStreamDataFormat).OnGetStream := OnGetStream;
 
-  Filesystem.Visible := DebugHook <> 0;
   EnableSkinning(RFAList);
   Reset;
 end;
@@ -2225,6 +2223,9 @@ end;
 
 procedure TRFAViewForm.AboutExecute(Sender: TObject);
 begin
+  if not Assigned(AboutForm) then
+    Application.CreateForm(TAboutForm, AboutForm);
+
   AboutForm.Showmodal;
 end;
 
@@ -2241,6 +2242,10 @@ var
   BasePath : string;
   Node : PVirtualNode;
 begin
+
+  if not Assigned(BrowsePackForm) then
+    Application.CreateForm(TBrowsePackForm, BrowsePackForm);
+
   if (BrowsePackForm.ShowModal = mrOk) then
     if DirectoryExists(BrowsePackForm.Directory) then
     begin
@@ -2267,7 +2272,7 @@ begin
           Exit;
         end;
 
-        Node := BuildTreeFromFullPath(BasePath);
+        Node := GetBuildPath(BasePath);
       end;
 
       Add(Node, nil, BrowsePackForm.Directory);
@@ -2305,6 +2310,9 @@ begin
     TerrainFile := ExtractTemporary(TerrainNode);
 
     {$IfDef OPENGL_SUPPORT}
+      if not Assigned(MapViewForm) then
+        Application.CreateForm(TMapViewForm, MapViewForm);
+
       MapViewForm.GetFileByPath := GetFileByPath;
       MapViewForm.LoadTerrain(TerrainFile);
       MapViewForm.Show;

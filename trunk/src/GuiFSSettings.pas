@@ -195,6 +195,7 @@ implementation
 
 uses
   DbugIntf,
+  Math,
   GuiWait,
   AppLib,
   CommonLib,
@@ -887,11 +888,22 @@ begin
     OnListArchives(Self, 'Name', 'Path', -1);
 end;
 
+{.$DEFINE DEBUG_FS}
+
 procedure TFSSettingsForm.ListFiles(ModID : integer);
 var
   ID: integer;
   Name, Path: string;
+  {$IfDef DEBUG_FS}
+  DbgLow, DbgHigh : integer;
+  {$EndIf}
 begin
+
+  {$IfDef DEBUG_FS}
+  DbgLow := 19489;
+  DbgHigh := 19520;
+  {$EndIf}
+
   // Open database if settings are correct
   if FileExists(Database.Database) then
   begin
@@ -908,10 +920,15 @@ begin
         Name := Dataset.FieldByName('filename').AsString;
         Path := Dataset.FieldByName('path').AsString;
 
-        if Assigned(OnListFiles) then
-          OnListFiles(Self, Name, Path, ID);
+        {$IfDef DEBUG_FS}
+        if InRange(ID, DbgLow, DbgHigh) then
+        {$EndIf}
+          if Assigned(OnListFiles) then
+            OnListFiles(Self, Name, Path, ID);
 
         Dataset.Next;
+
+
       end;
     end;
   end;
