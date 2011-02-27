@@ -554,7 +554,8 @@ begin
           Dataset.Next;
         end;
 
-        /// RebuildModDependency
+        SubDataset.Close;
+        Dataset.Close;
       end;
     end;
 
@@ -931,6 +932,8 @@ begin
 
         Dataset.Next;
       end;
+
+      Dataset.Close;
     end;
   end;
 
@@ -976,14 +979,7 @@ begin
     if Database.Connected then
     begin
       Dataset.Close;
-(*
-      Dataset.SQL.Clear;
-      Dataset.SQL.Add('SELECT file.id, file.filename, file.path');
-      Dataset.SQL.Add(' FROM mod, archive, file');
-      Dataset.SQL.Add(' WHERE mod.id = ' + IntToStr(ModID));
-      Dataset.SQL.Add(' AND file.archive = archive.id');
-      Dataset.SQL.Add(' AND archive.mod = mod.id;');
-*)
+
       Dataset.SQL.Clear;
       Dataset.SQL.Add('SELECT file.id, file.filename, file.path, file.offset,');
       Dataset.SQL.Add('  file.size, file.compressed, file.csize, archive.id,');
@@ -1018,9 +1014,9 @@ begin
             OnListFiles(Self, Data);
 
         Dataset.Next;
-
-
       end;
+
+      Dataset.Close;
     end;
   end;
 
