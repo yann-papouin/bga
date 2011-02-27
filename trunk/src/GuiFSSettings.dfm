@@ -352,10 +352,6 @@ inherited FSSettingsForm: TFSSettingsForm
       ImageIndex = 1118
       OnExecute = OkExecute
     end
-    object Init: TAction
-      Caption = 'Init'
-      OnExecute = InitExecute
-    end
     object Active: TAction
       Caption = 'Active'
       ImageIndex = 495
