@@ -32,6 +32,7 @@ uses
   Controls,
   Forms,
   Dialogs,
+  Generics.Collections,
   GuiRFACommon,
   ActnList,
   SpTBXControls,
@@ -47,11 +48,28 @@ uses
 
 type
 
+  TModItem = class
+  private
+    FName: string;
+    FPath: string;
+    FID: integer;
+    procedure SetID(const Value: integer);
+    procedure SetName(const Value: string);
+    procedure SetPath(const Value: string);
+  protected
+  public
+    property ID: integer read FID write SetID;
+    property Path: string read FPath write SetPath;
+    property Name: string read FName write SetName;
+  end;
+
+  TModList = TObjectList<TModItem>;
+
   TFSViewForm = class(TRFACommonForm)
     Panel2: TSpTBXPanel;
     SpTBXButton2: TSpTBXButton;
     Load: TAction;
-    ModList: TSpTBXComboBox;
+    Mods: TSpTBXComboBox;
     SpTBXLabel2: TSpTBXLabel;
     Footer: TSpTBXPanel;
     ButtonOk: TSpTBXButton;
@@ -65,12 +83,14 @@ type
     procedure FormCreate(Sender: TObject);
     procedure SettingsExecute(Sender: TObject);
     procedure LoadExecute(Sender: TObject);
-    procedure ModListChange(Sender: TObject);
-    procedure RFAListGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle;
-      var HintText: string);
+    procedure ModsChange(Sender: TObject);
+    procedure RFAListGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: string);
+    procedure FormDestroy(Sender: TObject);
   private
     { Déclarations privées }
+    FModList : TModList;
+    FCurrent : TModItem;
+
     procedure FileSystemChange(Sender: TObject);
     procedure ListMods(Sender: TObject; Name, Path: string; ID: integer);
     procedure ListArchives(Sender: TObject; Name, Path: string; ID: integer);
@@ -97,10 +117,11 @@ uses
   StringFunction,
   Types;
 
-
 procedure TFSViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
+  FModList := TModList.Create;
+
   FSSettingsForm.OnChange := FileSystemChange;
   FSSettingsForm.OnListMods := ListMods;
   FSSettingsForm.OnListArchives := ListArchives;
@@ -109,6 +130,11 @@ begin
   FSSettingsForm.ApplicationRun.Execute;
 end;
 
+procedure TFSViewForm.FormDestroy(Sender: TObject);
+begin
+  FModList.Free;
+  inherited;
+end;
 
 procedure TFSViewForm.OkExecute(Sender: TObject);
 begin
@@ -117,12 +143,10 @@ begin
   Close;
 end;
 
-procedure TFSViewForm.RFAListGetHint(Sender: TBaseVirtualTree;
-  Node: PVirtualNode; Column: TColumnIndex;
-  var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: string);
+procedure TFSViewForm.RFAListGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: string);
 var
-  Data : pFse;
-  FloatValue : extended;
+  Data: pFse;
+  FloatValue: extended;
 begin
   Data := Sender.GetNodeData(Node);
   HintText := Data.W32Path;
@@ -142,8 +166,10 @@ end;
 
 procedure TFSViewForm.FileSystemChange(Sender: TObject);
 begin
-  ModList.Clear;
-  ModList.Text := EmptyStr;
+  Mods.Clear;
+  FModList.Clear;
+
+  Mods.Text := EmptyStr;
   FSSettingsForm.ListMods;
 end;
 
@@ -152,22 +178,37 @@ begin
   inherited;
   RFAList.Clear;
   RFAList.BeginUpdate;
-  FSSettingsForm.ListFiles(ModList.Tag);
+  FSSettingsForm.ListFiles(FCurrent.ID);
   Sort;
   RFAList.EndUpdate;
 end;
 
-procedure TFSViewForm.ModListChange(Sender: TObject);
+procedure TFSViewForm.ModsChange(Sender: TObject);
+var
+  Index : integer;
 begin
   inherited;
-  ModList.Tag := ModList.Items.IndexOf(ModList.Text);
-  Load.Enabled := ModList.Tag > 0;
+  Index := Mods.Items.IndexOf(Mods.Text);
+
+  if Index >= 0 then
+    FCurrent := Mods.Items.Objects[Index] as TModItem
+  else
+    FCurrent := nil;
+
+  Load.Enabled := Assigned(FCurrent);
 end;
 
-
 procedure TFSViewForm.ListMods(Sender: TObject; Name, Path: string; ID: integer);
+var
+  Item : TModItem;
 begin
-  ModList.Items.Add(Name);
+  Item := TModItem.Create;
+  Item.Name := Name;
+  Item.Path := Path;
+  Item.ID := ID;
+
+  FModList.Add(Item);
+  Mods.Items.AddObject(Name, Item);
 end;
 
 procedure TFSViewForm.ListArchives(Sender: TObject; Name, Path: string; ID: integer);
@@ -175,15 +216,14 @@ begin
 
 end;
 
-
 procedure TFSViewForm.ListFiles(Sender: TObject; Name, Path: string; ID: integer);
 var
   Node: PVirtualNode;
-  Data : pFse;
-  W32Path : AnsiString;
+  Data: pFse;
+  W32Path: AnsiString;
 begin
   Path := StringReplace(Path, ARCHIVE_PATH, '/', [rfReplaceAll]);
-  W32Path := StringReplace(Path,'/','\',[rfReplaceAll]) + Name;
+  W32Path := StringReplace(Path, '/', '\', [rfReplaceAll]) + Name;
 
   Node := GetBuildPath(W32Path);
 
@@ -203,6 +243,23 @@ begin
   Data.W32Ext := ExtractFileExt(LowerCase(W32Path));
   Data.FileType := ExtensionToType(Data.W32Ext);
   Data.ExternalFilePath := EmptyStr;
+end;
+
+{ TModItem }
+
+procedure TModItem.SetID(const Value: integer);
+begin
+  FID := Value;
+end;
+
+procedure TModItem.SetName(const Value: string);
+begin
+  FName := Value;
+end;
+
+procedure TModItem.SetPath(const Value: string);
+begin
+  FPath := Value;
 end;
 
 end.

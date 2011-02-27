@@ -145,7 +145,7 @@ inherited FSViewForm: TFSViewForm
       Images = ResourcesForm.Images16x16
       ImageIndex = 318
     end
-    object ModList: TSpTBXComboBox
+    object Mods: TSpTBXComboBox
       Left = 111
       Top = 10
       Width = 551
@@ -153,7 +153,7 @@ inherited FSViewForm: TFSViewForm
       Anchors = [akLeft, akTop, akRight]
       ItemHeight = 13
       TabOrder = 1
-      OnChange = ModListChange
+      OnChange = ModsChange
     end
     object SpTBXLabel2: TSpTBXLabel
       Left = 7

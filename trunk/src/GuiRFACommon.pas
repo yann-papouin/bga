@@ -341,11 +341,13 @@ var
   SegPath, Current : string;
   Create : boolean;
 begin
-  Result := RFAList.RootNode;
+  Path := StrEnsurePrefix(DirDelimiter, Path);
   Count := StrCharCount(Path, DirDelimiter);
+  Result := RFAList.RootNode;
   Node := nil;
   Create := false;
   SegPath := Path;
+
 
   {$IfDef DEBUG_BP}
   SendSeparator;
@@ -809,7 +811,6 @@ var
 
 begin
   Result := false;
-  {$IfDef PREVIEW_SUPPORT}
 
   Node := RFAList.GetFirstSelected;
 
@@ -855,8 +856,6 @@ begin
         Result := false;
       end;
   end;
-
-  {$EndIf}
 end;
 
 procedure TRFACommonForm.PreviewExecute(Sender: TObject);
