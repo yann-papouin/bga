@@ -73,12 +73,35 @@ type
     destructor Destroy; override;
   end;
 
-  (*
-  TFSListMods     = procedure(Sender: TObject; Name: string; Path: string; ID: integer) of object;
-  TFSListArchives = procedure(Sender: TObject; Name: string; Path: string; ID: integer) of object;
-  TFSListFiles    = procedure(Sender: TObject; Name: string; Path: string; ID: integer) of object;
-  *)
-  TFSList = procedure(Sender: TObject; Name: string; Path: string; ID: integer) of object;
+  TFSModData = record
+    ID : integer;
+    Path : string[255];
+    Name : string[255];
+  end;
+
+  TFSArchiveData = record
+    ID : integer;
+    Path : string[255];
+    Name : string[255];
+  end;
+
+  TFSFileData = record
+    ID : integer;
+    Path : string[255];
+    Filename : string[255];
+    Offset : Int64;
+    Size : Int64;
+    Compressed : boolean;
+    CompSize : Int64;
+    Archive : TFSArchiveData;
+  end;
+
+
+  TFSListMods     = procedure(Sender: TObject; FSData: TFSModData) of object;
+  TFSListArchives = procedure(Sender: TObject; FSData: TFSArchiveData) of object;
+  TFSListFiles    = procedure(Sender: TObject; FSData: TFSFileData) of object;
+
+  //TFSList = procedure(Sender: TObject; Name: string; Path: string; ID: integer) of object;
 
   TFSSettingsForm = class(TFormCommon)
     Actions: TActionList;
@@ -153,9 +176,9 @@ type
     FSQL : TStringList;
     FSyncThread : TSyncThread;
     FOnChange: TNotifyEvent;
-    FOnListMods: TFSList;
-    FOnListArchives: TFSList;
-    FOnListFiles: TFSList;
+    FOnListMods: TFSListMods;
+    FOnListArchives: TFSListArchives;
+    FOnListFiles: TFSListFiles;
     procedure ApplySettingsData(Data: pFilesystemData);
     { Déclarations privées }
     procedure SyncStart;
@@ -169,9 +192,9 @@ type
     procedure ListFiles(ModID : integer);
 
     property OnChange: TNotifyEvent read FOnChange write FOnChange;
-    property OnListMods: TFSList read FOnListMods write FOnListMods;
-    property OnListArchives: TFSList read FOnListArchives write FOnListArchives;
-    property OnListFiles: TFSList read FOnListFiles write FOnListFiles;
+    property OnListMods: TFSListMods read FOnListMods write FOnListMods;
+    property OnListArchives: TFSListArchives read FOnListArchives write FOnListArchives;
+    property OnListFiles: TFSListFiles read FOnListFiles write FOnListFiles;
 
     property ActiveIndex: Integer read FActiveIndex write SetActiveIndex;
   end;
@@ -862,8 +885,7 @@ end;
 
 procedure TFSSettingsForm.ListMods;
 var
-  ID: integer;
-  Name, Path: string;
+  Data : TFSModData;
 begin
   // Open database if settings are correct
   if FileExists(Database.Database) then
@@ -877,12 +899,12 @@ begin
 
       while not Dataset.Eof do
       begin
-        ID := Dataset.FieldByName('id').AsInteger;
-        Name := Dataset.FieldByName('name').AsString;
-        Path := Dataset.FieldByName('path').AsString;
+        Data.ID := Dataset.FieldByName('id').AsInteger;
+        Data.Name := Dataset.FieldByName('name').AsString;
+        Data.Path := Dataset.FieldByName('path').AsString;
 
         if Assigned(OnListMods) then
-          OnListMods(Self, Name, Path, ID);
+          OnListMods(Self, Data);
 
         Dataset.Next;
       end;
@@ -892,17 +914,28 @@ begin
 end;
 
 procedure TFSSettingsForm.ListArchives(ModID : integer);
+var
+  Data : TFSArchiveData;
 begin
   if Assigned(OnListArchives) then
-    OnListArchives(Self, 'Name', 'Path', -1);
+    OnListArchives(Self, Data);
+end;
+
+procedure DebugFields(List : TFieldList);
+var
+  i: integer;
+begin
+  for i := 0 to List.Count - 1 do
+  begin
+    SendDebug(List.Fields[i].FullName);
+  end;
 end;
 
 {.$DEFINE DEBUG_FS}
 
 procedure TFSSettingsForm.ListFiles(ModID : integer);
 var
-  ID: integer;
-  Name, Path: string;
+  Data : TFSFileData;
   {$IfDef DEBUG_FS}
   DbgLow, DbgHigh : integer;
   {$EndIf}
@@ -920,20 +953,46 @@ begin
     if Database.Connected then
     begin
       Dataset.Close;
-      Dataset.SQL.Text := Format('SELECT file.id, file.filename, file.path FROM mod, archive, file WHERE mod.id = %d AND file.archive = archive.id AND archive.mod = mod.id ;',[ModID]);
+(*
+      Dataset.SQL.Clear;
+      Dataset.SQL.Add('SELECT file.id, file.filename, file.path');
+      Dataset.SQL.Add(' FROM mod, archive, file');
+      Dataset.SQL.Add(' WHERE mod.id = ' + IntToStr(ModID));
+      Dataset.SQL.Add(' AND file.archive = archive.id');
+      Dataset.SQL.Add(' AND archive.mod = mod.id;');
+*)
+      Dataset.SQL.Clear;
+      Dataset.SQL.Add('SELECT file.id, file.filename, file.path, file.offset,');
+      Dataset.SQL.Add('  file.size, file.compressed, file.csize, archive.id,');
+      Dataset.SQL.Add('  archive.name, archive.path');
+      Dataset.SQL.Add(' FROM mod, archive, file');
+      Dataset.SQL.Add(' WHERE mod.id = ' + IntToStr(ModID));
+      Dataset.SQL.Add(' AND file.archive = archive.id');
+      Dataset.SQL.Add(' AND archive.mod = mod.id;');
+
       Dataset.Open;
 
       while not Dataset.Eof do
       begin
-        ID := Dataset.FieldByName('id').AsInteger;
-        Name := Dataset.FieldByName('filename').AsString;
-        Path := Dataset.FieldByName('path').AsString;
+        //DebugFields(Dataset.FieldList);
+
+        Data.ID := Dataset.FieldByName('id').AsInteger;
+        Data.Path := Dataset.FieldByName('path').AsString;
+        Data.Filename := Dataset.FieldByName('filename').AsString;
+        Data.Offset := Dataset.FieldByName('offset').AsInteger;
+        Data.Size := Dataset.FieldByName('size').AsInteger;
+        Data.Compressed := Dataset.FieldByName('compressed').AsBoolean;
+        Data.CompSize := Dataset.FieldByName('csize').AsInteger;
+
+        Data.Archive.ID := Dataset.FieldByName('archive.id').AsInteger;
+        Data.Archive.Name := Dataset.FieldByName('name').AsString;
+        Data.Archive.Path := Dataset.FieldByName('archive.path').AsString;
 
         {$IfDef DEBUG_FS}
         if InRange(ID, DbgLow, DbgHigh) then
         {$EndIf}
           if Assigned(OnListFiles) then
-            OnListFiles(Self, Name, Path, ID);
+            OnListFiles(Self, Data);
 
         Dataset.Next;
 

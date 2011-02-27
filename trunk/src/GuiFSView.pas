@@ -34,6 +34,8 @@ uses
   Dialogs,
   Generics.Collections,
   GuiRFACommon,
+
+  GuiFSSettings,
   ActnList,
   SpTBXControls,
   StdCtrls,
@@ -86,15 +88,17 @@ type
     procedure ModsChange(Sender: TObject);
     procedure RFAListGetHint(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; var LineBreakStyle: TVTTooltipLineBreakStyle; var HintText: string);
     procedure FormDestroy(Sender: TObject);
+    procedure RFAListGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
   private
     { Déclarations privées }
     FModList : TModList;
     FCurrent : TModItem;
 
     procedure FileSystemChange(Sender: TObject);
-    procedure ListMods(Sender: TObject; Name, Path: string; ID: integer);
-    procedure ListArchives(Sender: TObject; Name, Path: string; ID: integer);
-    procedure ListFiles(Sender: TObject; Name, Path: string; ID: integer);
+    procedure ListMods(Sender: TObject; FSData: TFSModData);
+    procedure ListArchives(Sender: TObject; FSData: TFSArchiveData);
+    procedure ListFiles(Sender: TObject; FSData: TFSFileData);
 
   public
     { Déclarations publiques }
@@ -109,7 +113,6 @@ implementation
 
 uses
   DbugIntf,
-  GuiFSSettings,
   Resources,
   IOUtils,
   JclFileUtils,
@@ -150,6 +153,29 @@ var
 begin
   Data := Sender.GetNodeData(Node);
   HintText := Data.W32Path;
+end;
+
+procedure TFSViewForm.RFAListGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: string);
+var
+  Data: pFse;
+begin
+  inherited;
+  Data := Sender.GetNodeData(Node);
+
+  if Column = 5 then
+  begin
+    if IsFile(Data.FileType) then
+    begin
+      CellText := Data.RFAFileName;
+    end
+      else
+    begin
+      CellText := EmptyStr;
+    end;
+  end;
+
 end;
 
 procedure TFSViewForm.CancelExecute(Sender: TObject);
@@ -198,45 +224,45 @@ begin
   Load.Enabled := Assigned(FCurrent);
 end;
 
-procedure TFSViewForm.ListMods(Sender: TObject; Name, Path: string; ID: integer);
+procedure TFSViewForm.ListMods(Sender: TObject; FSData: TFSModData);
 var
   Item : TModItem;
 begin
   Item := TModItem.Create;
-  Item.Name := Name;
-  Item.Path := Path;
-  Item.ID := ID;
+  Item.Name := FSData.Name;
+  Item.Path := FSData.Path;
+  Item.ID := FSData.ID;
 
   FModList.Add(Item);
-  Mods.Items.AddObject(Name, Item);
+  Mods.Items.AddObject(FSData.Name, Item);
 end;
 
-procedure TFSViewForm.ListArchives(Sender: TObject; Name, Path: string; ID: integer);
+procedure TFSViewForm.ListArchives(Sender: TObject; FSData: TFSArchiveData);
 begin
 
 end;
 
-procedure TFSViewForm.ListFiles(Sender: TObject; Name, Path: string; ID: integer);
+procedure TFSViewForm.ListFiles(Sender: TObject; FSData: TFSFileData);
 var
   Node: PVirtualNode;
   Data: pFse;
   W32Path: AnsiString;
 begin
-  Path := StringReplace(Path, ARCHIVE_PATH, '/', [rfReplaceAll]);
-  W32Path := StringReplace(Path, '/', '\', [rfReplaceAll]) + Name;
+  FSData.Path := StringReplace(FSData.Path, ARCHIVE_PATH, '/', [rfReplaceAll]);
+  W32Path := StringReplace(FSData.Path, '/', '\', [rfReplaceAll]) + FSData.Filename;
 
   Node := GetBuildPath(W32Path);
 
   Node := RFAList.AddChild(Node);
   Data := RFAList.GetNodeData(Node);
   Data.RFAFileHandle := nil;
-  Data.RFAFileName := '';
+  Data.RFAFileName := FSData.Archive.Path + FSData.Archive.Name;
 
-  Data.EntryName := Name;
-  Data.Offset := 0;
-  Data.Size := 0;
-  Data.Compressed := false;
-  Data.CompSize := 0;
+  Data.EntryName := FSData.Filename;
+  Data.Offset := FSData.Offset;
+  Data.Size := FSData.Size;
+  Data.Compressed := FSData.Compressed;
+  Data.CompSize := FSData.CompSize;
 
   Data.W32Path := W32Path;
   Data.W32Name := ExtractFileName(W32Path);
