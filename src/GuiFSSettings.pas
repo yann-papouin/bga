@@ -147,6 +147,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure ApplicationRunExecute(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     FActiveIndex : Integer;
     FSQL : TStringList;
@@ -229,9 +230,17 @@ begin
   inherited;
 end;
 
+procedure TFSSettingsForm.FormShow(Sender: TObject);
+begin
+  inherited;
+  if not Assigned(FSEditForm) then
+    Application.CreateForm(TFSEditForm, FSEditForm);
+end;
+
+
 procedure TFSSettingsForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  SyncStop;
+  //SyncStop;
 end;
 
 procedure TFSSettingsForm.FormActivate(Sender: TObject);

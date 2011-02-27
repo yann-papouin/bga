@@ -98,9 +98,7 @@ begin
     Application.CreateForm(TRFAViewForm, RFAViewForm);
     Application.CreateForm(TRFASettingsForm, RFASettingsForm);
     Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
-    Application.CreateForm(TSkinDialogForm, SkinDialogForm);
     Application.CreateForm(TFSSettingsForm, FSSettingsForm);
-    Application.CreateForm(TFSEditForm, FSEditForm);
     Application.CreateForm(TFSViewForm, FSViewForm);
     Application.CreateForm(TWaitForm, WaitForm);
 

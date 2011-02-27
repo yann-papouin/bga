@@ -6,6 +6,7 @@ inherited FSSettingsForm: TFSSettingsForm
   OnActivate = FormActivate
   OnClose = FormClose
   OnDestroy = FormDestroy
+  OnShow = FormShow
   ExplicitWidth = 527
   ExplicitHeight = 487
   PixelsPerInch = 96
