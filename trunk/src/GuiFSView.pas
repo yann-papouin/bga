@@ -228,6 +228,7 @@ begin
 
   Mods.Text := EmptyStr;
   FSSettingsForm.ListMods;
+  Mods.Enabled := (Mods.Items.Count > 0);
 end;
 
 procedure TFSViewForm.LoadExecute(Sender: TObject);

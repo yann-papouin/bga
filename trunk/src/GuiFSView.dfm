@@ -12,7 +12,7 @@ inherited FSViewForm: TFSViewForm
     Width = 852
     Height = 400
     ExplicitTop = 42
-    ExplicitWidth = 890
+    ExplicitWidth = 852
     ExplicitHeight = 400
     inherited RFAList: TVirtualStringTree
       Width = 852
@@ -20,7 +20,7 @@ inherited FSViewForm: TFSViewForm
       TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toThemeAware, toUseBlendedImages, toUseExplorerTheme]
       OnDblClick = RFAListDblClick
       OnGetHint = RFAListGetHint
-      ExplicitWidth = 890
+      ExplicitWidth = 852
       ExplicitHeight = 329
       Columns = <
         item
@@ -64,14 +64,14 @@ inherited FSViewForm: TFSViewForm
       Top = 329
       Width = 852
       ExplicitTop = 329
-      ExplicitWidth = 890
+      ExplicitWidth = 852
       inherited SearchEdit: TSpTBXEdit
         Width = 417
-        ExplicitWidth = 455
+        ExplicitWidth = 417
       end
       inherited SearchProgressBar: TSpTBXProgressBar
         Left = 503
-        ExplicitLeft = 541
+        ExplicitLeft = 503
       end
     end
     object Footer: TSpTBXPanel
@@ -91,7 +91,6 @@ inherited FSViewForm: TFSViewForm
       TabOrder = 2
       Borders = False
       TBXStyleBackground = True
-      ExplicitWidth = 890
       object ButtonOk: TSpTBXButton
         AlignWithMargins = True
         Left = 612
@@ -103,7 +102,6 @@ inherited FSViewForm: TFSViewForm
         TabOrder = 0
         Images = ResourcesForm.Images16x16
         ImageIndex = 1118
-        ExplicitLeft = 650
       end
       object ButtonCancel: TSpTBXButton
         AlignWithMargins = True
@@ -116,7 +114,6 @@ inherited FSViewForm: TFSViewForm
         TabOrder = 1
         Images = ResourcesForm.Images16x16
         ImageIndex = 143
-        ExplicitLeft = 770
       end
       object SpTBXButton3: TSpTBXButton
         AlignWithMargins = True
@@ -141,7 +138,6 @@ inherited FSViewForm: TFSViewForm
     TabOrder = 1
     Borders = False
     TBXStyleBackground = True
-    ExplicitWidth = 890
     DesignSize = (
       852
       42)
@@ -155,7 +151,6 @@ inherited FSViewForm: TFSViewForm
       TabOrder = 0
       Images = ResourcesForm.Images16x16
       ImageIndex = 318
-      ExplicitLeft = 813
     end
     object Mods: TSpTBXComboBox
       Left = 111
@@ -166,7 +161,6 @@ inherited FSViewForm: TFSViewForm
       ItemHeight = 13
       TabOrder = 1
       OnChange = ModsChange
-      ExplicitWidth = 696
     end
     object SpTBXLabel2: TSpTBXLabel
       Left = 7

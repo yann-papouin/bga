@@ -681,8 +681,10 @@ begin
     Node := RFAList.GetFirst;
     while Node <> nil do
     begin
-      if RFAList.GetNodeLevel(Node) <= 2 then
-        RFAList.Expanded[Node] := true;
+      RFAList.Expanded[Node] := true;
+
+      if Node.ChildCount > 1 then
+        Break;
 
       Node := RFAList.GetNext(Node);
     end;
