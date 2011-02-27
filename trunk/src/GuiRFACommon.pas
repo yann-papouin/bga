@@ -166,6 +166,7 @@ type
     function GetSearchText: string;
   protected
     function FindFileByName(Filename: string): PVirtualNode;
+    function FindFileByPath(Path: string): PVirtualNode;
     function FindFile(Path: String): PVirtualNode;
     function FindPath(Path: String) : PVirtualNode;
     procedure PropagateStatus(Node: PVirtualNode; Status: TEntryModification);
@@ -517,6 +518,24 @@ begin
     Data := RFAList.GetNodeData(Result);
 
     if AnsiCompareText(Data.W32Name, Filename) = 0 then
+      Exit
+    else
+      Result := RFAList.GetNext(Result, true);
+  end;
+end;
+
+
+function TRFACommonForm.FindFileByPath(Path: string): PVirtualNode;
+var
+  Data : pFse;
+begin
+  Result := RFAList.GetFirst;
+
+  while Result <> nil do
+  begin
+    Data := RFAList.GetNodeData(Result);
+
+    if AnsiCompareText(Data.W32Path, Path) = 0 then
       Exit
     else
       Result := RFAList.GetNext(Result, true);

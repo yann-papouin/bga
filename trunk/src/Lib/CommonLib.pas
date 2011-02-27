@@ -331,7 +331,7 @@ var
 begin
   { Enclose filename in quotes to take care of
     long filenames with spaces. }
-  CmdLine := DblQuotedStr(FileName) + Params;
+  CmdLine := DblQuotedStr(FileName) + ' ' + Params;
   FillChar(SUInfo, SizeOf(SUInfo), #0);
   with SUInfo do
   begin
