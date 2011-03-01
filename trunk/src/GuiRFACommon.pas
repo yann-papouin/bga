@@ -1320,6 +1320,8 @@ begin
 
   FreeOnTerminate:=false;
   Priority:=tpNormal;
+  FSearchNode := nil;
+  FOwner := nil;
 
   FSearchList := TStringList.Create;
   FSearchList.Delimiter := ';';
