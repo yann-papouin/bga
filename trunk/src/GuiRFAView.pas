@@ -2456,13 +2456,16 @@ procedure TSyncThread.Execute;
 begin
   inherited;
   repeat
-    Sleep(5);
 
+  if (State = ssWaiting) then
+    Sleep(100)
+  else
   if (State = ssStopping) then
-    State := ssWaiting;
-
+    State := ssWaiting
+  else
   if (State = ssWorking) and not FOwner.OperationPending and not FMutex then
   begin
+    Sleep(5);
     FMutex := true;
     if Assigned(FOwner.FArchive) then
     begin

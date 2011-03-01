@@ -188,7 +188,7 @@
 						<VersionInfoKeys Name="ProductName">BF1942 Game Archive Tool</VersionInfoKeys>
 						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="Comments"/>
-						<VersionInfoKeys Name="LastCompiledTime">01/03/2011 23:48:53</VersionInfoKeys>
+						<VersionInfoKeys Name="LastCompiledTime">01/03/2011 23:57:54</VersionInfoKeys>
 					</VersionInfoKeys>
 					<Excluded_Packages>
 						<Excluded_Packages Name="$(BDS)\bin\bcboffice2k140.bpl">Package Serveurs Office 2000 Embarcadero C++Builder</Excluded_Packages>
