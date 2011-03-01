@@ -550,13 +550,6 @@ inherited RFAViewForm: TRFAViewForm
     Left = 8
     Top = 128
   end
-  object Sync: TTimer
-    Enabled = False
-    Interval = 10
-    OnTimer = SyncTimer
-    Left = 8
-    Top = 160
-  end
   object ExtensionImageList: TPngImageList
     PngImages = <>
     Left = 8

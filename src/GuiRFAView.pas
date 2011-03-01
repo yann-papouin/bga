@@ -63,6 +63,28 @@ type
     dsDropComplete
   );
 
+  TRFAViewForm = class;
+
+  TSyncState =
+  (
+    ssWaiting,
+    ssStopping,
+    ssWorking
+  );
+
+  TSyncThread = class(TThread)
+  private
+    FMutex : boolean;
+    FOwner : TRFAViewForm;
+    FSyncNode : PVirtualNode;
+  protected
+    procedure Execute; override;
+    procedure Invalidate;
+  public
+    State : TSyncState;
+    constructor Create(CreateSuspended:boolean);
+    destructor Destroy; override;
+  end;
 
   TRFAViewForm = class(TRFACommonForm)
     Open: TAction;
@@ -126,7 +148,6 @@ type
     SpTBXItem19: TSpTBXItem;
     AppStorage: TJvAppRegistryStorage;
     FormStorage: TJvFormStorage;
-    Sync: TTimer;
     StatusBar: TSpTBXStatusBar;
     ArchiveSize: TSpTBXLabelItem;
     SpTBXSeparatorItem7: TSpTBXSeparatorItem;
@@ -176,7 +197,6 @@ type
     procedure DefragExecute(Sender: TObject);
     procedure AboutExecute(Sender: TObject);
     procedure RecentExecute(Sender: TObject);
-    procedure SyncTimer(Sender: TObject);
     procedure RFAListDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
     procedure RFAListDblClick(Sender: TObject);
     procedure RFAListDragOver(Sender: TBaseVirtualTree; Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode; var Effect: Integer; var Accept: Boolean);
@@ -222,10 +242,10 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure DropEmptySourceFeedback(Sender: TObject; Effect: Integer;
       var UseDefaultCursors: Boolean);
+    procedure UpdateVCLTimer(Sender: TObject);
   private
     FEditResult : TEditResult;
-    FSyncNode : PVirtualNode;
-    //FDragNode : PVirtualNode;
+    FSyncThread : TSyncThread;
     FDragNodes : Array of PVirtualNode;
     FArchive : TRFAFile;
     FResetMutex : boolean;
@@ -235,7 +255,7 @@ type
     procedure SubProgress(Sender : TRFAFile; Operation : TRFAOperation; Value : Integer = 0);
     procedure TotalProgress(Operation : TRFAOperation; Value : Integer; Max:integer);
     procedure Add(MainNode: PVirtualNode; List: TStringList; Path: string = '');
-    procedure CheckStatus(Node: PVirtualNode);
+    function CheckStatus(Node: PVirtualNode): boolean;
     procedure DeleteSelection;
     procedure EditSelection;
     function EditInternal(ApplicationPath : string = '') : boolean;
@@ -315,7 +335,7 @@ end;
 
 
 
-procedure TRFAViewForm.CheckStatus(Node: PVirtualNode);
+function TRFAViewForm.CheckStatus(Node: PVirtualNode): boolean;
 var
   Data : pFse;
   PreviousStatus : TEntryStatus;
@@ -324,6 +344,7 @@ var
   Child : PVirtualNode;
   ChildData : pFse;
 begin
+  Result := False;
   if Node <> nil then
   begin
     Data := RFAList.GetNodeData(Node);
@@ -340,7 +361,7 @@ begin
             if MD5FromFile(Data.ExternalFilePath) <> Data.ExternalMD5 then
             begin
               Include(Data.Status, fsExternal);
-              NotifyChange;
+              //NotifyChange;
             end
             else
               Exclude(Data.Status, fsExternal)
@@ -379,8 +400,7 @@ begin
       end;
     end;
 
-    if PreviousStatus <> Data.Status then
-      RFAList.InvalidateNode(Node);
+    Result := PreviousStatus <> Data.Status;
   end;
 end;
 
@@ -647,7 +667,7 @@ var
 begin
   Result := false;
   SyncStop;
-  FSyncNode := nil;
+  //FSyncNode := nil;
 
   RFAList.BeginUpdate;
 
@@ -1415,43 +1435,24 @@ end;
 
 procedure TRFAViewForm.SyncStart;
 begin
-  FSyncNode := nil;
-  Sync.Enabled := true;
+  Assert(FSyncThread.State = ssWaiting, 'Syncing must be started when not already running');
+
+  FSyncThread.FSyncNode := nil;
+  FSyncThread.State := ssWorking;
 end;
 
 procedure TRFAViewForm.SyncStop;
 begin
-  Sync.Enabled := false;
-end;
-
-procedure TRFAViewForm.SyncTimer(Sender: TObject);
-var
-  i, Count : integer;
-begin
-  if OperationPending then
-    Exit;
-
-  Sync.Enabled := false;
-
-  if Assigned(FArchive) then
+  if FSyncThread.State <> ssWaiting then
   begin
-    Count := Max(1, FArchive.Count div 100);
+    FSyncThread.State := ssStopping;
 
-    for i := 0 to Count - 1 do
+    while FSyncThread.State <> ssWaiting do
     begin
-      if (FSyncNode = nil) then
-        FSyncNode := RFAList.GetFirst
-      else
-        FSyncNode := RFAList.GetNext(FSyncNode, true);
-
-      CheckStatus(FSyncNode);
+      // Wait here for the thread to finish //Sleep(100);
     end;
-
-    Sync.Enabled := true;
   end;
 end;
-
-
 
 procedure TRFAViewForm.RebuildEditWithMenu;
 var
@@ -2040,12 +2041,26 @@ begin
 end;
 
 
+procedure TRFAViewForm.UpdateVCLTimer(Sender: TObject);
+begin
+  inherited;
+
+  if FSyncThread.State = ssWorking then
+  begin
+
+  end;
+
+end;
+
 { TRFAViewForm }
 
 
 procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
+  FSyncThread := TSyncThread.Create(false);
+  FSyncThread.FOwner := self;
+
   // Setup event handler to let a drop target request data from our drop source.
   (DragDataFormatAdapter.DataFormat as TVirtualFileStreamDataFormat).OnGetStream := OnGetStream;
 
@@ -2081,6 +2096,7 @@ begin
   if Assigned(FArchive) then
     FArchive.Free;
 
+  FSyncThread.Free;
   inherited;
 end;
 
@@ -2416,6 +2432,58 @@ begin
   end;
 
   Application.ProcessMessages;
+end;
+
+{ TSyncThread }
+
+constructor TSyncThread.Create(CreateSuspended: boolean);
+begin
+  inherited Create(CreateSuspended);
+
+  FreeOnTerminate:=false;
+  Priority:=tpNormal;
+  FOwner := nil;
+  FSyncNode := nil;
+end;
+
+destructor TSyncThread.Destroy;
+begin
+
+  inherited;
+end;
+
+procedure TSyncThread.Execute;
+begin
+  inherited;
+  repeat
+    Sleep(5);
+
+  if (State = ssStopping) then
+    State := ssWaiting;
+
+  if (State = ssWorking) and not FOwner.OperationPending and not FMutex then
+  begin
+    FMutex := true;
+    if Assigned(FOwner.FArchive) then
+    begin
+      if (FSyncNode = nil) then
+        FSyncNode := FOwner.RFAList.GetFirst
+      else
+        FSyncNode := FOwner.RFAList.GetNext(FSyncNode, true);
+
+      if FOwner.CheckStatus(FSyncNode) then
+        Synchronize(Invalidate);
+    end;
+    FMutex := false;
+  end;
+
+  until Terminated;
+end;
+
+procedure TSyncThread.Invalidate;
+begin
+  FOwner.RFAList.InvalidateNode(FSyncNode);
+  FOwner.NotifyChange;
 end;
 
 end.

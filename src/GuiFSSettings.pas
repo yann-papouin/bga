@@ -41,14 +41,14 @@ type
 
   TFSSettingsForm = class;
 
-  TSyncState =
+  TSyncDBState =
   (
-    ssWaiting,
-    ssStopping,
-    ssWorking
+    sdWaiting,
+    sdStopping,
+    sdWorking
   );
 
-  TSyncThread = class(TThread)
+  TSyncDBThread = class(TThread)
   private
     FMutex : boolean;
     FWaitTime : integer;
@@ -70,7 +70,7 @@ type
     procedure SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
 
   public
-    State : TSyncState;
+    State : TSyncDBState;
     constructor Create(CreateSuspended:boolean);
     destructor Destroy; override;
   end;
@@ -174,7 +174,7 @@ type
   private
     FActiveIndex : Integer;
     FSQL : TStringList;
-    FSyncThread : TSyncThread;
+    FSyncDBThread : TSyncDBThread;
     FOnChange: TNotifyEvent;
     FOnListMods: TFSListMods;
     FOnListArchives: TFSListArchives;
@@ -237,9 +237,9 @@ uses
 procedure TFSSettingsForm.FormCreate(Sender: TObject);
 begin
   FSQL := TStringList.Create;
-  FSyncThread := TSyncThread.Create(false);
-  FSyncThread.FOwner := Self;
-  FSyncThread.FDataset := SyncDataset;
+  FSyncDBThread := TSyncDBThread.Create(false);
+  FSyncDBThread.FOwner := Self;
+  FSyncDBThread.FDataset := SyncDataset;
 end;
 
 procedure TFSSettingsForm.FormDestroy(Sender: TObject);
@@ -249,7 +249,7 @@ begin
   SyncStop;
 
   Database.Disconnect;
-  FSyncThread.Free;
+  FSyncDBThread.Free;
   FSQL.Free;
   inherited;
 end;
@@ -584,13 +584,13 @@ end;
 
 procedure TFSSettingsForm.SetActiveIndex(const Value: Integer);
 var
-  State : TSyncState;
+  State : TSyncDBState;
 begin
-  State := FSyncThread.State;
-  if State <> ssWaiting then SyncStop;
+  State := FSyncDBThread.State;
+  if State <> sdWaiting then SyncStop;
   FActiveIndex := Value;
   SyncStart;
-  FSyncThread.FPassCount := 0;
+  FSyncDBThread.FPassCount := 0;
 
   if Assigned(OnChange) then
     OnChange(Self);
@@ -626,7 +626,7 @@ var
   Data: pFilesystemData;
   WarnMsg : string;
 begin
-  Assert(FSyncThread.State = ssWaiting, 'Syncing must be started when not already running');
+  Assert(FSyncDBThread.State = sdWaiting, 'Syncing must be started when not already running');
 
   if SyncInit then
   begin
@@ -665,7 +665,7 @@ begin
     SyncAnimStore.Visible := false;
 
     /// Initialize transition values with current values
-    with FSyncThread do
+    with FSyncDBThread do
     begin
       FTextAction := SyncStatusAction.Caption;
       FTextFilename := SyncStatusArchiveName.Caption;
@@ -677,7 +677,7 @@ begin
       FTextStatus := SyncStatus.Caption;
     end;
 
-    FSyncThread.State := ssWorking;
+    FSyncDBThread.State := sdWorking;
   end
     else
   begin
@@ -689,12 +689,12 @@ end;
 
 procedure TFSSettingsForm.SyncStop;
 begin
-  if FSyncThread.State <> ssWaiting then
+  if FSyncDBThread.State <> sdWaiting then
   begin
-    FSyncThread.State := ssStopping;
+    FSyncDBThread.State := sdStopping;
 
     SyncStatus.Caption := 'Stopping';
-    while FSyncThread.State <> ssWaiting do
+    while FSyncDBThread.State <> sdWaiting do
     begin
       // Wait here for the thread to finish //Sleep(100);
     end;
@@ -895,9 +895,9 @@ procedure TFSSettingsForm.UpdateVCLTimer(Sender: TObject);
 begin
   inherited;
 
-  if FSyncThread.State = ssWorking then
+  if FSyncDBThread.State = sdWorking then
   begin
-    with FSyncThread do
+    with FSyncDBThread do
     begin
       SyncStatusAction.Caption := FTextAction;
       SyncStatusArchiveName.Caption := FTextFilename;
@@ -1029,26 +1029,28 @@ begin
 end;
 
 
-{ TSyncThread }
+{ TSyncDBThread }
 
-constructor TSyncThread.Create(CreateSuspended: boolean);
+constructor TSyncDBThread.Create(CreateSuspended: boolean);
 begin
   inherited Create(CreateSuspended);
 
   FreeOnTerminate:=false;
   Priority:=tpNormal;
+  FOwner := nil;
+  FDataset := nil;
 
   FSQL := TStringList.Create;
   FWaitTime := SYNC_EASYTIME;
 end;
 
-destructor TSyncThread.Destroy;
+destructor TSyncDBThread.Destroy;
 begin
   FSQL.Free;
   inherited;
 end;
 
-procedure TSyncThread.Execute;
+procedure TSyncDBThread.Execute;
 var
   Archive : TRFAFile;
   ArchiveID : integer;
@@ -1066,10 +1068,10 @@ begin
   repeat
   Sleep(FWaitTime); //en millisecondes
 
-  if (State = ssStopping) then
-    State := ssWaiting;
+  if (State = sdStopping) then
+    State := sdWaiting;
 
-  if (State = ssWorking) and not FMutex then
+  if (State = sdWorking) and not FMutex then
   begin
     FMutex := true;
 
@@ -1171,7 +1173,7 @@ begin
       end
         else
       begin
-        State := ssWaiting;
+        State := sdWaiting;
         FOwner.SyncStop;
       end;
 
@@ -1179,7 +1181,7 @@ begin
       on e:Exception do
       begin   
         SendDebugError(e.Message);
-        State := ssWaiting;
+        State := sdWaiting;
         FOwner.SyncStop;
       end;
 
@@ -1192,7 +1194,7 @@ begin
 end;
 
 
-procedure TSyncThread.SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
+procedure TSyncDBThread.SyncReadEntry(Sender: TRFAFile; Name: AnsiString; Offset, ucSize: Int64; Compressed: boolean; cSize: integer);
 var
   Filename : string;
   Path : string;
