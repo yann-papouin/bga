@@ -329,16 +329,19 @@ inherited FSSettingsForm: TFSSettingsForm
     end
     object Update: TAction
       Caption = 'Update'
+      Enabled = False
       ImageIndex = 94
       OnExecute = UpdateExecute
     end
     object Remove: TAction
       Caption = 'Remove'
+      Enabled = False
       ImageIndex = 471
       OnExecute = RemoveExecute
     end
     object Edit: TAction
       Caption = 'Edit'
+      Enabled = False
       ImageIndex = 51
       OnExecute = EditExecute
     end
@@ -354,6 +357,7 @@ inherited FSSettingsForm: TFSSettingsForm
     end
     object Active: TAction
       Caption = 'Active'
+      Enabled = False
       ImageIndex = 495
       OnExecute = ActiveExecute
     end
@@ -385,130 +389,35 @@ inherited FSSettingsForm: TFSSettingsForm
     Top = 64
   end
   object DataSource: TDataSource
-    DataSet = Dataset
     Left = 88
     Top = 96
-  end
-  object Database: TSqlitePassDatabase
-    DatabaseType = dbtSqlitePass
-    DatatypeOptions.BooleanStorage = asInteger
-    DatatypeOptions.DateFormat = 'YYYY-MM-DD'
-    DatatypeOptions.DateStorage = asInteger
-    DatatypeOptions.DateTimeFormat = 'YYYY-MM-DD hh:mm:ss.zzz'
-    DatatypeOptions.DateTimeStorage = dtsDateTime
-    DatatypeOptions.DecimalSeparator = '.'
-    DatatypeOptions.DefaultFieldType = ftUnknown
-    DatatypeOptions.DetectionMode = dmTypeName
-    DatatypeOptions.LoadOptions = [loDefaultProperties, loCustomProperties, loTranslationRules, loCustomFieldDefs]
-    DatatypeOptions.SaveOptions = [soCustomProperties, soTranslationRules, soCustomFieldDefs]
-    DatatypeOptions.UnicodeEncoding = ueUTF16
-    DatatypeOptions.TimeFormat = 'hh:mm:ss'
-    DatatypeOptions.TimeStorage = asInteger
-    DatatypeOptions.pCustomFieldDefs = ()
-    DatatypeOptions.pTranslationsRules = ()
-    Options.ApplyMode = [amOverwriteDatabaseFileSettings, amAutoVacuum, amCacheSize, amCaseSensitiveLike, amCountChanges, amDefaultCacheSize, amFullColumnNames, amForeignKeys, amJournalMode, amLockingMode, amRecursiveTriggers, amSecureDelete, amSynchronous, amTemporaryStorage]
-    Options.AutoVacuum = avNone
-    Options.CacheSize = 2000
-    Options.CaseSensitiveLike = False
-    Options.CountChanges = False
-    Options.DefaultCacheSize = 2000
-    Options.Encoding = UTF8
-    Options.ForeignKeys = False
-    Options.FullColumnNames = False
-    Options.JournalMode = jmDelete
-    Options.JournalSizeLimit = -1
-    Options.LockingMode = lmNormal
-    Options.LogErrors = True
-    Options.MaxPageCount = 2147483647
-    Options.PageSize = 1024
-    Options.QuoteStyle = qsDoubleQuote
-    Options.RecursiveTriggers = False
-    Options.SecureDelete = False
-    Options.Synchronous = syncNormal
-    Options.TemporaryStorage = tsDefault
-    QueryTimeout = 0
-    ShowSystemObjects = False
-    VersionInfo.Component = '0.55'
-    VersionInfo.Schema = -1
-    VersionInfo.Package = '0.55'
-    VersionInfo.SqliteLibraryNumber = 0
-    VersionInfo.UserTag = -1
-    Left = 24
-    Top = 96
-  end
-  object Dataset: TSqlitePassDataset
-    CalcDisplayedRecordsOnly = False
-    Database = Database
-    MasterSourceAutoActivate = True
-    FilterMode = fmSQLDirect
-    FilterRecordLowerLimit = 0
-    FilterRecordUpperLimit = 0
-    Indexed = True
-    LocateSmartRefresh = False
-    LookUpCache = False
-    LookUpDisplayedRecordsOnly = False
-    LookUpSmartRefresh = False
-    Sorted = False
-    RecordsCacheCapacity = 100
-    DatabaseAutoActivate = True
-    VersionInfo.Component = '0.55'
-    VersionInfo.Package = '0.55'
-    ParamCheck = False
-    WriteMode = wmDirect
-    Left = 56
-    Top = 96
-    pParams = ()
-  end
-  object SubDataset: TSqlitePassDataset
-    CalcDisplayedRecordsOnly = False
-    Database = Database
-    MasterSourceAutoActivate = True
-    FilterMode = fmSQLDirect
-    FilterRecordLowerLimit = 0
-    FilterRecordUpperLimit = 0
-    Indexed = True
-    LocateSmartRefresh = False
-    LookUpCache = False
-    LookUpDisplayedRecordsOnly = False
-    LookUpSmartRefresh = False
-    Sorted = False
-    RecordsCacheCapacity = 100
-    DatabaseAutoActivate = True
-    VersionInfo.Component = '0.55'
-    VersionInfo.Package = '0.55'
-    ParamCheck = False
-    WriteMode = wmDirect
-    Left = 56
-    Top = 128
-    pParams = ()
-  end
-  object SyncDataset: TSqlitePassDataset
-    CalcDisplayedRecordsOnly = False
-    Database = Database
-    MasterSourceAutoActivate = True
-    FilterMode = fmSQLDirect
-    FilterRecordLowerLimit = 0
-    FilterRecordUpperLimit = 0
-    Indexed = True
-    LocateSmartRefresh = False
-    LookUpCache = False
-    LookUpDisplayedRecordsOnly = False
-    LookUpSmartRefresh = False
-    Sorted = False
-    RecordsCacheCapacity = 100
-    DatabaseAutoActivate = True
-    VersionInfo.Component = '0.55'
-    VersionInfo.Package = '0.55'
-    ParamCheck = False
-    WriteMode = wmDirect
-    Left = 56
-    Top = 160
-    pParams = ()
   end
   object UpdateVCL: TTimer
     Interval = 100
     OnTimer = UpdateVCLTimer
+    Left = 88
+    Top = 160
+  end
+  object Database: TZConnection
     Left = 24
+    Top = 96
+  end
+  object Dataset: TZQuery
+    Connection = Database
+    Params = <>
+    Left = 56
+    Top = 96
+  end
+  object SubDataset: TZQuery
+    Connection = Database
+    Params = <>
+    Left = 56
+    Top = 128
+  end
+  object SyncDataset: TZQuery
+    Connection = Database
+    Params = <>
+    Left = 56
     Top = 160
   end
 end

@@ -20,6 +20,7 @@
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_Define>REMOVE_OPENGL_SUPPORT;$(DCC_Define)</DCC_Define>
 			<DCC_ExeOutput>.\_bin_bga</DCC_ExeOutput>
 			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_BplOutput>.\_bpl_bga</DCC_BplOutput>

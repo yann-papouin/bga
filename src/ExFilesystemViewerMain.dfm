@@ -15,4 +15,8 @@ object ExFilesystemViewerMainForm: TExFilesystemViewerMainForm
   OnActivate = FormActivate
   PixelsPerInch = 96
   TextHeight = 13
+  object AppInstances: TJvAppInstances
+    Left = 8
+    Top = 8
+  end
 end

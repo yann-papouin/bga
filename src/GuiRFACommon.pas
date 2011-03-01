@@ -24,6 +24,10 @@ interface
 
 {$I BGA.inc}
 
+{$IfDef REMOVE_OPENGL_SUPPORT}
+  {$Undef OPENGL_SUPPORT}
+{$EndIf}
+
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, GuiFormCommon,
   Dialogs, VirtualTrees, ActnList, JCLFileUtils, RFALib, Types, SpTBXControls,
