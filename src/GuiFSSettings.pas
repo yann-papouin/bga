@@ -1066,15 +1066,18 @@ var
 begin
   inherited;
   repeat
-  Sleep(FWaitTime); //en millisecondes
 
+
+  if (State = sdWaiting) then
+    Sleep(100)
+  else
   if (State = sdStopping) then
-    State := sdWaiting;
-
+    State := sdWaiting
+  else
   if (State = sdWorking) and not FMutex then
   begin
+    Sleep(FWaitTime);
     FMutex := true;
-
 
     try
       if FDataset.Connection.Connected then

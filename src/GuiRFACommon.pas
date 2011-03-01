@@ -93,10 +93,10 @@ type
 
   TSearchState =
   (
-    ssWaiting,
-    ssStopping,
-    ssUpdating,
-    ssWorking
+    srWaiting,
+    srStopping,
+    srUpdating,
+    srWorking
   );
 
   TSearchResult =
@@ -1136,7 +1136,7 @@ var
   Data : pFse;
   Node : PVirtualNode;
 begin
-  if (FSearchThread.State = ssWorking) or (FSearchThread.State = ssUpdating) then
+  if (FSearchThread.State = srWorking) or (FSearchThread.State = srUpdating) then
   begin
     RFAList.BeginUpdate;
 
@@ -1163,9 +1163,9 @@ begin
       Node := RFAList.GetNext(Node, true);
     end;
 
-    if (FSearchThread.State = ssUpdating) then
+    if (FSearchThread.State = srUpdating) then
     begin
-      FSearchThread.State := ssStopping;
+      FSearchThread.State := srStopping;
       GoToSelection;
     end;
 
@@ -1242,8 +1242,8 @@ var
   Node : pVirtualNode;
   Data : pFse;
 begin
-  FSearchThread.State := ssStopping;
-  while FSearchThread.State <> ssWaiting do
+  FSearchThread.State := srStopping;
+  while FSearchThread.State <> srWaiting do
   begin
     // Wait here;
   end;
@@ -1265,7 +1265,7 @@ begin
   if (FSearchThread.FSearchText <> EmptyStr) then
   begin
     FSearchThread.FSearchNode := RFAList.GetFirst;
-    FSearchThread.State := ssWorking;
+    FSearchThread.State := srWorking;
   end
     else
   begin
@@ -1360,18 +1360,18 @@ begin
   inherited;
   repeat
 
-  if (State = ssWaiting) or (State = ssUpdating) then
+  if (State = srWaiting) or (State = srUpdating) then
     Sleep(100)
   else
-  if (State = ssStopping) then
-    State := ssWaiting
+  if (State = srStopping) then
+    State := srWaiting
   else
-  if (State = ssWorking) and not FOwner.OperationPending then
+  if (State = srWorking) and not FOwner.OperationPending then
   begin
 
     if (FSearchNode = nil) then
     begin
-      State := ssUpdating;
+      State := srUpdating;
     end
       else
     begin
