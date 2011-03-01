@@ -31,10 +31,11 @@ uses
   Graphics,
   Controls,
   Forms,
-  Dialogs;
+  Dialogs, JvAppInst;
 
 type
   TExMeshViewerMainForm = class(TForm)
+    AppInstances: TJvAppInstances;
     procedure FormShow(Sender: TObject);
   private
     { Déclarations privées }

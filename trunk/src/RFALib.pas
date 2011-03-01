@@ -452,7 +452,7 @@ begin
 
     // Show bench results of entries reading
     Bench := GetTickCount - Bench;
-    SendDebugFmt('Entries read in %dms',[Bench]);
+    //SendDebugFmt('Entries read in %dms',[Bench]);
 
     if Assigned(FOnProgress) then
       FOnProgress(Self, roEnd, 0);

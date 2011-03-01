@@ -24,10 +24,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs;
+  Dialogs, JvAppInst;
 
 type
   TExPictureViewerMainForm = class(TForm)
+    AppInstances: TJvAppInstances;
     procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
   private

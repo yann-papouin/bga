@@ -26,7 +26,9 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, SyncObjs,
   Dialogs, GuiFormCommon, ActnList, SpTBXControls, StdCtrls, SpTBXEditors, SpTBXItem, VirtualTrees,
   ExtCtrls, TB2Item, TB2Dock, TB2Toolbar, FSLib, JvComponentBase, JvFormPlacement, DB, RFALib,
-  SqlitePassDbo, JvAppStorage, JvAppRegistryStorage, Grids, DBGrids, JvExDBGrids, JvDBGrid, JvExControls, JvAnimatedImage, JvGIFCtrl;
+  JvAppStorage, JvAppRegistryStorage, Grids, DBGrids, JvExDBGrids, JvDBGrid,
+  JvExControls, JvAnimatedImage, JvGIFCtrl,
+  ZAbstractRODataset, ZAbstractDataset, ZDataset, ZConnection;
 
 type
 
@@ -55,7 +57,7 @@ type
     FArchiveID : integer;
     FSQL : TStringList;
     FOwner : TFSSettingsForm;
-    FDataset: TSqlitePassDataset;
+    FDataset: TZQuery;
 
     FTextAction : string;
     FTextFilename : string;
@@ -129,10 +131,6 @@ type
     SpTBXItem1: TSpTBXItem;
     TemporaryAppStorage: TJvAppRegistryStorage;
     DataSource: TDataSource;
-    Database: TSqlitePassDatabase;
-    Dataset: TSqlitePassDataset;
-    SubDataset: TSqlitePassDataset;
-    SyncDataset: TSqlitePassDataset;
     SpTBXItem2: TSpTBXItem;
     Active: TAction;
     SyncStatusGroup: TSpTBXGroupBox;
@@ -144,6 +142,10 @@ type
     SyncStatus: TSpTBXLabel;
     UpdateVCL: TTimer;
     ApplicationRun: TAction;
+    Database: TZConnection;
+    Dataset: TZQuery;
+    SubDataset: TZQuery;
+    SyncDataset: TZQuery;
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
@@ -246,7 +248,7 @@ begin
   Cancel.Enabled := false;
   SyncStop;
 
-  Database.Close;
+  Database.Disconnect;
   FSyncThread.Free;
   FSQL.Free;
   inherited;
@@ -400,50 +402,50 @@ begin
 
     if not FileExists(Database.Database) then
     begin
-      Database.CreateDatabase(Database.Database, dbtSqlitePass);
-      Database.Open;
+      Database.Connect;
       WaitForm.IncProgress('Creating tables');
+      FSQL.Clear;
 
-      Database.TableDefs.CreateTable
+      FSQL.Add
       (
         'CREATE TABLE "MOD"' +
         '(' +
         '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
-        '"name" BLOB,' +
-        '"path" BLOB' +
+        '"name" TEXT,' +
+        '"path" TEXT' +
         ');'
       );
 
-      Database.TableDefs.CreateTable
+      FSQL.Add
       (
         'CREATE TABLE "DEPENDENCY"' +
         '(' +
-        '"mod" INTEGER,' +
-        '"depends" INTEGER,' +
-        '"order" INTEGER' +
+        '"mod" TEXT,' +
+        '"depends" TEXT,' +
+        '"order" TEXT' +
         ');'
       );
 
-      Database.TableDefs.CreateTable
+      FSQL.Add
       (
         'CREATE TABLE "ARCHIVE"' +
         '(' +
         '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
-        '"name" BLOB,' +
-        '"path" BLOB,' +
+        '"name" TEXT,' +
+        '"path" TEXT,' +
         '"age" DATETIME,' +
-        '"hash" BLOB,' +
+        '"hash" TEXT,' +
         '"mod" INTEGER' +
         ');'
       );
 
-      Database.TableDefs.CreateTable
+      FSQL.Add
       (
         'CREATE TABLE "FILE"' +
         '(' +
         '"id" INTEGER PRIMARY KEY AUTOINCREMENT,' +
-        '"filename" BLOB,' +
-        '"path" BLOB,' +
+        '"filename" TEXT,' +
+        '"path" TEXT,' +
         '"offset" INTEGER,' +
         '"size" INTEGER,' +
         '"compressed" BOOLEAN,' +
@@ -452,14 +454,15 @@ begin
         ');'
       );
 
-      Database.Close;
+      Database.ExecuteDirect(FSQL.Text);
+      Database.Disconnect;
     end;
 
     // Open database if settings are correct
     if FileExists(Database.Database) then
     begin
 
-      Database.Connected := true;
+      Database.Connect;
       if Database.Connected then
       begin
         Dataset.Close;
@@ -480,7 +483,7 @@ begin
           if not Dataset.Locate('name', ModEntry.GameName, Options) then
           begin
             Query := Format('INSERT INTO "MOD" VALUES(NULL, "%s", "%s");', [ModEntry.GameName, FsAbsToRel(ModEntry.AbsolutePath)]);
-            Database.Engine.ExecSQL(Query);
+            Database.ExecuteDirect(Query);
           end;
         end;
 
@@ -498,7 +501,7 @@ begin
 
             // Remove existing dependencies
             Query := Format('DELETE FROM "DEPENDENCY" WHERE mod=%d;',[ModID]);
-            Database.Engine.ExecSQL(Query);
+            Database.ExecuteDirect(Query);
 
             for j := 0 to ModEntry.PathList.Count - 1 do
             begin
@@ -512,7 +515,7 @@ begin
                Inc(Order);
                DepID := SubDataset.FieldByName('id').AsInteger;
                Query := Format('INSERT INTO "DEPENDENCY" VALUES(%d, %d, %d);', [ModID, DepID, Order]);
-               Database.Engine.ExecSQL(Query);
+               Database.ExecuteDirect(Query);
 
                SubDataset.Next;
               end;
@@ -540,15 +543,15 @@ begin
             WaitForm.IncProgress('Updating ARCHIVES');
             SubDataset.Close;
             SubDataset.ParamCheck := true;
-            SubDataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE mod=:IdAsInteger;';
-            SubDataset.Params.ParamByName('IdAsInteger').Value := IntToStr(ModID);
+            SubDataset.SQL.Text := 'SELECT * FROM "ARCHIVE" WHERE mod=:Id;';
+            SubDataset.Params.ParamByName('Id').AsInteger := ModID;
             SubDataset.Open;
 
             FSQL.Clear;
             FSQL.Add('BEGIN;');
             PrepareInsertAchivesFromPath(ModPath);
             FSQL.Add('COMMIT;');
-            Database.Engine.ExecSQL(FSQL.Text);
+            Database.ExecuteDirect(FSQL.Text);
           end;
 
           Dataset.Next;
@@ -609,8 +612,11 @@ begin
   if FileExists(SQLiteDll) then
   begin
     Result := true;
+    Database.Protocol := 'sqlite-3';
+    (*
     if Database.SQLiteLibrary = EmptyStr then
       Database.SQLiteLibrary := SQLiteDll;
+    *)
   end;
 end;
 
@@ -643,7 +649,7 @@ begin
     if Database.Database <> EmptyStr then
     begin
       if FileExists(Database.Database) then
-        Database.Open
+        Database.Connect
       else
       begin
         WarnMsg := 'Please run "Update" first to init the filesystem database named ';
@@ -982,8 +988,8 @@ begin
 
       Dataset.SQL.Clear;
       Dataset.SQL.Add('SELECT file.id, file.filename, file.path, file.offset,');
-      Dataset.SQL.Add('  file.size, file.compressed, file.csize, archive.id,');
-      Dataset.SQL.Add('  archive.name, archive.path');
+      Dataset.SQL.Add('  file.size, file.compressed, file.csize, archive.id AS archive_id,');
+      Dataset.SQL.Add('  archive.name AS archive_name, archive.path AS archive_path');
       Dataset.SQL.Add(' FROM mod, archive, file');
       Dataset.SQL.Add(' WHERE mod.id = ' + IntToStr(ModID));
       Dataset.SQL.Add(' AND file.archive = archive.id');
@@ -1003,9 +1009,9 @@ begin
         Data.Compressed := Dataset.FieldByName('compressed').AsBoolean;
         Data.CompSize := Dataset.FieldByName('csize').AsInteger;
 
-        Data.Archive.ID := Dataset.FieldByName('archive.id').AsInteger;
-        Data.Archive.Name := Dataset.FieldByName('name').AsString;
-        Data.Archive.Path := Dataset.FieldByName('archive.path').AsString;
+        Data.Archive.ID := Dataset.FieldByName('archive_id').AsInteger;
+        Data.Archive.Name := Dataset.FieldByName('archive_name').AsString;
+        Data.Archive.Path := Dataset.FieldByName('archive_path').AsString;
 
         {$IfDef DEBUG_FS}
         if InRange(ID, DbgLow, DbgHigh) then
@@ -1069,7 +1075,7 @@ begin
 
 
     try
-      if FDataset.Database.Connected then
+      if FDataset.Connection.Connected then
       begin
         if not FDataset.Active or (FDataset.Active and FDataset.Eof) then
         begin
@@ -1083,7 +1089,7 @@ begin
         ArchiveFilename := FsRelToAbs(FDataset.FieldByName('path').AsString + FDataset.FieldByName('name').AsString);
         ArchiveDateTime := FDataset.FieldByName('age').AsDateTime;
         ArchiveMD5 :=  FDataset.FieldByName('hash').AsString;
-        CommonActionText := Format(' archive (%d/%d)',[FDataset.RecNo+1, FDataset.RecordCount]);
+        CommonActionText := Format(' archive (%d/%d)',[FDataset.RecNo, FDataset.RecordCount]);
 
         FTextAction := 'Scanning' + CommonActionText;
         FTextFilename := ArchiveFilename;
@@ -1108,7 +1114,7 @@ begin
             begin
               // Updates archives
               Query := Format('DELETE FROM "FILE" WHERE archive=%d;',[ArchiveID]);
-              FDataset.Database.Engine.ExecSQL(Query);
+              FDataset.Connection.ExecuteDirect(Query);
 
               FSQL.Clear;
               FSQL.Add('BEGIN;');
@@ -1120,7 +1126,7 @@ begin
               if Archive.Open(ArchiveFilename, True) = orReadOnly then
               begin
                 FSQL.Add('COMMIT;');
-                FDataset.Database.Engine.ExecSQL(FSQL.Text);
+                FDataset.Connection.ExecuteDirect(FSQL.Text);
               end;
               Archive.Free;
             end;
@@ -1129,7 +1135,7 @@ begin
             Query := Format('UPDATE "ARCHIVE" SET age="%s", hash="%s" WHERE id=%d;',[FileAgeString, FileMD5, ArchiveID]);
             FWaitTime := SYNC_HARDTIME;
 
-            FDataset.Database.Engine.ExecSQL(Query);
+            FDataset.Connection.ExecuteDirect(Query);
           end
             else
           begin
@@ -1148,9 +1154,9 @@ begin
         begin
           // File doesn't exists anymore, remove it
           Query := Format('DELETE FROM "FILE" WHERE archive=%d;',[ArchiveID]);
-          FDataset.Database.Engine.ExecSQL(Query);
+          FDataset.Connection.ExecuteDirect(Query);
           Query := Format('DELETE FROM "ARCHIVE" WHERE id=%d;',[ArchiveID]);
-          FDataset.Database.Engine.ExecSQL(Query);
+          FDataset.Connection.ExecuteDirect(Query);
         end;
 
         if (FPassCount > FUpdatePass) and (FPassCount > 1) then

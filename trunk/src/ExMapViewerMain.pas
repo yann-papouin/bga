@@ -24,10 +24,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs;
+  Dialogs, JvAppInst;
 
 type
   TExMapViewerMainForm = class(TForm)
+    AppInstances: TJvAppInstances;
     procedure FormShow(Sender: TObject);
   private
     { Déclarations privées }
