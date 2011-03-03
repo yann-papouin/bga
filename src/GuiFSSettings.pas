@@ -149,7 +149,6 @@ type
     procedure AddExecute(Sender: TObject);
     procedure ImportExecute(Sender: TObject);
     procedure UpdateExecute(Sender: TObject);
-    procedure FilesystemChoiceChange(Sender: TObject);
     procedure CancelExecute(Sender: TObject);
     procedure FormStorageBeforeSavePlacement(Sender: TObject);
     procedure FormStorageAfterRestorePlacement(Sender: TObject);
@@ -207,7 +206,7 @@ var
 const
   FS_SEPARATOR = '|';
   SYNC_HARDTIME = 20;
-  SYNC_EASYTIME = 200;
+  SYNC_EASYTIME = 400;
 
   IMG_SYNC_STOP = 312;
   IMG_SYNC_INIT = 325;
@@ -315,15 +314,6 @@ begin
   end;
 end;
 
-(*
-  'CREATE TABLE [SampleTable]
-  ( [AutoIncField] AUTOINC, [BinIntField] BIGINT,' +
-  '[BinaryField] BINARY, [BlobField] BLOB, [BooleanField] BOOLEAN, [CharField] CHAR,' +
-  '[ClobField] CLOB, [CurrencyField] CURRENCY, [DateField] DATE, [DateTextField] DATE,' +
-  '[DateTimeField] DATETIME, [DecField] DEC, [DecimalField] DECIMAL, [DoubleField] DOUBLE,' +
-  '[DoublePrecisionField] DOUBLE PRECISION, [FloatField] FLOAT, [GaphicField] GRAPHIC,'+
-  '[GuidField] GUID, [IntField] INT, [Int64Field] INT64);');
-  *)
 
 procedure TFSSettingsForm.PrepareUpdateDatabase;
 var
@@ -343,6 +333,8 @@ var
     k : integer;
     ArchiveName : string;
     ArchivePath : string;
+    PatchText : string;
+    PatchVersion : integer;
 
     Content : TStringDynArray;
   begin
@@ -362,9 +354,12 @@ var
         ArchiveName := ExtractFileName(Content[k]);
         ArchivePath := FsAbsToRel(IncludeTrailingBackslash(ExtractFilePath(Content[k])));
 
+        PatchText := SFBetweenTwo('_','.rfa', LowerCase(ArchiveName));
+        PatchVersion := StrToIntDef(PatchText, -1);
+
         if not SubDataset.Locate('path; name', VarArrayOf([ArchivePath, ArchiveName]), Options) then
         begin
-          FSQL.Add(Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", NULL, NULL, "%d");', [ArchiveName, ArchivePath, ModID]));
+          FSQL.Add(Format('INSERT INTO "ARCHIVE" VALUES(NULL, "%s", "%s", NULL, NULL, "%d", "%d");', [ArchiveName, ArchivePath, ModID, PatchVersion]));
           //SendDebug(FSQL.Strings[FSQL.Count-1]);
         end;
       end
@@ -397,7 +392,7 @@ begin
     Options := [loCaseInsensitive, loPartialKey];
 
     if FileExists(Database.Database) and (DebugHook <> 0) then
-      if ShowDialog('Database exists', 'Delete older data and create a new database?', mtInformation, mbYesNo, mbNo, 0)= mrOk then
+      if ShowDialog('Database exists', 'Delete older data and create a new database?', mtInformation, mbYesNo, mbNo, 0)= mrYes then
         DeleteFile(Database.Database);
 
     if not FileExists(Database.Database) then
@@ -421,8 +416,8 @@ begin
         'CREATE TABLE "DEPENDENCY"' +
         '(' +
         '"mod" TEXT,' +
-        '"depends" TEXT,' +
-        '"order" TEXT' +
+        '"dep" TEXT,' +
+        '"priority" TEXT' +
         ');'
       );
 
@@ -435,7 +430,8 @@ begin
         '"path" TEXT,' +
         '"age" DATETIME,' +
         '"hash" TEXT,' +
-        '"mod" INTEGER' +
+        '"mod" INTEGER,' +
+        '"patch" INTEGER' +
         ');'
       );
 
@@ -613,10 +609,6 @@ begin
   begin
     Result := true;
     Database.Protocol := 'sqlite-3';
-    (*
-    if Database.SQLiteLibrary = EmptyStr then
-      Database.SQLiteLibrary := SQLiteDll;
-    *)
   end;
 end;
 
@@ -768,12 +760,6 @@ begin
       ApplySettingsData(Data);
     end;
   end;
-end;
-
-procedure TFSSettingsForm.FilesystemChoiceChange(Sender: TObject);
-begin
-  inherited;
-  //Settings.Enabled := FileExists(FilesystemChoice.Text);
 end;
 
 procedure TFSSettingsForm.FilesystemListBeforeCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex; CellPaintMode: TVTCellPaintMode; CellRect: TRect; var ContentRect: TRect);
@@ -987,14 +973,23 @@ begin
       Dataset.Close;
 
       Dataset.SQL.Clear;
-      Dataset.SQL.Add('SELECT file.id, file.filename, file.path, file.offset,');
-      Dataset.SQL.Add('  file.size, file.compressed, file.csize, archive.id AS archive_id,');
-      Dataset.SQL.Add('  archive.name AS archive_name, archive.path AS archive_path');
-      Dataset.SQL.Add(' FROM mod, archive, file');
-      Dataset.SQL.Add(' WHERE mod.id = ' + IntToStr(ModID));
-      Dataset.SQL.Add(' AND file.archive = archive.id');
-      Dataset.SQL.Add(' AND archive.mod = mod.id;');
-
+      Dataset.SQL.Add('SELECT');
+      Dataset.SQL.Add('  archive.path AS archive_path,  archive.name AS archive_name,');
+      Dataset.SQL.Add('  archive.id AS archive_id,');
+      Dataset.SQL.Add('  dependency.mod, dependency.dep, dependency.priority,');
+      Dataset.SQL.Add('  file.id, file.filename, file.path, file.offset,');
+      Dataset.SQL.Add('  file.size, file.compressed, file.csize');
+      Dataset.SQL.Add('FROM');
+      Dataset.SQL.Add('  mod, archive, dependency, file');
+      Dataset.SQL.Add('WHERE');
+      Dataset.SQL.Add(' file.archive = archive.id');
+      Dataset.SQL.Add('AND');
+      Dataset.SQL.Add(' dependency.mod = mod.id');
+      Dataset.SQL.Add('AND');
+      Dataset.SQL.Add(' archive.mod = dependency.dep');
+      Dataset.SQL.Add('AND');
+      Dataset.SQL.Add(' mod.id = ' + IntToStr(ModID) +';');
+      Dataset.SQL.SaveToFile('Query.txt');
       Dataset.Open;
 
       while not Dataset.Eof do
@@ -1102,7 +1097,7 @@ begin
         if FileAge(ArchiveFilename, FileDateAndTime) = true then
         begin
           // We need to compare time with an Epsilon due to rounding errors
-          if Abs(FileDateAndTime - ArchiveDateTime) > 0.00001 then
+          if Abs(FileDateAndTime - ArchiveDateTime) > 0.0001 then
           begin
             //SendDebugWarning('Date & Time compare failed');
 

@@ -169,7 +169,7 @@ type
     procedure SetSearchText(const Value: string);
     function GetSearchText: string;
   protected
-    function FindFileByName(Filename: string): PVirtualNode;
+    function FindFileByName(Filename: string; ParentNode : PVirtualNode): PVirtualNode;
     function FindFileByPath(Path: string): PVirtualNode;
     function FindFile(Path: String): PVirtualNode;
     function FindPath(Path: String) : PVirtualNode;
@@ -511,11 +511,15 @@ begin
 end;
 
 
-function TRFACommonForm.FindFileByName(Filename: string): PVirtualNode;
+function TRFACommonForm.FindFileByName(Filename: string; ParentNode : PVirtualNode): PVirtualNode;
 var
   Data : pFse;
 begin
-  Result := RFAList.GetFirst;
+  if ParentNode = nil then
+    Result := RFAList.GetFirst
+  else
+    Result := RFAList.GetFirstChild(ParentNode);
+
 
   while Result <> nil do
   begin
@@ -524,7 +528,12 @@ begin
     if AnsiCompareText(Data.W32Name, Filename) = 0 then
       Exit
     else
-      Result := RFAList.GetNext(Result, true);
+    begin
+      if ParentNode = nil then
+        Result := RFAList.GetNext(Result, true)
+      else
+        Result := RFAList.GetNextSibling(Result);
+    end;
   end;
 end;
 
