@@ -101,7 +101,7 @@ const
 implementation
 
 uses
-  CONLib;
+  CONLib, StringFunction;
 
 
 
@@ -203,11 +203,14 @@ begin
 end;
 
 procedure TBattlefieldModEntry.LoadFromConFile(Filename: string);
+const
+  BC1942_AUTO_MODPATH = 'rem Battlecraft 1942 added this command in order to generate lightmaps for this MOD';
 var
   Text, ModPath : TStringList;
-  i : integer;
+  i, Pos : integer;
 begin
   PathList.Clear;
+  Pos := 0;
 
   GameURL := Filename;
   GameName := Filename;
@@ -227,12 +230,23 @@ begin
     GameVersion := GetStringFromProperty(Text, 'game.setCustomGameVersion');
     GameURL := GetStringFromProperty(Text, 'game.setCustomGameUrl');
 
+
+    //Specific here, we need to remove modpath added by Battlecraft
+    for i := 0 to Text.Count - 1 do
+    begin
+      // Find line that contains Battlecraft comment
+      if Pos <= 0 then
+        Pos := SFUniPos(BC1942_AUTO_MODPATH, Text[i])
+      else
+        // When we found it, delete all lines after it that contains modpaht data
+        if SFUniPos('game.addModPath', Text[i]) > 0 then
+          Text[i] := EmptyStr;
+    end;
+
     GetStringListFromProperty(Text, 'game.addModPath', ModPath);
 
     for i := 0 to ModPath.Count - 1 do
     begin
-      //PathList.Add(ModPath[i]);
-      /// Insert in a revert order
       PathList.Insert(0, ModPath[i]);
     end;
 

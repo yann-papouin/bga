@@ -276,16 +276,19 @@ end;
 
 procedure TFSViewForm.ListFiles(Sender: TObject; FSData: TFSFileData);
 var
-  Node: PVirtualNode;
+  Node, ParentNode, ExistingNode: PVirtualNode;
   Data: pFse;
   W32Path: AnsiString;
 begin
   FSData.Path := StringReplace(FSData.Path, ARCHIVE_PATH, '', [rfReplaceAll]);
   W32Path := StringReplace(FSData.Path, '/', '\', [rfReplaceAll]) + FSData.Filename;
 
-  Node := GetBuildPath(W32Path);
+  ParentNode := GetBuildPath(W32Path);
+  Node := FindFileByName(ExtractFileName(W32Path), ParentNode);
 
-  Node := RFAList.AddChild(Node);
+  if Node = nil then
+    Node := RFAList.AddChild(ParentNode);
+
   Data := RFAList.GetNodeData(Node);
   Data.RFAFileHandle := nil;
   Data.RFAFileName := FSData.Archive.Path + FSData.Archive.Name;
