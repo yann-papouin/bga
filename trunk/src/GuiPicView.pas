@@ -26,7 +26,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GuiFormCommon, GLScene, GLObjects, GLCoordinates, GLWin32Viewer,
   GLCrossPlatform, BaseClasses, DDSImage, GLSimpleNavigation, GLBitmapFont,
-  GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage, GraphicEx;
+  GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage, GraphicEx, StdCtrls;
 
 type
   TSinglePoint = record
@@ -41,12 +41,15 @@ type
     GLCamera: TGLCamera;
     WindowsBitmapFont: TGLWindowsBitmapFont;
     Cadencer: TGLCadencer;
-    Plane: TGLPlane;
     GLZoom: TGLAbsoluteHUDText;
     GLZoomPlane: TGLPlane;
     Background: TGLPlane;
     GLFileInfo: TGLHUDText;
     WindowsBitmapFontBold: TGLWindowsBitmapFont;
+    Invariant: TGLDummyCube;
+    PicturePlane: TGLPlane;
+    Scalable: TGLDummyCube;
+    GLPlane1: TGLPlane;
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure CadencerProgress(Sender: TObject; const deltaTime,
@@ -86,7 +89,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Math, Types;
+  Math, Types, VectorTypes, GLMaterial, Dbugintf;
 
 const
   MIN_SCENE_SCALE = 0.01;
@@ -111,8 +114,7 @@ end;
 procedure TPICViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
-  FScale := GLCamera.SceneScale;
-
+  FScale := 1;
 end;
 
 procedure TPICViewForm.LoadTexture(Filename: string);
@@ -124,14 +126,15 @@ begin
 
   Title := Filename;
 
-  Plane.Material.Texture.Enabled := true;
-  Plane.Material.Texture.Image.LoadFromFile(Filename);
+  PicturePlane.Material.Texture.Enabled := true;
+  PicturePlane.Material.Texture.Image.LoadFromFile(Filename);
+  //PicturePlane.Material.BlendingMode := bmAdditive;
 
-  FTxWidth := Plane.Material.Texture.Image.Width;
-  FTxHeight := Plane.Material.Texture.Image.Height;
+  FTxWidth := PicturePlane.Material.Texture.Image.Width;
+  FTxHeight := PicturePlane.Material.Texture.Image.Height;
 
-  Plane.Width := FTxWidth;
-  Plane.Height := FTxHeight;
+  PicturePlane.Width := FTxWidth;
+  PicturePlane.Height := FTxHeight;
 
   GLFileInfo.Text := Format('%s (%dx%d)',[ExtractFileName(Filename), FTxWidth, FTxHeight]);
 end;
@@ -151,11 +154,11 @@ begin
   GreaterThanValue: FCamOffset.Y := FCamOffset.Y - abs(FCamOffset.Y - FAutoPanOffset.Y)* CAM_SPEED;
   end;
 
-  GLCamera.Position.X := -FTxWidth/2 + (FTxWidth - Viewer.Width)/2 + FCamOffset.X;
-  GLCamera.Position.Y := -FTxHeight/2 + (FTxHeight - Viewer.Height)/2 + FCamOffset.Y;
+  GLCamera.Position.X :=  (-Viewer.Width)/2  + FCamOffset.X;
+  GLCamera.Position.Y :=  (-Viewer.Height)/2 + FCamOffset.Y;
 
-  Background.Position.X := FCamOffset.X;
-  Background.Position.Y := FCamOffset.Y;
+  //Background.Position.X := FCamOffset.X;
+  //Background.Position.Y := FCamOffset.Y;
 
   GLFileInfo.Position.X := Viewer.Width/2;
   GLFileInfo.Position.Y := Viewer.Height - 20;
@@ -181,8 +184,12 @@ begin
   GLZoomPlane.Position.X := GLCamera.Position.X + Viewer.Width/2;
   GLZoomPlane.Position.Y := GLCamera.Position.Y + Viewer.Height/2;
 
-  Plane.Width := FTxWidth * FScale;
-  Plane.Height := FTxHeight * FScale;
+
+  Scalable.Scale.X := FScale;
+  Scalable.Scale.Y := FScale;
+
+  //Scalable.Width := FTxWidth * FScale;
+  //Plane.Height := FTxHeight * FScale;
 end;
 
 
@@ -233,8 +240,6 @@ end;
 
 
 procedure TPICViewForm.ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-var
-  FDragDelta : TSinglePoint;
 begin
   inherited;
 
@@ -248,11 +253,8 @@ begin
 
   if ssLeft in Shift then
   begin
-    FDragDelta.X := X - FInitPos.X;
-    FDragDelta.Y := Y - FInitPos.Y;
-
-    FAutoPanOffset.X := -FDragDelta.X;
-    FAutoPanOffset.Y :=  FDragDelta.Y;
+    FAutoPanOffset.X := -(X - FInitPos.X);
+    FAutoPanOffset.Y :=  (Y - FInitPos.Y);
   end;
 
   FMoving := false;
