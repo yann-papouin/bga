@@ -23,12 +23,26 @@ unit GuiPicView;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Contnrs,
   Dialogs, GuiFormCommon, GLScene, GLObjects, GLCoordinates, GLWin32Viewer,
-  GLCrossPlatform, BaseClasses, DDSImage, GLSimpleNavigation, GLBitmapFont,
+  GLCrossPlatform, BaseClasses, DDSImage, GLSimpleNavigation, GLBitmapFont, GLMultiPolygon,
   GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage, GraphicEx, StdCtrls;
 
 type
+  TGLArea = class(TGLMultiPolygon)
+
+  end;
+
+  TAreaPod = class(TObjectList)
+  private
+    function GetItem(AIndex: integer): TGLArea;
+    procedure SetItem(AIndex: integer; const Value: TGLArea);
+  public
+    function Add(AItem: TGLArea): integer;
+    property Items[AIndex: integer]: TGLArea read GetItem write SetItem; default;
+  end;
+
+
   TSinglePoint = record
     X : single;
     Y : single;
@@ -49,7 +63,6 @@ type
     Invariant: TGLDummyCube;
     PicturePlane: TGLPlane;
     Scalable: TGLDummyCube;
-    GLPlane1: TGLPlane;
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure CadencerProgress(Sender: TObject; const deltaTime,
@@ -274,6 +287,24 @@ procedure TPICViewForm.ViewerMouseUp(Sender: TObject; Button: TMouseButton;
 begin
   inherited;
   Viewer.Cursor := crDefault;
+end;
+
+
+{ TAreaPod }
+
+function TAreaPod.Add(AItem: TGLArea): integer;
+begin
+  Result := inherited Add(AItem);
+end;
+
+function TAreaPod.GetItem(AIndex: integer): TGLArea;
+begin
+  Result := Get(AIndex);
+end;
+
+procedure TAreaPod.SetItem(AIndex: integer; const Value: TGLArea);
+begin
+  Put(AIndex, Value);
 end;
 
 end.
