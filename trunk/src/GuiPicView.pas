@@ -24,9 +24,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Contnrs,
-  Dialogs, GuiFormCommon, GLScene, GLObjects, GLCoordinates, GLWin32Viewer,
+  Dialogs, GuiFormCommon, GLScene, GLObjects, GLCoordinates, GLWin32Viewer, GLNodes,
   GLCrossPlatform, BaseClasses, DDSImage, GLSimpleNavigation, GLBitmapFont, GLMultiPolygon,
-  GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage, GraphicEx, StdCtrls;
+  GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage, GraphicEx, StdCtrls, GLGeomObjects;
 
 type
   TGLArea = class(TGLMultiPolygon)
@@ -63,6 +63,8 @@ type
     Invariant: TGLDummyCube;
     PicturePlane: TGLPlane;
     Scalable: TGLDummyCube;
+    GLPolygon1: TGLPolygon;
+    GLLines1: TGLLines;
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure CadencerProgress(Sender: TObject; const deltaTime,
@@ -78,6 +80,8 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     { Déclarations privées }
+    FLines : TGLLines;
+    FFreeNode : TGLNode;
     FInitPos : TSinglePoint;
     FMousePos : TSinglePoint;
     FCamOffset : TSinglePoint;
@@ -102,7 +106,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Math, Types, VectorTypes, GLMaterial, Dbugintf;
+  Math, Types, VectorTypes, VectorGeometry, GLMaterial, Dbugintf;
 
 const
   MIN_SCENE_SCALE = 0.01;
@@ -253,6 +257,8 @@ end;
 
 
 procedure TPICViewForm.ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var
+  Position : TVector;
 begin
   inherited;
 
@@ -260,6 +266,8 @@ begin
     Exit
   else
     FMoving := true;
+
+
 
   FMousePos.X := X;
   FMousePos.Y := Y;
@@ -270,16 +278,42 @@ begin
     FAutoPanOffset.Y :=  (Y - FInitPos.Y);
   end;
 
+  if FFreeNode <> nil then
+  begin
+    Position := VectorMake(GLScene.CurrentBuffer.ScreenToWorld(X,Y));
+    FFreeNode.AsVector := Scalable.AbsoluteToLocal(Position);
+  end;
+
   FMoving := false;
 end;
 
 procedure TPICViewForm.ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  Position : TVector;
 begin
   inherited;
   FInitPos.X := X + FCamOffset.X;
   FInitPos.Y := Y - FCamOffset.Y;
 
   Viewer.Cursor := crHandPoint;
+
+  Position := VectorMake(GLScene.CurrentBuffer.ScreenToWorld(X,Y));
+
+  if FLines = nil then
+  begin
+    FLines := TGLLines.Create(Self);
+    FLines.Parent := Scalable;
+
+    FLines.AntiAliased := True;
+    FLines.LineWidth := 2;
+    FLines.SplineMode := lsmLines;
+
+    FFreeNode := FLines.Nodes.Add;
+    FFreeNode.AsVector := Scalable.AbsoluteToLocal(Position);
+  end;
+
+  FFreeNode := FLines.Nodes.Add;
+  FFreeNode.AsVector := Scalable.AbsoluteToLocal(Position);
 end;
 
 procedure TPICViewForm.ViewerMouseUp(Sender: TObject; Button: TMouseButton;
