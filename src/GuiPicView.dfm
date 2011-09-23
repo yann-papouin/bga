@@ -128,6 +128,25 @@ inherited PICViewForm: TPICViewForm
         Width = 128.000000000000000000
       end
     end
+    object GLPolygon1: TGLPolygon
+      ShowAxes = True
+      Up.Coordinates = {000000000000803F0000008000000000}
+      Nodes = <
+        item
+        end
+        item
+          X = 50.000000000000000000
+          Y = 50.000000000000000000
+        end
+        item
+          X = -50.000000000000000000
+          Y = 50.000000000000000000
+        end>
+    end
+    object GLLines1: TGLLines
+      Nodes = <>
+      Options = []
+    end
   end
   object WindowsBitmapFont: TGLWindowsBitmapFont
     Font.Charset = DEFAULT_CHARSET
