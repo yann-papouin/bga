@@ -1,28 +1,32 @@
 inherited PICViewForm: TPICViewForm
   Caption = 'Picture View'
-  ClientHeight = 551
-  ClientWidth = 606
+  ClientHeight = 464
+  ClientWidth = 499
   OnCloseQuery = FormCloseQuery
+  OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
   OnMouseWheel = FormMouseWheel
-  ExplicitWidth = 622
-  ExplicitHeight = 589
+  ExplicitWidth = 515
+  ExplicitHeight = 502
   PixelsPerInch = 96
   TextHeight = 13
   object Viewer: TGLSceneViewer
     Left = 0
     Top = 0
-    Width = 606
-    Height = 551
+    Width = 499
+    Height = 464
     Camera = GLCamera
     Buffer.BackgroundColor = 3815994
     Buffer.AmbientColor.Color = {0000803F0000803F0000803F0000803F}
-    FieldOfView = 166.339050292968800000
+    FieldOfView = 163.808944702148400000
     Align = alClient
     OnDblClick = ViewerDblClick
     OnMouseDown = ViewerMouseDown
     OnMouseMove = ViewerMouseMove
     OnMouseUp = ViewerMouseUp
     TabOrder = 0
+    ExplicitWidth = 606
+    ExplicitHeight = 551
   end
   object GLScene: TGLScene
     Left = 8
@@ -127,25 +131,6 @@ inherited PICViewForm: TPICViewForm
         Height = 128.000000000000000000
         Width = 128.000000000000000000
       end
-    end
-    object GLPolygon1: TGLPolygon
-      ShowAxes = True
-      Up.Coordinates = {000000000000803F0000008000000000}
-      Nodes = <
-        item
-        end
-        item
-          X = 50.000000000000000000
-          Y = 50.000000000000000000
-        end
-        item
-          X = -50.000000000000000000
-          Y = 50.000000000000000000
-        end>
-    end
-    object GLLines1: TGLLines
-      Nodes = <>
-      Options = []
     end
   end
   object WindowsBitmapFont: TGLWindowsBitmapFont
