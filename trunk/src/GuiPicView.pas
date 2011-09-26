@@ -33,23 +33,35 @@ type
 
   TGLArea = class;
 
+  TDrawMode =
+  (
+    dmFreeform,
+    dmRectangle,
+    dmEllipse
+  );
+
   TGLAreaPencil = class(TGLLines)
   private
     FCross : TGLLines;
     FCursorNode: TGLNode;
-    function GetLastNode: TGLNode;
+    FPencilPosition: TVector;
+    FScreenPoint: TPoint;
+    FDrawMode: TDrawMode;
+    //function GetLastNode: TGLNode;
+    procedure SetScreenPoint(const Value: TPoint);
   public
-    PencilPosition : TVector; // Position in scene
+    InitialPosition : TVector;
+    property ScreenPoint : TPoint read FScreenPoint write SetScreenPoint;
+    property PencilPosition : TVector read FPencilPosition; // Position in scene
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function IsDrawing : Boolean;
     procedure Cancel;
     procedure Undo;
-    procedure Start;
-    function Continue : TGLArea;
-    procedure DistantClose;
     property CursorNode : TGLNode read FCursorNode;
-    property LastNode : TGLNode read GetLastNode;
+    property DrawMode : TDrawMode read FDrawMode;
+    procedure MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
   end;
 
   TGLArea = class(TGLPolygon)
@@ -93,6 +105,7 @@ type
     Invariant: TGLDummyCube;
     PicturePlane: TGLPlane;
     Scalable: TGLDummyCube;
+    GLLines1: TGLLines;
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure CadencerProgress(Sender: TObject; const deltaTime,
@@ -121,7 +134,6 @@ type
     FTxHeight : integer;
     FTxWidth : integer;
     procedure Reset;
-    function ScenePositionFromScreenPoint(X, Y: integer): TVector;
   public
     { Déclarations publiques }
     procedure LoadTexture(Filename: string);
@@ -157,12 +169,6 @@ begin
   Result[3] := Math.SimpleRoundTo(AValue[3], ADigit);
 end;
 
-function TPICViewForm.ScenePositionFromScreenPoint(X,Y: integer):TVector;
-begin
-  Result := VectorMake(GLScene.CurrentBuffer.ScreenToWorld(X,Y));
-  Result := Scalable.AbsoluteToLocal(Result);
-  Result := SimpleRoundTo(Result, 1);
-end;
 
 procedure TPICViewForm.Preview;
 begin
@@ -184,6 +190,7 @@ begin
   FScale := 1;
   FPencil := TGLAreaPencil.Create(Self);
   FPencil.Parent := Scalable;
+  FPencil.FCross.Parent := GLScene.Objects;
 end;
 
 procedure TPICViewForm.FormDestroy(Sender: TObject);
@@ -350,11 +357,6 @@ end;
 
 
 procedure TPICViewForm.ViewerMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-var
-  PosA, PosB : TVector;
-  Slope : Extended;
-  AngleRad : Extended;
-  AngleDeg : Extended;
 begin
   inherited;
 
@@ -366,59 +368,18 @@ begin
   FMousePos.X := X;
   FMousePos.Y := Y;
 
-  FPencil.PencilPosition := ScenePositionFromScreenPoint(X,Y);
-
   if ssLeft in Shift then
   begin
     FAutoPanOffset.X := -(X - FInitPos.X);
     FAutoPanOffset.Y :=  (Y - FInitPos.Y);
   end;
 
-  if FPencil.IsDrawing then
-  begin
-    // Get current mouse position as Point A
-    PosA := FPencil.PencilPosition;
-
-    // Get position of the previous point added as Point B
-    PosB := FPencil.GetLastNode.AsVector;
-
-    // Convert 2-Points data to Angles
-    AngleRad := ArcTan2(PosA[idY]-PosB[idY], PosA[idX]-PosB[idX]);
-    AngleDeg := RadToDeg(AngleRad);
-
-    SendDebugFmt('Teta(rad) = %.3f,  Teta(deg) = %.3f', [AngleRad, AngleDeg]);
-
-    if not IsNan(AngleDeg) then
-    begin
-      if ssCtrl in Shift then
-        AngleDeg := Math.SimpleRoundTo(AngleDeg, 1)
-      else
-        AngleDeg := Math.SimpleRoundTo(AngleDeg, 0);
-
-      AngleRad := DegToRad(AngleDeg);
-      Slope := Tan(AngleRad);
-
-      if ((Abs(AngleDeg) >= 0) and (Abs(AngleDeg) <= 45)) or (Abs(AngleDeg) >= 145) then
-      begin
-        // Affect Y value only
-        PosA[idY] := Slope*(PosA[idX]-PosB[idX]) + PosB[idY];
-      end
-        else
-      begin
-        // Affect X value only
-        PosA[idX] := (PosA[idY]-PosB[idY])/Slope+PosB[idX];
-      end;
-    end;
-
-    FPencil.CursorNode.AsVector := PosA;
-  end;
+  FPencil.MouseMove(Sender, Shift, X, Y);
 
   FMoving := false;
 end;
 
 procedure TPICViewForm.ViewerMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var
-  Area : TGLArea;
 begin
   inherited;
   FInitPos.X := X + FCamOffset.X;
@@ -426,32 +387,7 @@ begin
 
   Viewer.Cursor := crHandPoint;
 
-  if not FPencil.IsDrawing and (ssCtrl in Shift) then
-  begin
-    FPencil.Start;
-    FPencil.MoveLast;
-  end;
-
-  if FPencil.IsDrawing then
-  begin
-
-    if ssDouble in Shift then
-    begin
-      FPencil.DistantClose;
-    end;
-
-    Area := FPencil.Continue;
-
-    // Pencil is now closed
-    if Area<>nil then
-    begin
-      Area.Material.BlendingMode := bmTransparency;
-      Area.Material.FrontProperties.Emission.RandomColor;
-      Area.Material.FrontProperties.Diffuse.Alpha := 0.5;
-      Area.Contour.LineColor := Area.Material.FrontProperties.Emission;
-    end;
-
-  end;
+  FPencil.MouseDown(Sender, Button, Shift, X, Y);
 end;
 
 procedure TPICViewForm.ViewerMouseUp(Sender: TObject; Button: TMouseButton;
@@ -484,10 +420,12 @@ end;
 constructor TGLArea.Create(AOwner: TComponent);
 begin
   inherited;
+  //Parts := [ppTop];
   FContour := TGLLines.Create(Self);
   FContour.Parent := Self;
   FContour.AntiAliased := True;
   FContour.LineWidth := 2;
+  FContour.NodesAspect := lnaInvisible;
   FContour.SplineMode := lsmLines;
 end;
 
@@ -508,6 +446,7 @@ end;
 constructor TGLAreaPencil.Create(AOwner: TComponent);
 begin
   inherited;
+  FDrawMode := dmRectangle;
   Parent := Self;
   LineColor.Color := clrBlue;
   AntiAliased := True;
@@ -515,6 +454,17 @@ begin
   SplineMode := lsmLines;
 
   FCross := TGLLines.Create(Self);
+  FCross.AntiAliased := True;
+  FCross.LineColor.Color := clrWhite;
+  FCross.LineColor.Alpha := 0.5;
+  FCross.LinePattern := 255;
+  FCross.NodesAspect := lnaInvisible;
+  FCross.SplineMode := lsmSegments;
+  FCross.Parent := Parent;
+  FCross.Nodes.Add;
+  FCross.Nodes.Add;
+  FCross.Nodes.Add;
+  FCross.Nodes.Add;
 end;
 
 
@@ -524,7 +474,7 @@ begin
   inherited;
 end;
 
-
+(*
 function TGLAreaPencil.GetLastNode: TGLNode;
 begin
   if Nodes.Count >= 2 then
@@ -532,17 +482,220 @@ begin
   else
     Result := nil;
 end;
+*)
 
 function TGLAreaPencil.IsDrawing: Boolean;
 begin
   Result := FCursorNode<>nil;
 end;
 
-procedure TGLAreaPencil.Start;
+
+procedure TGLAreaPencil.MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  Area : TGLArea;
 begin
-  FCursorNode := Nodes.Add;
-  FCursorNode.AsVector := PencilPosition;
+  if not IsDrawing and (ssCtrl in Shift) then
+  begin
+
+    if DrawMode = dmFreeform then
+    begin
+      FCursorNode := Nodes.Add;
+      FCursorNode.AsVector := FPencilPosition;
+    end;
+
+    if DrawMode = dmRectangle then
+    begin
+      FCursorNode := Nodes.Add;
+      FCursorNode.AsVector := FPencilPosition;
+    end;
+
+    MoveLast;
+  end;
+
+  if IsDrawing then
+  begin
+
+    if DrawMode = dmFreeform then
+    begin
+      if ssDouble in Shift then
+      begin
+        FCursorNode.AsVector := Nodes.First.AsVector;
+      end;
+
+      // Check close
+      if (Nodes.Count>=2) and VectorEquals(Nodes.First.AsVector, Nodes.Last.AsVector) then
+      begin
+        Area := TGLArea.Create(Self);
+        Area.Nodes.Assign(Nodes);
+        Area.Parent := Parent;
+
+        Area.Contour.Nodes.Assign(Nodes);
+        Area.Contour.LineWidth := 2;
+
+        Area.Material.BlendingMode := bmTransparency;
+        Area.Material.FrontProperties.Emission.RandomColor;
+        Area.Material.FrontProperties.Diffuse.Alpha := 0.5;
+        Area.Contour.LineColor := Area.Material.FrontProperties.Emission;
+
+        Cancel;
+      end
+        else // Continue
+      begin
+        InitialPosition := FCursorNode.AsVector;
+        FCursorNode := Nodes.Add;
+        FCursorNode.AsVector := FPencilPosition;
+      end;
+    end;
+
+
+    if DrawMode = dmRectangle then
+    begin
+
+      // Check close
+      if (Nodes.Count>=4) then
+      begin
+        Area := TGLArea.Create(Self);
+        Area.Nodes.Assign(Nodes);
+        Area.Parent := Parent;
+
+        Area.Contour.Nodes.Assign(Nodes);
+        Area.Contour.LineWidth := 2;
+
+        Area.Material.BlendingMode := bmTransparency;
+        Area.Material.FrontProperties.Emission.RandomColor;
+        Area.Material.FrontProperties.Diffuse.Alpha := 0.5;
+        Area.Contour.LineColor := Area.Material.FrontProperties.Emission;
+
+        Cancel;
+      end
+        else // Continue
+      begin
+        InitialPosition := FCursorNode.AsVector;
+        Nodes.Add;
+        FCursorNode := Nodes.Add;
+        Nodes.Add;
+        Nodes.Add;
+        FCursorNode.AsVector := FPencilPosition;
+      end;
+
+    end;
+
+  end;
+
 end;
+
+procedure TGLAreaPencil.MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var
+  Point : TPoint;
+  PosA, PosB, PosC, PosD : TVector;
+  Slope : Extended;
+  AngleRad : Extended;
+  AngleDeg : Extended;
+begin
+
+  Point.X := X;
+  Point.Y := Y;
+
+  ScreenPoint := Point;
+
+  if IsDrawing then
+  begin
+    // Get current mouse position as Point A
+    PosA := PencilPosition;
+    // Get position of the previous point added as Point B
+    PosB := InitialPosition;
+
+    if DrawMode = dmFreeform then
+    begin
+
+      // Convert 2-Points data to Angles
+      AngleRad := ArcTan2(PosA[idY]-PosB[idY], PosA[idX]-PosB[idX]);
+      AngleDeg := RadToDeg(AngleRad);
+
+      //SendDebugFmt('Teta(rad) = %.3f,  Teta(deg) = %.3f', [AngleRad, AngleDeg]);
+
+      if not IsNan(AngleDeg) then
+      begin
+        if ssCtrl in Shift then
+          AngleDeg := Math.SimpleRoundTo(AngleDeg, 1)
+        else
+          AngleDeg := Math.SimpleRoundTo(AngleDeg, 0);
+
+        AngleRad := DegToRad(AngleDeg);
+        Slope := Tan(AngleRad);
+
+        if ((Abs(AngleDeg) >= 0) and (Abs(AngleDeg) <= 45)) or (Abs(AngleDeg) >= 145) then
+        begin
+          // Affect Y value only
+          PosA[idY] := Slope*(PosA[idX]-PosB[idX]) + PosB[idY];
+        end
+          else
+        begin
+          // Affect X value only
+          PosA[idX] := (PosA[idY]-PosB[idY])/Slope+PosB[idX];
+        end;
+      end;
+
+      CursorNode.AsVector := PosA;
+    end;
+
+    if DrawMode = dmRectangle then
+    begin
+      CursorNode.AsVector := PosA;
+
+      PosC[idX] := PosA[idX];
+      PosC[idY] := PosB[idY];
+
+      PosD[idX] := PosB[idX];
+      PosD[idY] := PosA[idY];
+
+      Nodes[1].AsVector := PosC;
+      Nodes[3].AsVector := PosD;
+      Nodes[4].AsVector := PosB;
+    end;
+
+
+  end;
+
+end;
+
+procedure TGLAreaPencil.SetScreenPoint(const Value: TPoint);
+var
+  UnscalePosition : TVector;
+const
+  A=0;
+  B=1;
+  C=2;
+  D=3;
+begin
+  FScreenPoint := Value;
+
+  // Get scene position from ScreenPoint
+  FPencilPosition := VectorMake(Scene.CurrentBuffer.ScreenToWorld(FScreenPoint.X, FScreenPoint.Y));
+  FPencilPosition := Parent.AbsoluteToLocal(FPencilPosition);
+  FPencilPosition := SimpleRoundTo(FPencilPosition, 1);
+  UnscalePosition := Parent.LocalToAbsolute(FPencilPosition);
+
+  // Place cross
+  FCross.Visible := IsDrawing;
+
+  if FCross.Visible then
+  begin
+    FCross.Nodes[A].X := UnscalePosition[0];
+    FCross.Nodes[B].X := UnscalePosition[0];
+
+    FCross.Nodes[C].Y := UnscalePosition[1];
+    FCross.Nodes[D].Y := UnscalePosition[1];
+
+    FCross.Nodes[C].X := -Scene.CurrentBuffer.Width + Scene.CurrentGLCamera.Position.X;
+    FCross.Nodes[D].X :=  Scene.CurrentBuffer.Width + Scene.CurrentGLCamera.Position.X;
+
+    FCross.Nodes[A].Y := -Scene.CurrentBuffer.Height + Scene.CurrentGLCamera.Position.Y;
+    FCross.Nodes[B].Y :=  Scene.CurrentBuffer.Height + Scene.CurrentGLCamera.Position.Y;
+  end;
+end;
+
+
 procedure TGLAreaPencil.Cancel;
 begin
   //Finalize drawing by releasing mouse cursor
@@ -550,31 +703,7 @@ begin
   Nodes.Clear;
 end;
 
-procedure TGLAreaPencil.DistantClose;
-begin
-  FCursorNode.AsVector := Nodes.First.AsVector;
-  SendDebugFmt('Node count = %d',[Nodes.Count]);
-end;
 
-function TGLAreaPencil.Continue : TGLArea;
-begin
-  Result := nil;
-
-  // Check close
-  if (Nodes.Count>=2) and VectorEquals(Nodes.First.AsVector, Nodes.Last.AsVector) then
-  begin
-    Result := TGLArea.Create(Self);
-    Result.Nodes.Assign(Nodes);
-    Result.Contour.Nodes.Assign(Nodes);
-    Result.Parent := Parent;
-    Cancel;
-  end
-    else
-  begin
-    FCursorNode := Nodes.Add;
-    FCursorNode.AsVector := PencilPosition;
-  end;
-end;
 
 procedure TGLAreaPencil.Undo;
 begin
