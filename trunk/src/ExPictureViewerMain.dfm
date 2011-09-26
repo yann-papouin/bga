@@ -11,7 +11,7 @@ object ExPictureViewerMainForm: TExPictureViewerMainForm
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  OnMouseDown = FormMouseDown
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object AppInstances: TJvAppInstances

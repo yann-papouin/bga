@@ -29,8 +29,7 @@ uses
 type
   TExPictureViewerMainForm = class(TForm)
     AppInstances: TJvAppInstances;
-    procedure FormMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure FormShow(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -47,10 +46,11 @@ implementation
 uses
   GuiPicView;
 
-procedure TExPictureViewerMainForm.FormMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TExPictureViewerMainForm.FormShow(Sender: TObject);
 begin
-  PICViewForm.LoadTexture('C:\Windows\winsxs\x86_microsoft-windows-photosamples_31bf3856ad364e35_6.1.7600.16385_none_974f72e1e322d188\Penguins.jpg');
+  PICViewForm.LoadTexture('C:\Users\Yann\Pictures\Photos\Nouvelle Cellule 3D\Vue_AvantDroite.jpg');
   PICViewForm.Preview;
+
 end;
 
 end.
