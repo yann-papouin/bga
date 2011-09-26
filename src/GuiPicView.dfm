@@ -18,6 +18,8 @@ inherited PICViewForm: TPICViewForm
     Camera = GLCamera
     Buffer.BackgroundColor = 3815994
     Buffer.AmbientColor.Color = {0000803F0000803F0000803F0000803F}
+    Buffer.ContextOptions = [roDoubleBuffer, roStencilBuffer, roRenderToWindow]
+    Buffer.DepthTest = False
     FieldOfView = 163.808944702148400000
     Align = alClient
     OnDblClick = ViewerDblClick
@@ -25,8 +27,6 @@ inherited PICViewForm: TPICViewForm
     OnMouseMove = ViewerMouseMove
     OnMouseUp = ViewerMouseUp
     TabOrder = 0
-    ExplicitWidth = 606
-    ExplicitHeight = 551
   end
   object GLScene: TGLScene
     Left = 8
@@ -89,7 +89,7 @@ inherited PICViewForm: TPICViewForm
           BE00A28A2BEFFA28A2BE00A28A2BEFFA28A2BE00A28A2BEFFA28A2BE00A28A2B
           EFFA28A2BE00A28A2BEFFA28A2BE00A28A2BEFFA28A2BFFFD9}
         Material.Texture.Disabled = False
-        Position.Coordinates = {0000000000000000666666BF0000803F}
+        Position.Coordinates = {0000804400008044666666BF0000803F}
         Height = 2048.000000000000000000
         Width = 2048.000000000000000000
         XTiles = 32
@@ -131,6 +131,10 @@ inherited PICViewForm: TPICViewForm
         Height = 128.000000000000000000
         Width = 128.000000000000000000
       end
+    end
+    object GLLines1: TGLLines
+      Nodes = <>
+      Options = []
     end
   end
   object WindowsBitmapFont: TGLWindowsBitmapFont
