@@ -447,6 +447,7 @@ inherited RFAViewForm: TRFAViewForm
     object Filesystem: TAction
       Category = 'Custom'
       Caption = 'Filesystem ...'
+      Enabled = False
       ImageIndex = 522
       ShortCut = 122
       OnExecute = FilesystemExecute
