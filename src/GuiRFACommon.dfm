@@ -72,7 +72,7 @@ inherited RFACommonForm: TRFACommonForm
         item
           Alignment = taRightJustify
           Position = 4
-          Width = 95
+          Width = 91
           WideText = 'Offset'
         end>
     end
@@ -199,11 +199,5 @@ inherited RFACommonForm: TRFACommonForm
       ImageIndex = 98
       OnExecute = SearchStopExecute
     end
-  end
-  object UpdateVCL: TTimer
-    Interval = 50
-    OnTimer = UpdateVCLTimer
-    Left = 8
-    Top = 64
   end
 end

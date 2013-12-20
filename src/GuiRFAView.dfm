@@ -476,9 +476,6 @@ inherited RFAViewForm: TRFAViewForm
       OnExecute = EditWithOSExecute
     end
   end
-  inherited UpdateVCL: TTimer
-    OnTimer = nil
-  end
   object DropFileSource: TDropFileSource
     DragTypes = [dtMove]
     OnDrop = DropFileSourceDrop

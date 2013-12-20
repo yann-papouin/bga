@@ -60,6 +60,7 @@ uses
 
 procedure TFormCommon.FormCreate(Sender: TObject);
 begin
+  DoubleBuffered := True;
   if DebugHook <> 0 then
     FApplicationTitle := Caption
   else
