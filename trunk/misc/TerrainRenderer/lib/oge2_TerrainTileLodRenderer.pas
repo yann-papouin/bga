@@ -40,12 +40,12 @@ var
 
   procedure AddVertex(ind: Integer; X, Y, Z, TX, TY: Single);
   begin
-    Vertex[0] := X;
-    Vertex[1] := Y;
-    Vertex[2] := Z;
+    Vertex.V[0] := X;
+    Vertex.V[1] := Y;
+    Vertex.V[2] := Z;
     VertexCoords[ind] := Vertex;
-    TexCoords[ind][0] := TX;
-    TexCoords[ind][1] := 1 - TY;
+    TexCoords[ind].V[0] := TX;
+    TexCoords[ind].V[1] := 1 - TY;
   end;
 
 var

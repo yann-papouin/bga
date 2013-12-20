@@ -24,6 +24,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, Contnrs,
+  Types,
   Dialogs, GuiFormCommon, GLScene, GLObjects, GLCoordinates, GLWin32Viewer, GLNodes,
   GLCrossPlatform, BaseClasses, DDSImage, GLSimpleNavigation, GLBitmapFont, GLMultiPolygon,
   GLWindowsFont, GLHUDObjects, GLCadencer, jpeg, tga, pngimage, GraphicEx, StdCtrls, GLGeomObjects,
@@ -148,7 +149,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Math, Types, GLMaterial, GLColor, Dbugintf;
+  Math,  GLMaterial, GLColor, Dbugintf;
 
 const
   MIN_SCENE_SCALE = 0.01;
@@ -163,10 +164,10 @@ const
 
 function SimpleRoundTo(const AValue: TVector; const ADigit: TRoundToRange = -2): TVector;
 begin
-  Result[0] := Math.SimpleRoundTo(AValue[0], ADigit);
-  Result[1] := Math.SimpleRoundTo(AValue[1], ADigit);
-  Result[2] := Math.SimpleRoundTo(AValue[2], ADigit);
-  Result[3] := Math.SimpleRoundTo(AValue[3], ADigit);
+  Result.V[0] := Math.SimpleRoundTo(AValue.V[0], ADigit);
+  Result.V[1] := Math.SimpleRoundTo(AValue.V[1], ADigit);
+  Result.V[2] := Math.SimpleRoundTo(AValue.V[2], ADigit);
+  Result.V[3] := Math.SimpleRoundTo(AValue.V[3], ADigit);
 end;
 
 
@@ -609,8 +610,8 @@ begin
     begin
 
       // Convert 2-Points data to Angles
-      AngleRad := ArcTan2(PosA[idY]-PosB[idY], PosA[idX]-PosB[idX]);
-      AngleDeg := RadToDeg(AngleRad);
+      AngleRad := Math.ArcTan2(PosA.Y-PosB.Y, PosA.X-PosB.X);
+      AngleDeg := Math.RadToDeg(AngleRad);
 
       //SendDebugFmt('Teta(rad) = %.3f,  Teta(deg) = %.3f', [AngleRad, AngleDeg]);
 
@@ -621,18 +622,18 @@ begin
         else
           AngleDeg := Math.SimpleRoundTo(AngleDeg, 0);
 
-        AngleRad := DegToRad(AngleDeg);
-        Slope := Tan(AngleRad);
+        AngleRad := Math.DegToRad(AngleDeg);
+        Slope := Math.Tan(AngleRad);
 
         if ((Abs(AngleDeg) >= 0) and (Abs(AngleDeg) <= 45)) or (Abs(AngleDeg) >= 145) then
         begin
           // Affect Y value only
-          PosA[idY] := Slope*(PosA[idX]-PosB[idX]) + PosB[idY];
+          PosA.Y := Slope * (PosA.X - PosB.X) + PosB.Y;
         end
           else
         begin
           // Affect X value only
-          PosA[idX] := (PosA[idY]-PosB[idY])/Slope+PosB[idX];
+          PosA.X := (PosA.Y - PosB.Y) / Slope + PosB.X;
         end;
       end;
 
@@ -643,11 +644,11 @@ begin
     begin
       CursorNode.AsVector := PosA;
 
-      PosC[idX] := PosA[idX];
-      PosC[idY] := PosB[idY];
+      PosC.X := PosA.X;
+      PosC.Y := PosB.Y;
 
-      PosD[idX] := PosB[idX];
-      PosD[idY] := PosA[idY];
+      PosD.X := PosB.X;
+      PosD.Y := PosA.Y;
 
       Nodes[1].AsVector := PosC;
       Nodes[3].AsVector := PosD;
@@ -681,11 +682,11 @@ begin
 
   if FCross.Visible then
   begin
-    FCross.Nodes[A].X := UnscalePosition[0];
-    FCross.Nodes[B].X := UnscalePosition[0];
+    FCross.Nodes[A].X := UnscalePosition.X;
+    FCross.Nodes[B].X := UnscalePosition.X;
 
-    FCross.Nodes[C].Y := UnscalePosition[1];
-    FCross.Nodes[D].Y := UnscalePosition[1];
+    FCross.Nodes[C].Y := UnscalePosition.Y;
+    FCross.Nodes[D].Y := UnscalePosition.Y;
 
     FCross.Nodes[C].X := -Scene.CurrentBuffer.Width + Scene.CurrentGLCamera.Position.X;
     FCross.Nodes[D].X :=  Scene.CurrentBuffer.Width + Scene.CurrentGLCamera.Position.X;

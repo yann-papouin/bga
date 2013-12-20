@@ -56,13 +56,13 @@ var
 
   procedure AddVertex(ind: Integer; vX, vY, vZ, tU, tV: Single);
   begin
-    Vertex[0] := vX;
-    Vertex[1] := vY;
-    Vertex[2] := vZ;
+    Vertex.X := vX;
+    Vertex.Y := vY;
+    Vertex.Z := vZ;
 
     VertexCoords[ind] := Vertex;
-    TexCoords[ind][0] := tU;
-    TexCoords[ind][1] := 1 - tV;
+    TexCoords[ind].V[0] := tU;
+    TexCoords[ind].V[1] := 1 - tV;
   end;
 
   procedure ExAddVertex( Xi, Yj : Integer);

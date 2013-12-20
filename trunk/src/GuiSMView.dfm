@@ -49,7 +49,6 @@ inherited SMViewForm: TSMViewForm
       DragMode = dmAutomatic
       DragOperations = [doMove]
       Header.AutoSizeIndex = -1
-      Header.DefaultHeight = 17
       Header.Font.Charset = DEFAULT_CHARSET
       Header.Font.Color = clWindowText
       Header.Font.Height = -11
@@ -183,12 +182,12 @@ inherited SMViewForm: TSMViewForm
       AntiAliased = True
       LineColor.Color = {FBFAFA3EFBFAFA3EFBFAFA3E0000803F}
       XSamplingScale.Min = -100.000000000000000000
-      XSamplingScale.max = 100.000000000000000000
-      XSamplingScale.step = 5.000000000000000000
-      YSamplingScale.step = 1.000000000000000000
+      XSamplingScale.Max = 100.000000000000000000
+      XSamplingScale.Step = 5.000000000000000000
+      YSamplingScale.Step = 1.000000000000000000
       ZSamplingScale.Min = -100.000000000000000000
-      ZSamplingScale.max = 100.000000000000000000
-      ZSamplingScale.step = 5.000000000000000000
+      ZSamplingScale.Max = 100.000000000000000000
+      ZSamplingScale.Step = 5.000000000000000000
       Parts = [gpX, gpZ]
     end
     object LightBack: TGLLightSource

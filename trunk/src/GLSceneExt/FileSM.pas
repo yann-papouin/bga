@@ -145,19 +145,19 @@ begin
   begin
 
     /// Extracting bounding box
-    aStream.Read(FBBox.P1[0] , FLOAT_SIZE);
-    FBBox.P1[0] := FBBox.P1[0] *DSM_SCALE;
-    aStream.Read(FBBox.P1[1] , FLOAT_SIZE);
-    FBBox.P1[1] := FBBox.P1[1] *DSM_SCALE;
-    aStream.Read(FBBox.P1[2] , FLOAT_SIZE);
-    FBBox.P1[2] := FBBox.P1[2] *DSM_SCALE;
+    aStream.Read(FBBox.P1.V[0] , FLOAT_SIZE);
+    FBBox.P1.V[0] := FBBox.P1.V[0] *DSM_SCALE;
+    aStream.Read(FBBox.P1.V[1] , FLOAT_SIZE);
+    FBBox.P1.V[1] := FBBox.P1.V[1] *DSM_SCALE;
+    aStream.Read(FBBox.P1.V[2] , FLOAT_SIZE);
+    FBBox.P1.V[2] := FBBox.P1.V[2] *DSM_SCALE;
 
-    aStream.Read(FBBox.P2[0] , FLOAT_SIZE);
-    FBBox.P2[0] := FBBox.P2[0] *DSM_SCALE;
-    aStream.Read(FBBox.P2[1] , FLOAT_SIZE);
-    FBBox.P2[1] := FBBox.P2[1] *DSM_SCALE;
-    aStream.Read(FBBox.P2[2] , FLOAT_SIZE);
-    FBBox.P2[2] := FBBox.P2[2] *DSM_SCALE;
+    aStream.Read(FBBox.P2.V[0] , FLOAT_SIZE);
+    FBBox.P2.V[0] := FBBox.P2.V[0] *DSM_SCALE;
+    aStream.Read(FBBox.P2.V[1] , FLOAT_SIZE);
+    FBBox.P2.V[1] := FBBox.P2.V[1] *DSM_SCALE;
+    aStream.Read(FBBox.P2.V[2] , FLOAT_SIZE);
+    FBBox.P2.V[2] := FBBox.P2.V[2] *DSM_SCALE;
 
     // Apply an offset on version 10
     if FHeader = 10 then
@@ -187,12 +187,12 @@ begin
         begin
           ptVertex := @(FCollMeshes[i].Vertex[j]);
 
-          aStream.Read(ptVertex.Value[0] , FLOAT_SIZE);
-          ptVertex.Value[0] := ptVertex.Value[0] * DSM_SCALE;
-          aStream.Read(ptVertex.Value[1] , FLOAT_SIZE);
-          ptVertex.Value[1] := ptVertex.Value[1] * DSM_SCALE;
-          aStream.Read(ptVertex.Value[2] , FLOAT_SIZE);
-          ptVertex.Value[2] := ptVertex.Value[2] * DSM_SCALE;
+          aStream.Read(ptVertex.Value.V[0] , FLOAT_SIZE);
+          ptVertex.Value.V[0] := ptVertex.Value.V[0] * DSM_SCALE;
+          aStream.Read(ptVertex.Value.V[1] , FLOAT_SIZE);
+          ptVertex.Value.V[1] := ptVertex.Value.V[1] * DSM_SCALE;
+          aStream.Read(ptVertex.Value.V[2] , FLOAT_SIZE);
+          ptVertex.Value.V[2] := ptVertex.Value.V[2] * DSM_SCALE;
 
           aStream.Read(ptVertex.MaterialID, WORD_SIZE); //MatID
           aStream.Position := aStream.Position+(2); //Stuff of vert1 Repeated
@@ -238,9 +238,9 @@ begin
 
           ptNormale := @FCollMeshes[i].Normales[j];
 
-          aStream.Read(ptNormale.Value[0], FLOAT_SIZE);
-          aStream.Read(ptNormale.Value[1], FLOAT_SIZE);
-          aStream.Read(ptNormale.Value[2], FLOAT_SIZE);
+          aStream.Read(ptNormale.Value.V[0], FLOAT_SIZE);
+          aStream.Read(ptNormale.Value.V[1], FLOAT_SIZE);
+          aStream.Read(ptNormale.Value.V[2], FLOAT_SIZE);
 
           ptNormale.MaterialID := 0;
         end;
@@ -343,12 +343,12 @@ begin
               begin
                 ptVertex := @(ptMeshdata.Vertex[k]);
 
-                aStream.Read(ptVertex.Value[0] , FLOAT_SIZE);
-                ptVertex.Value[0] := ptVertex.Value[0] * DSM_SCALE;
-                aStream.Read(ptVertex.Value[1] , FLOAT_SIZE);
-                ptVertex.Value[1] := ptVertex.Value[1] * DSM_SCALE;
-                aStream.Read(ptVertex.Value[2] , FLOAT_SIZE);
-                ptVertex.Value[2] := ptVertex.Value[2] * DSM_SCALE;
+                aStream.Read(ptVertex.Value.V[0] , FLOAT_SIZE);
+                ptVertex.Value.V[0] := ptVertex.Value.V[0] * DSM_SCALE;
+                aStream.Read(ptVertex.Value.V[1] , FLOAT_SIZE);
+                ptVertex.Value.V[1] := ptVertex.Value.V[1] * DSM_SCALE;
+                aStream.Read(ptVertex.Value.V[2] , FLOAT_SIZE);
+                ptVertex.Value.V[2] := ptVertex.Value.V[2] * DSM_SCALE;
 
                 {$IfDef DEBUG_SM_DETAILS}
                 SendDebugFmt('Current vertex is %d/%d (X=%.3f, Y=%.3f, Z=%.3f)',[k+1, ptMeshdata.VertexCount, ptVertex.Value[0], ptVertex.Value[1], ptVertex.Value[2]]);
@@ -360,9 +360,9 @@ begin
 
                 ptNormale := @(ptMeshdata.Normales[k]);
 
-                aStream.Read(ptNormale.Value[0], FLOAT_SIZE);
-                aStream.Read(ptNormale.Value[1], FLOAT_SIZE);
-                aStream.Read(ptNormale.Value[2], FLOAT_SIZE);
+                aStream.Read(ptNormale.Value.V[0], FLOAT_SIZE);
+                aStream.Read(ptNormale.Value.V[1], FLOAT_SIZE);
+                aStream.Read(ptNormale.Value.V[2], FLOAT_SIZE);
 
                 aStream.Read(ptMaterial.TextureCoord[k].S, FLOAT_SIZE);
                 aStream.Read(ptMaterial.TextureCoord[k].T, FLOAT_SIZE);
@@ -484,9 +484,9 @@ begin
   Assert(Face.B<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
   Assert(Face.C<FMeshes[MeshID].MatMeshes[LodID].MeshData.VertexCount);
 
-  Result[0] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.A].Value;
-  Result[1] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.B].Value;
-  Result[2] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.C].Value;
+  Result.V[0] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.A].Value;
+  Result.V[1] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.B].Value;
+  Result.V[2] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Vertex[Face.C].Value;
 end;
 
 function TFileSM.MeshTextureFromMatFaceId(MeshID, LodID, FaceID: Longword): TTexPoint3;
@@ -514,9 +514,9 @@ var
 begin
   Face := FMeshes[MeshID].MatMeshes[LodID].MeshData.Faces[FaceID];
 
-  Result[0] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Normales[Face.A].Value;
-  Result[1] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Normales[Face.B].Value;
-  Result[2] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Normales[Face.C].Value;
+  Result.V[0] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Normales[Face.A].Value;
+  Result.V[1] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Normales[Face.B].Value;
+  Result.V[2] := FMeshes[MeshID].MatMeshes[LodID].MeshData.Normales[Face.C].Value;
 end;
 
 
@@ -526,9 +526,9 @@ var
 begin
   Face := FCollMeshes[CollMeshID].Faces[FaceID];
 
-  Result[0] := FCollMeshes[CollMeshID].Vertex[Face.A].Value;
-  Result[1] := FCollMeshes[CollMeshID].Vertex[Face.B].Value;
-  Result[2] := FCollMeshes[CollMeshID].Vertex[Face.C].Value;
+  Result.V[0] := FCollMeshes[CollMeshID].Vertex[Face.A].Value;
+  Result.V[1] := FCollMeshes[CollMeshID].Vertex[Face.B].Value;
+  Result.V[2] := FCollMeshes[CollMeshID].Vertex[Face.C].Value;
 end;
 
 function TFileSM.CollNormaleFromFaceId(CollMeshID : Longword; FaceID: Longword): TMatrix3f;
@@ -545,9 +545,9 @@ begin
   Assert(Face.B<FCollMeshes[CollMeshID].NormaleCount);
   Assert(Face.C<FCollMeshes[CollMeshID].NormaleCount);
 
-  Result[0] := FCollMeshes[CollMeshID].Normales[Face.A].Value;
-  Result[1] := FCollMeshes[CollMeshID].Normales[Face.B].Value;
-  Result[2] := FCollMeshes[CollMeshID].Normales[Face.C].Value;
+  Result.V[0] := FCollMeshes[CollMeshID].Normales[Face.A].Value;
+  Result.V[1] := FCollMeshes[CollMeshID].Normales[Face.B].Value;
+  Result.V[2] := FCollMeshes[CollMeshID].Normales[Face.C].Value;
 end;
 
 

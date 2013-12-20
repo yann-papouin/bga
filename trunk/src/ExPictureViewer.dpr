@@ -1,6 +1,7 @@
 program ExPictureViewer;
 
 uses
+  ExceptionLog,
   Forms,
   ExPictureViewerMain in 'ExPictureViewerMain.pas' {ExPictureViewerMainForm},
   GuiPicView in 'GuiPicView.pas' {PICViewForm},

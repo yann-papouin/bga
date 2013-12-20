@@ -107,10 +107,10 @@ var
     SFParseDelimited(ArrayText, trim(s), ' ');
     if ArrayText.Count = 3 then
     begin
-      Result[0] := StrToFloatDef(ArrayText[0], 0.0);
-      Result[1] := StrToFloatDef(ArrayText[1], 0.0);
-      Result[2] := StrToFloatDef(ArrayText[2], 0.0);
-      Result[3] := 1.0;
+      Result.V[0] := StrToFloatDef(ArrayText[0], 0.0);
+      Result.V[1] := StrToFloatDef(ArrayText[1], 0.0);
+      Result.V[2] := StrToFloatDef(ArrayText[2], 0.0);
+      Result.V[3] := 1.0;
     end;
     ArrayText.Free;
     DisableBFDecimal;
