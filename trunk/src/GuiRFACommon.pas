@@ -111,15 +111,16 @@ type
 
   TSearchThread = class(TThread)
   private
-    FSearchText: string;
     FSearchNode : PVirtualNode;
-    FSearchList : TStringList;
-    FOwner : TRFACommonForm;
+    FGui : TRFACommonForm;
+    FName: string;
   protected
     procedure Execute; override;
+    procedure MatchNode;
+    procedure HideNode;
   public
     State : TSearchState;
-    constructor Create(CreateSuspended:boolean);
+    constructor Create(CreateSuspended:boolean; Gui: TRFACommonForm; Name: string);
     destructor Destroy; override;
   end;
 
@@ -140,7 +141,6 @@ type
     SpTBXLabel1: TSpTBXLabel;
     SpTBXButton1: TSpTBXButton;
     SearchProgressBar: TSpTBXProgressBar;
-    UpdateVCL: TTimer;
     procedure CollapseSelectedExecute(Sender: TObject);
     procedure ExpandSelectedExecute(Sender: TObject);
     procedure CollapseAllExecute(Sender: TObject);
@@ -157,7 +157,6 @@ type
     procedure SearchStopExecute(Sender: TObject);
     procedure SearchEditChange(Sender: TObject);
     procedure RFAListHeaderClick(Sender: TVTHeader; HitInfo: TVTHeaderHitInfo);
-    procedure UpdateVCLTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
@@ -189,9 +188,10 @@ type
     function GetFileByPath(Sender: TObject; const VirtualPath : string) : string;
     procedure WarnAboutOpenGL;
     procedure GoToSelection;
+    procedure SearchThreadCreate;
+    procedure SearchThreadDestroy;
   public
-    { Déclarations publiques }
-    property SearchText : string read GetSearchText write SetSearchText;
+    SearchList: TStringList;
   end;
 
 
@@ -245,19 +245,6 @@ uses
   MD5Api;
 
 
-procedure TRFACommonForm.FormCreate(Sender: TObject);
-begin
-  inherited;
-  FSearchThread := TSearchThread.Create(false);
-  FSearchThread.FOwner := Self;
-end;
-
-procedure TRFACommonForm.FormDestroy(Sender: TObject);
-begin
-  FSearchThread.Free;
-  inherited;
-end;
-
 function TRFACommonForm.IsFolder(Name: String) : boolean;
 begin
   result := SFRight(DirDelimiter,Name) <> EmptyStr;
@@ -302,6 +289,20 @@ begin
   end;
 end;
 
+
+procedure TRFACommonForm.FormCreate(Sender: TObject);
+begin
+  inherited;
+  SearchList := TStringList.Create;
+  SearchList.Delimiter := ';';
+end;
+
+procedure TRFACommonForm.FormDestroy(Sender: TObject);
+begin
+  inherited;
+  SearchStop.Execute;
+  SearchList.Free;
+end;
 
 function TRFACommonForm.FindFile(Path: String) : PVirtualNode;
 var
@@ -1123,123 +1124,82 @@ begin
 end;
 
 procedure TRFACommonForm.SearchEditChange(Sender: TObject);
+var
+  Node : pVirtualNode;
+  Data : pFse;
 begin
-  SearchText := SearchEdit.Text;
+
+  if Assigned(FSearchThread) then
+    SearchThreadDestroy;
+
+  SearchProgressBar.Position := 0;
+  SearchProgressBar.Max := RFAList.TotalCount;
+  SearchList.DelimitedText := SearchEdit.Text;
+
+  if SearchEdit.Text <> EmptyStr then
+  begin
+    if SearchBar.Visible then
+      SearchThreadCreate;
+  end
+    else
+  begin
+    Node := RFAList.GetFirst(true);
+    RFAList.BeginUpdate;
+    while Node <> nil do
+    begin
+      RFAList.IsVisible[Node] := True;
+
+      if RFAList.GetNodeLevel(Node) <= 2 then
+        RFAList.Expanded[Node] := True
+      else
+        RFAList.Expanded[Node] := not True;
+
+      Node := RFAList.GetNext(Node, true);
+    end;
+    RFAList.EndUpdate;
+    GoToSelection;
+  end;
 end;
 
 procedure TRFACommonForm.SearchStartExecute(Sender: TObject);
 begin
   SearchBar.Show;
-  SearchText := SearchEdit.Text;
   ActiveControl := SearchEdit;
 end;
 
 procedure TRFACommonForm.SearchStopExecute(Sender: TObject);
 begin
   SearchBar.Hide;
-  SearchText := EmptyStr;
+  SearchEdit.Text := EmptyStr;
 end;
 
-procedure TRFACommonForm.UpdateVCLTimer(Sender: TObject);
-var
-  Data : pFse;
-  Node : PVirtualNode;
+procedure TRFACommonForm.SearchThreadCreate;
 begin
-  if (FSearchThread.State = srWorking) or (FSearchThread.State = srUpdating) then
-  begin
-    RFAList.BeginUpdate;
+  if DebugHook <> 0 then
+    Assert(FSearchThread = nil);
 
-    Node := RFAList.GetFirst(true);
-    while Node <> nil do
-    begin
-      Data := RFAList.GetNodeData(Node);
-
-      if (Data.SearchResult = srYes) then
-      begin
-        RFAList.IsVisible[Node] := True;
-        RFAList.Expanded[Node] := True;
-        SearchProgressBar.Position := SearchProgressBar.Position+1;
-        Data.SearchResult := srOk;
-      end;
-
-      if (Data.SearchResult = srNo) then
-      begin
-        RFAList.IsVisible[Node] := False;
-        SearchProgressBar.Position := SearchProgressBar.Position+1;
-        Data.SearchResult := srOk;
-      end;
-
-      Node := RFAList.GetNext(Node, true);
-    end;
-
-    if (FSearchThread.State = srUpdating) then
-    begin
-      FSearchThread.State := srStopping;
-      GoToSelection;
-    end;
-
-    RFAList.EndUpdate;
-  end;
+  if not Assigned(FSearchThread) then
+    FSearchThread := TSearchThread.Create(False, Self, 'SearchThread');
 end;
 
-(*
-procedure TRFACommonForm.SearchTimer(Sender: TObject);
+procedure TRFACommonForm.SearchThreadDestroy;
 var
-  i, Count : integer;
-  Data : pFse;
-  SelectedNode : PVirtualNode;
-
-  function LocalMatchesMask(AString : string) : boolean;
-  var
-    i :integer;
-    Mask : string;
-  begin
-    Result := false;
-    for i := 0 to FSearchList.Count - 1 do
-    begin
-      Mask := '*'+trim(FSearchList[i])+'*';
-      if MatchesMask(AString, Mask) then
-      begin
-        Result := true;
-        Break;
-      end;
-    end;
-  end;
-
+  Diff: Cardinal;
 begin
-  if OperationPending then
-    Exit;
-
-  SelectedNode := RFAList.GetFirstSelected;
-
-  Count := 10;
-  Search.Enabled := false;
-  for i := 0 to Count - 1 do
+  if Assigned(FSearchThread) then
   begin
-    if (FSearchNode = nil) then
-      Break
-    else
-      begin
-        SearchProgressBar.Position := SearchProgressBar.Position+1;
-        Data := RFAList.GetNodeData(FSearchNode);
-
-        if LocalMatchesMask(Data.W32Path) then
-        begin
-          MakePathVisible(RFAList, FSearchNode);
-
-          if SelectedNode = nil then
-            RFAList.ScrollIntoView(FSearchNode,true);
-        end;
-        FSearchNode := RFAList.GetNext(FSearchNode, true);
-      end;
+    Diff := GetTickCount;
+    FSearchThread.Terminate;
+    if not FSearchThread.Suspended then
+    begin
+      Assert(FSearchThread.Terminated);
+      FSearchThread.WaitFor;
+      FSearchThread.Free;
+    end;
+    FSearchThread := nil;
+    SendDebugFmt('SearchThread destroyed in %dms',[GetTickCount-Diff]);
   end;
-
-  GoToSelection;
-
-  if FSearchNode <> nil then
-    Search.Enabled := true;
 end;
-*)
 
 function TRFACommonForm.GetSearchText: string;
 begin
@@ -1251,30 +1211,15 @@ var
   Node : pVirtualNode;
   Data : pFse;
 begin
-  FSearchThread.State := srStopping;
-  while FSearchThread.State <> srWaiting do
+(*
+  if (Value <> EmptyStr) then
   begin
-    // Wait here;
-  end;
-
-  FSearchThread.FSearchText := Value;
-  FSearchThread.FSearchList.DelimitedText := FSearchThread.FSearchText;
-
-  Node := RFAList.GetFirst(true);
-  while Node <> nil do
-  begin
-    Data := RFAList.GetNodeData(Node);
-    Data.SearchResult := srNone;
-    Node := RFAList.GetNext(Node, true);
-  end;
-
-  SearchProgressBar.Position := 0;
-  SearchProgressBar.Max := RFAList.TotalCount;
-
-  if (FSearchThread.FSearchText <> EmptyStr) then
-  begin
-    FSearchThread.FSearchNode := RFAList.GetFirst;
-    FSearchThread.State := srWorking;
+    SearchThreadDestroy;
+    SearchProgressBar.Position := 0;
+    SearchProgressBar.Max := RFAList.TotalCount;
+    SearchThreadCreate;
+    FSearchThread.FSearchText := Value;
+    FSearchThread.FSearchList.DelimitedText := FSearchThread.FSearchText;
   end
     else
   begin
@@ -1282,19 +1227,19 @@ begin
     RFAList.BeginUpdate;
     while Node <> nil do
     begin
-      RFAList.IsVisible[Node] := (FSearchThread.FSearchText = EmptyStr);
+      RFAList.IsVisible[Node] := True;
 
       if RFAList.GetNodeLevel(Node) <= 2 then
-        RFAList.Expanded[Node] := true
+        RFAList.Expanded[Node] := True
       else
-        RFAList.Expanded[Node] := not (FSearchThread.FSearchText = EmptyStr);
+        RFAList.Expanded[Node] := not True;
 
       Node := RFAList.GetNext(Node, true);
     end;
     RFAList.EndUpdate;
     GoToSelection;
   end;
-
+  *)
 end;
 
 
@@ -1323,23 +1268,19 @@ end;
 
 { TSearchThread }
 
-constructor TSearchThread.Create(CreateSuspended: boolean);
+constructor TSearchThread.Create(CreateSuspended: boolean; Gui: TRFACommonForm; Name: string);
 begin
   inherited Create(CreateSuspended);
 
   FreeOnTerminate:=false;
   Priority:=tpNormal;
   FSearchNode := nil;
-  FOwner := nil;
-
-  FSearchList := TStringList.Create;
-  FSearchList.Delimiter := ';';
+  FGui := Gui;
+  FName := Name;
 end;
 
 destructor TSearchThread.Destroy;
 begin
-
-  FSearchList.Free;
   inherited;
 end;
 
@@ -1354,9 +1295,9 @@ var
     Mask : string;
   begin
     Result := false;
-    for i := 0 to FSearchList.Count - 1 do
+    for i := 0 to FGui.SearchList.Count - 1 do
     begin
-      Mask := '*'+trim(FSearchList[i])+'*';
+      Mask := '*'+trim(FGui.SearchList[i])+'*';
       if MatchesMask(AString, Mask) then
       begin
         Result := true;
@@ -1367,47 +1308,57 @@ var
 
 begin
   inherited;
+  NameThreadForDebugging(FName);
+  FSearchNode := FGui.RFAList.GetFirst;
   repeat
-
-  if (State = srWaiting) or (State = srUpdating) then
-    Sleep(100)
-  else
-  if (State = srStopping) then
-    State := srWaiting
-  else
-  if (State = srWorking) and not FOwner.OperationPending then
-  begin
-
-    if (FSearchNode = nil) then
-    begin
-      State := srUpdating;
-    end
-      else
+    if FSearchNode <> nil then
     begin
       Node := FSearchNode;
-      Data := FOwner.RFAList.GetNodeData(Node);
+      Data := FGui.RFAList.GetNodeData(Node);
       if LocalMatchesMask(Data.W32Path) then
       begin
-        Data.SearchResult := srYes;
-
-        while (Node <> nil) and (Node <> FOwner.RFAList.RootNode)  do
-        begin
-          Data.SearchResult := srYes;
-          Node := Node.Parent;
-          Data := FOwner.RFAList.GetNodeData(Node);
-        end;
-
+        Synchronize(MatchNode);
       end
         else
       begin
-        if Data.SearchResult = srNone then
-          Data.SearchResult := srNo;
+        Synchronize(HideNode);
       end;
-      FSearchNode := FOwner.RFAList.GetNext(FSearchNode, true);
+      FSearchNode := FGui.RFAList.GetNext(FSearchNode, true);
+    end;
+  until
+    Terminated;
+end;
+
+procedure TSearchThread.HideNode;
+begin
+  with FGui do
+  begin
+    RFAList.IsVisible[FSearchNode] := False;
+    SearchProgressBar.Position := SearchProgressBar.Position+1;
+  end;
+end;
+
+procedure TSearchThread.MatchNode;
+var
+  Node: PVirtualNode;
+begin
+  with FGui do
+  begin
+    RFAList.IsVisible[FSearchNode] := True;
+    RFAList.Expanded[FSearchNode] := True;
+    SearchProgressBar.Position := SearchProgressBar.Position+1;
+
+    Node := FSearchNode;
+    while (Node <> nil) and (Node <> FGui.RFAList.RootNode)  do
+    begin
+      RFAList.IsVisible[Node] := True;
+      RFAList.Expanded[Node] := True;
+      SearchProgressBar.Position := SearchProgressBar.Position+1;
+      Node := Node.Parent;
     end;
   end;
 
-  until Terminated;
 end;
+
 
 end.
