@@ -121,19 +121,19 @@ var
 
   procedure ReadBoundingBox(var Box: TTMBBox);
   begin
-    aStream.Read(Box.P1[0] , FLOAT_SIZE);
-    Box.P1[0] := Box.P1[0] * DTM_SCALE;
-    aStream.Read(Box.P1[1] , FLOAT_SIZE);
-    Box.P1[1] := Box.P1[1] * DTM_SCALE;
-    aStream.Read(Box.P1[2] , FLOAT_SIZE);
-    Box.P1[2] := Box.P1[2] * DTM_SCALE;
+    aStream.Read(Box.P1.X , FLOAT_SIZE);
+    Box.P1.X := Box.P1.X * DTM_SCALE;
+    aStream.Read(Box.P1.Y , FLOAT_SIZE);
+    Box.P1.Y := Box.P1.Y * DTM_SCALE;
+    aStream.Read(Box.P1.Z , FLOAT_SIZE);
+    Box.P1.Z := Box.P1.Z * DTM_SCALE;
 
-    aStream.Read(Box.P2[0] , FLOAT_SIZE);
-    Box.P2[0] := Box.P2[0] * DTM_SCALE;
-    aStream.Read(Box.P2[1] , FLOAT_SIZE);
-    Box.P2[1] := Box.P2[1] * DTM_SCALE;
-    aStream.Read(Box.P2[2] , FLOAT_SIZE);
-    Box.P2[2] := Box.P2[2] * DTM_SCALE;
+    aStream.Read(Box.P2.X , FLOAT_SIZE);
+    Box.P2.X := Box.P2.X * DTM_SCALE;
+    aStream.Read(Box.P2.Y , FLOAT_SIZE);
+    Box.P2.Y := Box.P2.Y * DTM_SCALE;
+    aStream.Read(Box.P2.Z , FLOAT_SIZE);
+    Box.P2.Z := Box.P2.Z * DTM_SCALE;
   end;
 
   procedure ReadTreemeshBlock(var Block : TTMBlock);
@@ -197,12 +197,12 @@ begin
         begin
           ptVertex := @(FCollMesh.Vertex[i]);
 
-          aStream.Read(ptVertex.Position[0] , FLOAT_SIZE);
-          ptVertex.Position[0] := ptVertex.Position[0] * DTM_SCALE;
-          aStream.Read(ptVertex.Position[1] , FLOAT_SIZE);
-          ptVertex.Position[1] := ptVertex.Position[1] * DTM_SCALE;
-          aStream.Read(ptVertex.Position[2] , FLOAT_SIZE);
-          ptVertex.Position[2] := ptVertex.Position[2] * DTM_SCALE;
+          aStream.Read(ptVertex.Position.X , FLOAT_SIZE);
+          ptVertex.Position.X := ptVertex.Position.X * DTM_SCALE;
+          aStream.Read(ptVertex.Position.Y , FLOAT_SIZE);
+          ptVertex.Position.Y := ptVertex.Position.Y * DTM_SCALE;
+          aStream.Read(ptVertex.Position.Z , FLOAT_SIZE);
+          ptVertex.Position.Z := ptVertex.Position.Z * DTM_SCALE;
 
           aStream.Position := aStream.Position+ 4;
 
@@ -243,16 +243,16 @@ begin
     begin
       ptVertex := @(FVisMesh.Vertex[i]);
 
-      aStream.Read(ptVertex.Position[0] , FLOAT_SIZE);
-      ptVertex.Position[0] := ptVertex.Position[0] * DTM_SCALE;
-      aStream.Read(ptVertex.Position[1] , FLOAT_SIZE);
-      ptVertex.Position[1] := ptVertex.Position[1] * DTM_SCALE;
-      aStream.Read(ptVertex.Position[2] , FLOAT_SIZE);
-      ptVertex.Position[2] := ptVertex.Position[2] * DTM_SCALE;
+      aStream.Read(ptVertex.Position.X , FLOAT_SIZE);
+      ptVertex.Position.X := ptVertex.Position.X * DTM_SCALE;
+      aStream.Read(ptVertex.Position.Y , FLOAT_SIZE);
+      ptVertex.Position.Y := ptVertex.Position.Y * DTM_SCALE;
+      aStream.Read(ptVertex.Position.Z, FLOAT_SIZE);
+      ptVertex.Position.Z := ptVertex.Position.Z * DTM_SCALE;
 
-      aStream.Read(ptVertex.Normale[0], FLOAT_SIZE);
-      aStream.Read(ptVertex.Normale[1], FLOAT_SIZE);
-      aStream.Read(ptVertex.Normale[2], FLOAT_SIZE);
+      aStream.Read(ptVertex.Normale.X, FLOAT_SIZE);
+      aStream.Read(ptVertex.Normale.Y, FLOAT_SIZE);
+      aStream.Read(ptVertex.Normale.Z, FLOAT_SIZE);
 
       aStream.Read(ptVertex.Diffuse32, DWORD_SIZE);
 

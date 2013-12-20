@@ -125,9 +125,9 @@ begin
           for j:=0 to SMFile.CollMeshes[i].FaceCount-1 do
           begin
             MatVert := SMFile.CollVertexFromFaceId(i, j);
-            id[0] := ColMesh.Vertices.Add(MatVert[0]);
-            id[1] := ColMesh.Vertices.Add(MatVert[1]);
-            id[2] := ColMesh.Vertices.Add(MatVert[2]);
+            id[0] := ColMesh.Vertices.Add(MatVert.V[0]);
+            id[1] := ColMesh.Vertices.Add(MatVert.V[1]);
+            id[2] := ColMesh.Vertices.Add(MatVert.V[2]);
             FaceGroup.VertexIndices.Add(id[0], id[1], id[2]);
           end;
 
@@ -165,15 +165,15 @@ begin
             for k:=0 to SMFile.Meshes[i].MatMeshes[j].MeshData.FaceCount-1 do
             begin
               MatVert := SMFile.MeshVertexFromMatFaceId(i, j, k);
-              id[0] := MatMesh.Vertices.Add(MatVert[0]);
-              id[1] := MatMesh.Vertices.Add(MatVert[1]);
-              id[2] := MatMesh.Vertices.Add(MatVert[2]);
+              id[0] := MatMesh.Vertices.Add(MatVert.V[0]);
+              id[1] := MatMesh.Vertices.Add(MatVert.V[1]);
+              id[2] := MatMesh.Vertices.Add(MatVert.V[2]);
               FaceGroup.VertexIndices.Add(id[0], id[1], id[2]);
 
               MatNorm := SMFile.MeshNormaleFromMatFaceId(i, j, k);
-              id[0] := MatMesh.Normals.Add(MatNorm[0]);
-              id[1] := MatMesh.Normals.Add(MatNorm[1]);
-              id[2] := MatMesh.Normals.Add(MatNorm[2]);
+              id[0] := MatMesh.Normals.Add(MatNorm.V[0]);
+              id[1] := MatMesh.Normals.Add(MatNorm.V[1]);
+              id[2] := MatMesh.Normals.Add(MatNorm.V[2]);
               FaceGroup.NormalIndices.Add(id[0], id[1], id[2]);
 
               TexPoint3 := SMFile.MeshTextureFromMatFaceId(i, j, k);

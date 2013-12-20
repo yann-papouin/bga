@@ -32,6 +32,7 @@ uses
   Controls,
   StdCtrls,
   Forms,
+  Types,
   SpTBXEditors,
   SpTBXItem,
   SpTBXControls,
@@ -218,7 +219,6 @@ implementation
 {$R *.dfm}
 
 uses
-  Types,
   Math,
   DbugIntf,
   StringFunction,
@@ -716,7 +716,7 @@ begin
     begin
        StrafeVector := TargetVector;
        RotateVector(StrafeVector, YVector, PI/2);
-       StrafeVector[1] := 0;
+       StrafeVector.V[1] := 0;
 
        if IsKeyDown('D') then
         CameraTarget.Position.AsVector := VectorAdd(CameraTarget.Position.AsVector, StrafeVector);
@@ -877,9 +877,9 @@ begin
     Coo3D := Scene.CurrentBuffer.OrthoScreenToWorld(X, Y);
     v := Scene.CurrentBuffer.PixelRayToWorld(X, Y);
 
-    XLabel.Caption := Format('X=%.2f', [v[2]]);
-    YLabel.Caption := Format('Y=%.2f', [v[1]]);
-    ZLabel.Caption := Format('Z=%.2f', [v[0]]);
+    XLabel.Caption := Format('X=%.2f', [v.V[2]]);
+    YLabel.Caption := Format('Y=%.2f', [v.V[1]]);
+    ZLabel.Caption := Format('Z=%.2f', [v.V[0]]);
   end;
 
    if (ssRight in Shift) then

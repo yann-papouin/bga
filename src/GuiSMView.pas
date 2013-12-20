@@ -254,9 +254,9 @@ begin
               begin
                 GL.Color4fv(@clrWhite);
                 GL.Begin_(GL_LINE_STRIP);
-                GL.Vertex3f(vA[0], vA[1], vA[2]);
-                GL.Vertex3f(vB[0], vB[1], vB[2]);
-                GL.Vertex3f(vC[0], vC[1], vC[2]);
+                GL.Vertex3f(vA.X, vA.Y, vA.Z);
+                GL.Vertex3f(vB.X, vB.Y, vB.Z);
+                GL.Vertex3f(vC.X, vC.Y, vC.Z);
                 GL.End_;
               end;
 
@@ -264,9 +264,9 @@ begin
               begin
                 GL.Color4fv(@clrBlue);
                 GL.Begin_(GL_POINTS);
-                GL.Vertex3f(vA[0], vA[1], vA[2]);
-                GL.Vertex3f(vB[0], vB[1], vB[2]);
-                GL.Vertex3f(vC[0], vC[1], vC[2]);
+                GL.Vertex3f(vA.X, vA.Y, vA.Z);
+                GL.Vertex3f(vB.X, vB.Y, vB.Z);
+                GL.Vertex3f(vC.X, vC.Y, vC.Z);
                 GL.End_;
               end;
 
@@ -289,12 +289,12 @@ begin
               vM := FreeMesh.MeshObjects[i].Normals[FaceGroup.NormalIndices[k+1]];
               vN := FreeMesh.MeshObjects[i].Normals[FaceGroup.NormalIndices[k+2]];
 
-              vP[0] := (vA[0] + vB[0] + vC[0]) /3;
-              vP[1] := (vA[1] + vB[1] + vC[1]) /3;
-              vP[2] := (vA[2] + vB[2] + vC[2]) /3;
+              vP.X := (vA.X + vB.X + vC.X) /3;
+              vP.Y := (vA.Y + vB.Y + vC.Y) /3;
+              vP.Z := (vA.Z + vB.Z + vC.Z) /3;
 
               GL.Begin_(GL_POINTS);
-              GL.Vertex3f(vP[0], vP[1], vP[2]);
+              GL.Vertex3f(vP.X, vP.Y, vP.Z);
               GL.End_;
 
             end;
@@ -507,10 +507,10 @@ begin
   end;
 
   CamDistance := 0;
-  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition[0]);
-  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition[1]);
-  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition[2]);
-  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition[3]);
+  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition.X);
+  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition.Y);
+  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition.Z);
+  CamDistance := Max(CamDistance, FreeMesh.BarycenterAbsolutePosition.W);
 
   CamDistance := Max(CamDistance*2, FreeMesh.BoundingSphereRadius);
 

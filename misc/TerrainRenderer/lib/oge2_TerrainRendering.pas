@@ -108,8 +108,8 @@ var
   patch: TOGEBaseHeightMapRender;
   xLeft, yTop: Integer;
 begin
-  xLeft := Round(tilePos[0] * FinvTileSize - 0.5) * tileSize;
-  yTop := Round(tilePos[1] * FinvTileSize - 0.5) * tileSize;
+  xLeft := Round(tilePos.V[0] * FinvTileSize - 0.5) * tileSize;
+  yTop := Round(tilePos.V[1] * FinvTileSize - 0.5) * tileSize;
   tile := FHeightDataSource.GetTile(xLeft, yTop);
 
   Result := nil;
@@ -165,40 +165,40 @@ var
     GL.GetFloatv(GL_MODELVIEW_MATRIX, @View);
     Clip := MatrixMultiply(View, Proj);
     // RIGHT plane
-    frustum.pRight[0] := Clip[0][3] - Clip[0][0];
-    frustum.pRight[1] := Clip[1][3] - Clip[1][0];
-    frustum.pRight[2] := Clip[2][3] - Clip[2][0];
-    frustum.pRight[3] := Clip[3][3] - Clip[3][0];
+    frustum.pRight.V[0] := Clip.V[0].V[3] - Clip.V[0].V[0];
+    frustum.pRight.V[1] := Clip.V[1].V[3] - Clip.V[1].V[0];
+    frustum.pRight.V[2] := Clip.V[2].V[3] - Clip.V[2].V[0];
+    frustum.pRight.V[3] := Clip.V[3].V[3] - Clip.V[3].V[0];
     NormalizePlane(frustum.pRight);
     // LEFT plane
-    frustum.pLeft[0] := Clip[0][3] + Clip[0][0];
-    frustum.pLeft[1] := Clip[1][3] + Clip[1][0];
-    frustum.pLeft[2] := Clip[2][3] + Clip[2][0];
-    frustum.pLeft[3] := Clip[3][3] + Clip[3][0];
+    frustum.pLeft.V[0] := Clip.V[0].V[3] + Clip.V[0].V[0];
+    frustum.pLeft.V[1] := Clip.V[1].V[3] + Clip.V[1].V[0];
+    frustum.pLeft.V[2] := Clip.V[2].V[3] + Clip.V[2].V[0];
+    frustum.pLeft.V[3] := Clip.V[3].V[3] + Clip.V[3].V[0];
     NormalizePlane(frustum.pLeft);
     // BOTTOM plane
-    frustum.pBottom[0] := Clip[0][3] + Clip[0][1];
-    frustum.pBottom[1] := Clip[1][3] + Clip[1][1];
-    frustum.pBottom[2] := Clip[2][3] + Clip[2][1];
-    frustum.pBottom[3] := Clip[3][3] + Clip[3][1];
+    frustum.pBottom.V[0] := Clip.V[0].V[3] + Clip.V[0].V[1];
+    frustum.pBottom.V[1] := Clip.V[1].V[3] + Clip.V[1].V[1];
+    frustum.pBottom.V[2] := Clip.V[2].V[3] + Clip.V[2].V[1];
+    frustum.pBottom.V[3] := Clip.V[3].V[3] + Clip.V[3].V[1];
     NormalizePlane(frustum.pBottom);
     // TOP plane
-    frustum.pTop[0] := Clip[0][3] - Clip[0][1];
-    frustum.pTop[1] := Clip[1][3] - Clip[1][1];
-    frustum.pTop[2] := Clip[2][3] - Clip[2][1];
-    frustum.pTop[3] := Clip[3][3] - Clip[3][1];
+    frustum.pTop.V[0] := Clip.V[0].V[3] - Clip.V[0].V[1];
+    frustum.pTop.V[1] := Clip.V[1].V[3] - Clip.V[1].V[1];
+    frustum.pTop.V[2] := Clip.V[2].V[3] - Clip.V[2].V[1];
+    frustum.pTop.V[3] := Clip.V[3].V[3] - Clip.V[3].V[1];
     NormalizePlane(frustum.pTop);
     // FAR plane
-    frustum.pFar[0] := Clip[0][3] - Clip[0][2];
-    frustum.pFar[1] := Clip[1][3] - Clip[1][2];
-    frustum.pFar[2] := Clip[2][3] - Clip[2][2];
-    frustum.pFar[3] := Clip[3][3] - Clip[3][2];
+    frustum.pFar.V[0] := Clip.V[0].V[3] - Clip.V[0].V[2];
+    frustum.pFar.V[1] := Clip.V[1].V[3] - Clip.V[1].V[2];
+    frustum.pFar.V[2] := Clip.V[2].V[3] - Clip.V[2].V[2];
+    frustum.pFar.V[3] := Clip.V[3].V[3] - Clip.V[3].V[2];
     NormalizePlane(frustum.pFar);
     // NEAR plane
-    frustum.pNear[0] := Clip[0][3] + Clip[0][2];
-    frustum.pNear[1] := Clip[1][3] + Clip[1][2];
-    frustum.pNear[2] := Clip[2][3] + Clip[2][2];
-    frustum.pNear[3] := Clip[3][3] + Clip[3][2];
+    frustum.pNear.V[0] := Clip.V[0].V[3] + Clip.V[0].V[2];
+    frustum.pNear.V[1] := Clip.V[1].V[3] + Clip.V[1].V[2];
+    frustum.pNear.V[2] := Clip.V[2].V[3] + Clip.V[2].V[2];
+    frustum.pNear.V[3] := Clip.V[3].V[3] + Clip.V[3].V[2];
     NormalizePlane(frustum.pNear);
   end;
 
@@ -218,9 +218,9 @@ begin
   if FHeightDataSource = nil then
     Exit;
 
-  v[0] := rci.cameraPosition[0];
-  v[1] := rci.cameraPosition[1];
-  v[2] := rci.cameraPosition[2];
+  v.V[0] := rci.cameraPosition.V[0];
+  v.V[1] := rci.cameraPosition.V[1];
+  v.V[2] := rci.cameraPosition.V[2];
 
   (* glMatrixMode(GL_PROJECTION);
     glPushMatrix;
@@ -240,20 +240,20 @@ begin
   vEye := VectorTransform(rci.cameraPosition, InvAbsoluteMatrix);
   vEyeDirection := VectorTransform(rci.cameraDirection, InvAbsoluteMatrix);
   SetVector(observer, vEye);
-  vEye[0] := Round(vEye[0] * FinvTileSize - 0.5) * tileSize + tileSize * 0.5;
-  vEye[1] := Round(vEye[1] * FinvTileSize - 0.5) * tileSize + tileSize * 0.5;
+  vEye.V[0] := Round(vEye.V[0] * FinvTileSize - 0.5) * tileSize + tileSize * 0.5;
+  vEye.V[1] := Round(vEye.V[1] * FinvTileSize - 0.5) * tileSize + tileSize * 0.5;
   tileGroundRadius := Sqr(tileSize * 0.5 * Scale.X) + Sqr(tileSize * 0.5 * Scale.Y);
   tileRadius := Sqrt(tileGroundRadius + Sqr(256 * Scale.Z));
   tileGroundRadius := Sqrt(tileGroundRadius);
   // now, we render a quad grid centered on eye position
   SetVector(tilePos, vEye);
-  tilePos[2] := 0;
+  tilePos.V[2] := 0;
   f := (rci.rcci.farClippingDistance + tileGroundRadius) / Scale.X;
   f := Round(f * FinvTileSize + 1.0) * tileSize;
-  maxTilePosX := vEye[0] + f;
-  maxTilePosY := vEye[1] + f;
-  minTilePosX := vEye[0] - f;
-  minTilePosY := vEye[1] - f;
+  maxTilePosX := vEye.X + f;
+  maxTilePosY := vEye.Y + f;
+  minTilePosX := vEye.X - f;
+  minTilePosY := vEye.Y - f;
 
   if (maxTilePosX < minTilePosX) or (maxTilePosY < minTilePosY) then
     Exit;
@@ -265,14 +265,14 @@ begin
 
   AbsoluteMatrix; // makes sure it is available
 
-  if vEyeDirection[0] >= 0 then
+  if vEyeDirection.V[0] >= 0 then
     deltaX := tileSize
   else
   begin
     deltaX := -tileSize;
     minTilePosX := maxTilePosX;
   end;
-  if vEyeDirection[1] >= 0 then
+  if vEyeDirection.V[1] >= 0 then
     deltaY := tileSize
   else
   begin
@@ -284,10 +284,10 @@ begin
   GL.PushMatrix;
   GL.Enable(GL_COLOR_MATERIAL);
   tileRadius := tileRadius;
-  tilePos[1] := minTilePosY;
+  tilePos.V[1] := minTilePosY;
   for iY := 0 to nbY - 1 do
   begin
-    tilePos[0] := minTilePosX;
+    tilePos.V[0] := minTilePosX;
     for iX := 0 to nbX do
     begin
       absTilePos := VectorTransform(tilePos, DirectAbsoluteMatrix^);
@@ -356,9 +356,9 @@ begin
           end;
         end;
       end;
-      tilePos[0] := tilePos[0] + deltaX;
+      tilePos.V[0] := tilePos.V[0] + deltaX;
     end;
-    tilePos[1] := tilePos[1] + deltaY;
+    tilePos.V[1] := tilePos.V[1] + deltaY;
   end;
 
   GL.Disable(GL_COLOR_MATERIAL);
@@ -494,7 +494,7 @@ begin
   if Assigned(FHeightDataSource) then
   begin
     pLocal := AbsoluteToLocal(p);
-    Result := FHeightDataSource.InterpolatedHeight(pLocal[0], pLocal[1], FTileSize + 1) * Scale.Z * (1 / 128);
+    Result := FHeightDataSource.InterpolatedHeight(pLocal.V[0], pLocal.V[1], FTileSize + 1) * Scale.Z * (1 / 128);
   end
   else
     Result := 0;

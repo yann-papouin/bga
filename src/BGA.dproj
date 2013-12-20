@@ -1,12 +1,27 @@
 ﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 		<PropertyGroup>
 			<ProjectGuid>{1045ADD1-F5D6-4D71-8E5E-6AFF7187B5EC}</ProjectGuid>
-			<ProjectVersion>12.0</ProjectVersion>
+			<ProjectVersion>13.4</ProjectVersion>
 			<MainSource>BGA.dpr</MainSource>
 			<Config Condition="'$(Config)'==''">Débogage</Config>
 			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+			<FrameworkType>VCL</FrameworkType>
+			<Base>True</Base>
+			<Platform Condition="'$(Platform)'==''">Win32</Platform>
+			<TargetedPlatforms>1</TargetedPlatforms>
+			<AppType>Application</AppType>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+			<Base_Win64>true</Base_Win64>
+			<CfgParent>Base</CfgParent>
+			<Base>true</Base>
+		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+			<Base_Win32>true</Base_Win32>
+			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
@@ -19,7 +34,17 @@
 			<CfgParent>Base</CfgParent>
 			<Base>true</Base>
 		</PropertyGroup>
+		<PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+			<Cfg_2_Win32>true</Cfg_2_Win32>
+			<CfgParent>Cfg_2</CfgParent>
+			<Cfg_2>true</Cfg_2>
+			<Base>true</Base>
+		</PropertyGroup>
 		<PropertyGroup Condition="'$(Base)'!=''">
+			<DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+			<VerInfo_Keys>CompanyName=Yann Papouin;FileDescription=BGA : Battlefield 1942 Game Archive Tool;FileVersion=1.0.0.0;InternalName=BGA;LegalCopyright=Yann Papouin;LegalTrademarks=;OriginalFilename=BGA.exe;ProductName=BF1942 Game Archive Tool;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=02/03/2011 00:00:09</VerInfo_Keys>
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+			<VerInfo_Locale>1036</VerInfo_Locale>
 			<DCC_IMPLICIT_STRING_CAST_LOSS>false</DCC_IMPLICIT_STRING_CAST_LOSS>
 			<DCC_IMPLICIT_STRING_CAST>false</DCC_IMPLICIT_STRING_CAST>
 			<DCC_Define>PREVIEW_SUPPORT;$(DCC_Define)</DCC_Define>
@@ -29,10 +54,23 @@
 			<DCC_ExeOutput>.\_bin_bga</DCC_ExeOutput>
 			<DCC_BplOutput>.\_bpl_bga</DCC_BplOutput>
 			<DCC_DcpOutput>.\_dcp_bga</DCC_DcpOutput>
-			<DCC_UsePackage>vclx;vcl;vclimg;dbrtl;Rave77VCL;bdertl;rtl;vclactnband;xmlrtl;vcldb;vcldbx;vcltouch;dsnap;dsnapcon;TeeUI;TeeDB;Tee;vclib;ibxpress;adortl;IndyCore;IndySystem;IndyProtocols;inet;intrawebdb_100_140;Intraweb_100_140;VclSmp;vclie;websnap;webdsnap;inetdb;inetdbbde;inetdbxpress;soaprtl;vclribbon;dbexpress;DbxCommonDriver;DataSnapIndy10ServerTransport;DataSnapProviderClient;DbxClientDriver;DataSnapServer;DBXInterBaseDriver;DBXMySQLDriver;dbxcds;DBXFirebirdDriver;DBXSybaseASEDriver;DBXSybaseASADriver;DBXOracleDriver;DBXMSSQLDriver;DBXInformixDriver;DBXDb2Driver;Jcl;JclVcl;JvCoreD14R;JvSystemD14R;JvStdCtrlsD14R;JvAppFrmD14R;JvBandsD14R;JvDBD14R;JvDlgsD14R;JvBDED14R;JvCmpD14R;JvCryptD14R;JvCtrlsD14R;JvCustomD14R;JvDockingD14R;JvDotNetCtrlsD14R;JvEDID14R;JvGlobusD14R;JvHMID14R;JvInterpreterD14R;JvJansD14R;JvManagedThreadsD14R;JvMMD14R;JvNetD14R;JvPageCompsD14R;JvPluginD14R;JvPrintPreviewD14R;JvRuntimeDesignD14R;JvTimeFrameworkD14R;JvValidatorsD14R;JvWizardD14R;JvXPCtrlsD14R;GLScene_RunTime;tb2k_d12;SpTBXLib_d14;VirtualTreesD12;EmbeddedWebBrowser_D2010;PngComponents;GR32_DSGN_BDS2009;GR32_BDS2006;GLDaliComponents;Snoop_D5;dclGraphicEx140</DCC_UsePackage>
+			<DCC_UsePackage>vclx;vcl;vclimg;dbrtl;Rave77VCL;bdertl;rtl;vclactnband;xmlrtl;vcldb;vcldbx;vcltouch;dsnap;dsnapcon;TeeUI;TeeDB;Tee;vclib;ibxpress;adortl;IndyCore;IndySystem;IndyProtocols;inet;intrawebdb_100_140;Intraweb_100_140;VclSmp;vclie;websnap;webdsnap;inetdb;inetdbbde;inetdbxpress;soaprtl;vclribbon;dbexpress;DbxCommonDriver;DataSnapIndy10ServerTransport;DataSnapProviderClient;DbxClientDriver;DataSnapServer;DBXInterBaseDriver;DBXMySQLDriver;dbxcds;DBXFirebirdDriver;DBXSybaseASEDriver;DBXSybaseASADriver;DBXOracleDriver;DBXMSSQLDriver;DBXInformixDriver;DBXDb2Driver;Jcl;JclVcl;JvCoreD14R;JvSystemD14R;JvStdCtrlsD14R;JvAppFrmD14R;JvBandsD14R;JvDBD14R;JvDlgsD14R;JvBDED14R;JvCmpD14R;JvCryptD14R;JvCtrlsD14R;JvCustomD14R;JvDockingD14R;JvDotNetCtrlsD14R;JvEDID14R;JvGlobusD14R;JvHMID14R;JvInterpreterD14R;JvJansD14R;JvManagedThreadsD14R;JvMMD14R;JvNetD14R;JvPageCompsD14R;JvPluginD14R;JvPrintPreviewD14R;JvRuntimeDesignD14R;JvTimeFrameworkD14R;JvValidatorsD14R;JvWizardD14R;JvXPCtrlsD14R;GLScene_RunTime;tb2k_d12;SpTBXLib_d14;VirtualTreesD12;EmbeddedWebBrowser_D2010;PngComponents;GR32_DSGN_BDS2009;GR32_BDS2006;GLDaliComponents;Snoop_D5;dclGraphicEx140;$(DCC_UsePackage)</DCC_UsePackage>
 			<DCC_ImageBase>00400000</DCC_ImageBase>
-			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
 			<DCC_Platform>x86</DCC_Platform>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base_Win64)'!=''">
+			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+			<Icon_MainIcon>BGA_Icon5.ico</Icon_MainIcon>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Base_Win32)'!=''">
+			<VerInfo_Locale>1033</VerInfo_Locale>
+			<VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+			<PreBuildEvent><![CDATA[SubWCRev.exe "$(PROJECTDIR)" "$(PROJECTDIR)\Lib\SvnInfo.tpl" "$(PROJECTDIR)\Lib\SvnInfo.pas"
+$(PreBuildEvent)]]></PreBuildEvent>
+			<Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+			<Icon_MainIcon>BGA_Icon5.ico</Icon_MainIcon>
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+			<DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_1)'!=''">
 			<DCC_Optimize>false</DCC_Optimize>
@@ -49,12 +87,16 @@
 			<DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
 			<DCC_Define>DEBUG;EUREKALOG;EUREKALOG_VER6;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
+		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.1;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=20/12/2013 14:26:12</VerInfo_Keys>
+			<VerInfo_Build>1</VerInfo_Build>
+		</PropertyGroup>
 		<ItemGroup>
-			<DelphiCompile Include="BGA.dpr">
+			<DelphiCompile Include="$(MainSource)">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
 			<DCCReference Include="GuiRFASettings.pas">
-				<Form> RFASettingsForm </Form>
+				<Form>RFASettingsForm</Form>
 			</DCCReference>
 			<DCCReference Include="Lib\AppLib.pas"/>
 			<DCCReference Include="Lib\CommonLib.pas"/>
@@ -68,38 +110,38 @@
 			</DCCReference>
 			<DCCReference Include="CONLib.pas"/>
 			<DCCReference Include="GuiAbout.pas">
-				<Form> AboutForm </Form>
+				<Form>AboutForm</Form>
 			</DCCReference>
 			<DCCReference Include="GuiSMView.pas">
-				<Form> SMViewForm </Form>
+				<Form>SMViewForm</Form>
 			</DCCReference>
 			<DCCReference Include="GLSceneExt\FileSM.pas"/>
 			<DCCReference Include="GLSceneExt\GLFileSM.pas"/>
 			<DCCReference Include="GLSceneExt\TypesSM.pas"/>
 			<DCCReference Include="Lib\SvnInfo.pas"/>
 			<DCCReference Include="GuiUpdateManager.pas">
-				<Form> UpdateManagerForm </Form>
+				<Form>UpdateManagerForm</Form>
 			</DCCReference>
 			<DCCReference Include="GuiBrowse.pas">
-				<Form> BrowseForm </Form>
+				<Form>BrowseForm</Form>
 			</DCCReference>
 			<DCCReference Include="GuiSkinDialog.pas">
-				<Form> SkinDialogForm </Form>
+				<Form>SkinDialogForm</Form>
 			</DCCReference>
 			<DCCReference Include="GuiBrowsePack.pas">
-				<Form> BrowsePackForm </Form>
+				<Form>BrowsePackForm</Form>
 			</DCCReference>
 			<DCCReference Include="GuiBrowseExtract.pas">
-				<Form> BrowseExtractForm </Form>
+				<Form>BrowseExtractForm</Form>
 			</DCCReference>
 			<DCCReference Include="GuiRFACommon.pas">
-				<Form> RFACommonForm </Form>
+				<Form>RFACommonForm</Form>
 			</DCCReference>
 			<DCCReference Include="Resources.pas">
-				<Form> ResourcesForm </Form>
+				<Form>ResourcesForm</Form>
 			</DCCReference>
 			<DCCReference Include="GuiRFAView.pas">
-				<Form> RFAViewForm </Form>
+				<Form>RFAViewForm</Form>
 			</DCCReference>
 			<DCCReference Include="GuiFSSettings.pas">
 				<Form>FSSettingsForm</Form>
@@ -110,10 +152,10 @@
 			<DCCReference Include="FSLib.pas"/>
 			<DCCReference Include="Lib\VirtualTreeviewTheme.pas"/>
 			<DCCReference Include="GuiFormCommon.pas">
-				<Form> FormCommon </Form>
+				<Form>FormCommon</Form>
 			</DCCReference>
 			<DCCReference Include="GuiPicView.pas">
-				<Form> PICViewForm </Form>
+				<Form>PICViewForm</Form>
 			</DCCReference>
 			<DCCReference Include="UAC.pas"/>
 			<DCCReference Include="BGALib.pas"/>
@@ -133,22 +175,19 @@
 				<Form>FSViewForm</Form>
 			</DCCReference>
 			<None Include="BGA.inc"/>
-			<BuildConfiguration Include="Base">
-				<Key>Base</Key>
-			</BuildConfiguration>
 			<BuildConfiguration Include="Débogage">
 				<Key>Cfg_2</Key>
 				<CfgParent>Base</CfgParent>
+			</BuildConfiguration>
+			<BuildConfiguration Include="Base">
+				<Key>Base</Key>
 			</BuildConfiguration>
 			<BuildConfiguration Include="Release">
 				<Key>Cfg_1</Key>
 				<CfgParent>Base</CfgParent>
 			</BuildConfiguration>
 		</ItemGroup>
-		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
-		<PropertyGroup>
-			<PreBuildEvent><![CDATA[SubWCRev.exe "$(PROJECTDIR)" "$(PROJECTDIR)\Lib\SvnInfo.tpl" "$(PROJECTDIR)\Lib\SvnInfo.pas"]]></PreBuildEvent>
-		</PropertyGroup>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')" Project="$(BDS)\Bin\CodeGear.Delphi.Targets"/>
 		<ProjectExtensions>
 			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
 			<Borland.ProjectType/>
@@ -168,7 +207,7 @@
 						<VersionInfo Name="MajorVer">1</VersionInfo>
 						<VersionInfo Name="MinorVer">0</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">0</VersionInfo>
+						<VersionInfo Name="Build">1</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -180,7 +219,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Yann Papouin</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">BGA : Battlefield 1942 Game Archive Tool</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">1.0.0.1</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">BGA</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Yann Papouin</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
@@ -188,23 +227,44 @@
 						<VersionInfoKeys Name="ProductName">BF1942 Game Archive Tool</VersionInfoKeys>
 						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="Comments"/>
-						<VersionInfoKeys Name="LastCompiledTime">02/03/2011 00:00:09</VersionInfoKeys>
+						<VersionInfoKeys Name="LastCompiledTime">20/12/2013 14:26:12</VersionInfoKeys>
 					</VersionInfoKeys>
 					<Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\bcboffice2k140.bpl">Package Serveurs Office 2000 Embarcadero C++Builder</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\bcbofficexp140.bpl">Package Serveurs Office XP Embarcadero C++Builder</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k140.bpl">Composants Microsoft Office 2000 Sample Automation Server Wrapper</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dclofficexp140.bpl">Composants Microsoft Office XP Sample Automation Server Wrapper</Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\bcboffice2k140.bpl">Package Serveurs Office 2000 Embarcadero C++Builder</Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\bcbofficexp140.bpl">Package Serveurs Office XP Embarcadero C++Builder</Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\dcloffice2k140.bpl">Composants Microsoft Office 2000 Sample Automation Server Wrapper</Excluded_Packages>
+						<Excluded_Packages Name="$(BDSBIN)\dclofficexp140.bpl">Composants Microsoft Office XP Sample Automation Server Wrapper</Excluded_Packages>
 					</Excluded_Packages>
 				</Delphi.Personality>
+				<Platforms>
+					<Platform value="Win64">False</Platform>
+					<Platform value="Win32">True</Platform>
+				</Platforms>
 			</BorlandProject>
 			<ProjectFileVersion>12</ProjectFileVersion>
 		</ProjectExtensions>
+		<Import Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj"/>
+		<PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win32'">
+			<PreBuildEvent>SubWCRev.exe &quot;$(PROJECTDIR)&quot; &quot;$(PROJECTDIR)\Lib\SvnInfo.tpl&quot; &quot;$(PROJECTDIR)\Lib\SvnInfo.pas&quot;</PreBuildEvent>
+			<PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+			<PreLinkEvent/>
+			<PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+			<PostBuildEvent/>
+			<PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+		</PropertyGroup>
+		<PropertyGroup Condition="'$(Config)'=='Débogage' And '$(Platform)'=='Win32'">
+			<PreBuildEvent>SubWCRev.exe &quot;$(PROJECTDIR)&quot; &quot;$(PROJECTDIR)\Lib\SvnInfo.tpl&quot; &quot;$(PROJECTDIR)\Lib\SvnInfo.pas&quot;</PreBuildEvent>
+			<PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+			<PreLinkEvent/>
+			<PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+			<PostBuildEvent/>
+			<PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+		</PropertyGroup>
 	</Project>
 
 <!-- EurekaLog First Line
 [Exception Log]
-EurekaLog Version=6101
+EurekaLog Version=6104
 Activate=1
 Activate Handle=1
 Save Log File=1

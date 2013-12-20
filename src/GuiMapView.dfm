@@ -373,6 +373,7 @@ inherited MapViewForm: TMapViewForm
     Materials = <
       item
         Name = 'Stripe1'
+        Tag = 0
         Material.FrontProperties.Emission.Color = {0000803F0000803F0000803F0000803F}
         Material.Texture.Image.Picture.Data = {
           0954506E67496D61676589504E470D0A1A0A0000000D49484452000000280000
@@ -392,11 +393,11 @@ inherited MapViewForm: TMapViewForm
           989E37941B08701445C9A4B9DC4080EFF77B3C6A343710E0C7E3D16A3E3710E0
           E7F3F985DC90D70BC8F6C2A21602F4740000000049454E44AE426082}
         Material.Texture.Disabled = False
-        Tag = 0
         TextureScale.Coordinates = {0000C8420000C8420000803F00000000}
       end
       item
         Name = 'Stripe2'
+        Tag = 0
         Material.FrontProperties.Emission.Color = {0000803F0000803F0000803F0000803F}
         Material.Texture.Image.Picture.Data = {
           0954506E67496D61676589504E470D0A1A0A0000000D49484452000000280000
@@ -412,7 +413,6 @@ inherited MapViewForm: TMapViewForm
           AA08EF512D43FFFDD47078F53D5EE3F6A095DC0776100000000049454E44AE42
           6082}
         Material.Texture.Disabled = False
-        Tag = 0
         TextureScale.Coordinates = {0000C8420000C8420000803F00000000}
       end>
     Left = 40

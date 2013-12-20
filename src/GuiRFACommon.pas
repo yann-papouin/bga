@@ -169,7 +169,7 @@ type
     procedure SetSearchText(const Value: string);
     function GetSearchText: string;
   protected
-    function FindFileByName(Filename: string; ParentNode : PVirtualNode): PVirtualNode;
+    function FindFileByName(Filename: string; ParentNode : PVirtualNode = nil): PVirtualNode;
     function FindFileByPath(Path: string): PVirtualNode;
     function FindFile(Path: String): PVirtualNode;
     function FindPath(Path: String) : PVirtualNode;
