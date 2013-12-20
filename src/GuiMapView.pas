@@ -370,7 +370,7 @@ begin
   if FileExists(Filename) then
   begin
     Title := Filename;
-    Stream := TFileStream.Create(Filename, fmOpenRead);
+    Stream := TFileStream.Create(Filename, fmOpenRead or fmShareDenyNone);
     LoadTerrain(Stream);
     Stream.Free;
 
@@ -446,7 +446,7 @@ begin
     HeightMapFile := GetFileByPath(Self, HeightMap);
     if FileExists(HeightMapFile) then
     begin
-      Stream := TFileStream.Create(HeightMapFile, fmOpenRead);
+      Stream := TFileStream.Create(HeightMapFile, fmOpenRead or fmShareDenyNone);
       LoadHeightmap(Stream);
 
       TerrainRenderer.Scale.X := FRawStep;

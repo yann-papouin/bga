@@ -74,15 +74,14 @@ type
 
   TSyncThread = class(TThread)
   private
-    FMutex : boolean;
-    FOwner : TRFAViewForm;
+    FGui : TRFAViewForm;
+    FName: string;
     FSyncNode : PVirtualNode;
   protected
     procedure Execute; override;
     procedure Invalidate;
   public
-    State : TSyncState;
-    constructor Create(CreateSuspended:boolean);
+    constructor Create(CreateSuspended:boolean; Gui: TRFAViewForm; Name: string);
     destructor Destroy; override;
   end;
 
@@ -181,6 +180,8 @@ type
     RecentList: TMemo;
     DropEmptySource: TDropEmptySource;
     DragDataFormatAdapter: TDataFormatAdapter;
+    DebugItem: TSpTBXColorItem;
+    SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormActivate(Sender: TObject);
@@ -242,10 +243,9 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure DropEmptySourceFeedback(Sender: TObject; Effect: Integer;
       var UseDefaultCursors: Boolean);
-    procedure UpdateVCLTimer(Sender: TObject);
   private
     FEditResult : TEditResult;
-    FSyncThread : TSyncThread;
+    FThread : TSyncThread;
     FDragNodes : Array of PVirtualNode;
     FArchive : TRFAFile;
     FResetMutex : boolean;
@@ -271,8 +271,8 @@ type
     procedure ExtractTo(Directory: string; RecreatePath : boolean; List: TStringList = nil);
     procedure ShiftData(ShiftData: TRFAResult; ShiftWay: TShiftWay; IgnoreNode: PVirtualNode = nil);
     procedure SyncAll;
-    procedure SyncStart;
-    procedure SyncStop;
+    procedure ThreadCreate;
+    procedure ThreadDestroy;
     procedure UpdateInfobar;
     procedure UpdateReply(Sender: TObject; Result: TUpdateResult);
     procedure RebuildEditWithMenu;
@@ -551,7 +551,12 @@ begin
     if FileExists(CmdLine[0]) then
     begin
       OpenDialog.FileName := CmdLine[0];
-      QuickOpen;
+      ThreadDestroy;
+      try
+        QuickOpen;
+      finally
+        ThreadCreate;
+      end;
     end;
 end;
 
@@ -578,7 +583,12 @@ begin
   begin
     SendDebug(ParamStr(1));
     OpenDialog.FileName := ParamStr(1);
-    QuickOpen;
+    ThreadDestroy;
+    try
+      QuickOpen;
+    finally
+      ThreadCreate;
+    end;
 
     if ParamCount > 1 then
     begin
@@ -641,7 +651,7 @@ begin
     end;
   end;
 
-  SyncStop;
+  ThreadDestroy;
   RFAList.Clear;
   Title := EmptyStr;
 
@@ -666,59 +676,56 @@ var
   Node: PVirtualNode;
 begin
   Result := false;
-  SyncStop;
-  //FSyncNode := nil;
-
   RFAList.BeginUpdate;
 
   if Reset(ASK_BEFORE_RESET) = mrCancel then
   begin
-    RFAList.EndUpdate;
-    SyncStart;
-    Exit;
-  end;
-
-  if Assigned(FArchive) then
-    FArchive.Free;
-
-  FArchive := TRFAFile.Create;
-  FArchive.OnReadEntry := ReadEntry;
-  //FArchive.OnProgress := SubProgress;
-
-  TotalProgress(roBegin, 0, 0);
-
-  try
-    if FArchive.Open(Path) = orFailed then
-    begin
-      ShowError('Archive opening error', 'This file is already used by another application');
-      FreeAndNil(FArchive);
-    end
-      else
-    begin
-      Result := true;
-    end;
-
-    Node := RFAList.GetFirst;
-    while Node <> nil do
-    begin
-      RFAList.Expanded[Node] := true;
-
-      if Node.ChildCount > 1 then
-        Break;
-
-      Node := RFAList.GetNext(Node);
-    end;
-    Sort;
-  finally
-    TotalProgress(roEnd, 0, 0);
-    RFAList.EndUpdate;
-  end;
-
-  if Result then
+    // Do nothing
+  end
+    else
   begin
-    UpdateInfobar;
-    SyncStart;
+    if Assigned(FArchive) then
+      FArchive.Free;
+
+    FArchive := TRFAFile.Create;
+    FArchive.OnReadEntry := ReadEntry;
+    //FArchive.OnProgress := SubProgress;
+
+    TotalProgress(roBegin, 0, 0);
+
+    try
+      if FArchive.Open(Path) = orFailed then
+      begin
+        ShowError('Archive opening error', 'This file is already used by another application');
+        FreeAndNil(FArchive);
+      end
+        else
+      begin
+        Result := true;
+      end;
+
+      Node := RFAList.GetFirst;
+      while Node <> nil do
+      begin
+        RFAList.Expanded[Node] := true;
+
+        if Node.ChildCount > 1 then
+          Break;
+
+        Node := RFAList.GetNext(Node);
+      end;
+      Sort;
+    finally
+      TotalProgress(roEnd, 0, 0);
+    end;
+
+    if Result then
+    begin
+      UpdateInfobar;
+    end;
   end;
+
+  RFAList.EndUpdate;
 end;
 
 
@@ -804,10 +811,8 @@ var
 
 begin
   Result := false;
-  SyncStop;
   RemoveEmptyFolders;
   SyncAll;
-
 
   if CountFilesByStatus(RFAList.RootNode, [fsConflict], false) > 0 then
   begin
@@ -815,6 +820,7 @@ begin
   end
     else
   begin
+    RFAList.BeginUpdate;
     Cancel.Enabled := true;
 
     if Assigned(FArchive) and (FArchive.Filepath = Path) and not Defrag then
@@ -869,7 +875,7 @@ begin
               ShiftData(DeleteResult, shLeft, Node);
             end;
 
-            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead or fmShareDenyNone);
             Size := ExternalFile.Size;
             InsertResult := Data.RFAFileHandle.InsertFile(ExternalFile, FArchive.Compressed);
             ShiftData(InsertResult, shRight, Node);
@@ -902,7 +908,7 @@ begin
 
           if (fsNew in Data.Status) and IsFile(Data.FileType) then
           begin
-            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead or fmShareDenyNone);
             Size := ExternalFile.Size;
             InsertResult := FArchive.InsertFile(ExternalFile, FArchive.Compressed);
             ShiftData(InsertResult, shRight, Node);
@@ -943,9 +949,24 @@ begin
             Data.EntryName := BuildEntryNameFromTree(Node);
             Data.RFAFileHandle.InsertEntry(Data.EntryName, Data.offset, Data.Size, Data.CompSize, 0);
             Exclude(Data.Status, fsEntry);
+            RFAList.InvalidateNode(Node);
           end;
 
           TotalProgress(roSave, PG_AUTO, RFAList.TotalCount*3);
+          Node := NextNode;
+        end;
+
+        /// Step-5 : Reset folder status
+        Node := RFAList.GetFirst;
+        while Node <> nil do
+        begin
+          NextNode := RFAList.GetNext(Node);
+          Data := RFAList.GetNodeData(Node);
+          if Data.FileType = ftFolder then
+          begin
+            Data.Status := [];
+            RFAList.InvalidateNode(Node);
+          end;
           Node := NextNode;
         end;
 
@@ -1041,7 +1062,7 @@ begin
 
           if (fsExternal in Data.Status) and IsFile(Data.FileType) then
           begin
-            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead or fmShareDenyNone);
             Size := ExternalFile.Size;
             InsertResult := TmpArchive.InsertFile(ExternalFile, TmpUseCompression);
             ExternalFile.Free;
@@ -1064,7 +1085,7 @@ begin
 
           if (fsNew in Data.Status) and IsFile(Data.FileType) then
           begin
-            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead);
+            ExternalFile := TFileStream.Create(Data.ExternalFilePath, fmOpenRead or fmShareDenyNone);
             Size := ExternalFile.Size;
             InsertResult := TmpArchive.InsertFile(ExternalFile, TmpUseCompression);
             ExternalFile.Free;
@@ -1106,9 +1127,10 @@ begin
 
       end;
     end;
+
+    RFAList.EndUpdate;
   end;
 
-  SyncStart;
 end;
 
 procedure TRFAViewForm.SearchStartExecute(Sender: TObject);
@@ -1159,6 +1181,9 @@ function TRFAViewForm.QuickOpen: boolean;
 var
   WindowCaption : string;
 begin
+  if DebugHook <> 0 then
+    Assert(FThread = nil);
+
   Result := false;
   if FileExists(OpenDialog.FileName) then
   begin
@@ -1185,6 +1210,9 @@ end;
 
 function TRFAViewForm.QuickSave(Defragmentation: boolean): boolean;
 begin
+  if DebugHook <> 0 then
+    Assert(FThread = nil);
+
   Result := false;
   if SaveMap(SaveDialog.FileName, Defragmentation) then
   begin
@@ -1433,26 +1461,6 @@ begin
   end;
 end;
 
-procedure TRFAViewForm.SyncStart;
-begin
-  Assert(FSyncThread.State = ssWaiting, 'Syncing must be started when not already running');
-
-  FSyncThread.FSyncNode := nil;
-  FSyncThread.State := ssWorking;
-end;
-
-procedure TRFAViewForm.SyncStop;
-begin
-  if FSyncThread.State <> ssWaiting then
-  begin
-    FSyncThread.State := ssStopping;
-
-    while FSyncThread.State <> ssWaiting do
-    begin
-      // Wait here for the thread to finish //Sleep(100);
-    end;
-  end;
-end;
 
 procedure TRFAViewForm.RebuildEditWithMenu;
 var
@@ -2041,16 +2049,6 @@ begin
 end;
 
 
-procedure TRFAViewForm.UpdateVCLTimer(Sender: TObject);
-begin
-  inherited;
-
-  if FSyncThread.State = ssWorking then
-  begin
-
-  end;
-
-end;
 
 { TRFAViewForm }
 
@@ -2058,14 +2056,13 @@ end;
 procedure TRFAViewForm.FormCreate(Sender: TObject);
 begin
   inherited;
-  FSyncThread := TSyncThread.Create(false);
-  FSyncThread.FOwner := self;
-
   // Setup event handler to let a drop target request data from our drop source.
   (DragDataFormatAdapter.DataFormat as TVirtualFileStreamDataFormat).OnGetStream := OnGetStream;
 
   EnableSkinning(RFAList);
   Reset;
+
+  ThreadCreate;
 end;
 
 
@@ -2093,10 +2090,11 @@ end;
 
 procedure TRFAViewForm.FormDestroy(Sender: TObject);
 begin
+  ThreadDestroy;
+
   if Assigned(FArchive) then
     FArchive.Free;
 
-  FSyncThread.Free;
   inherited;
 end;
 
@@ -2130,7 +2128,12 @@ begin
   if (Sender is TSpTBXItem) then
   begin
     OpenDialog.FileName := (Sender as TSpTBXItem).Caption;
-    QuickOpen;
+    ThreadDestroy;
+    try
+      QuickOpen;
+    finally
+      ThreadCreate;
+    end;
   end;
 end;
 
@@ -2147,7 +2150,12 @@ begin
   OpenDialog.FileName := ExtractFileName(OpenDialog.FileName);
   if OpenDialog.Execute then
   begin
-    QuickOpen;
+    ThreadDestroy;
+    try
+      QuickOpen;
+    finally
+      ThreadCreate;
+    end;
   end;
 end;
 
@@ -2177,16 +2185,21 @@ begin
   SaveDialog.InitialDir := ExtractFilePath(SaveDialog.FileName);
   SaveDialog.FileName := ExtractFileName(SaveDialog.FileName);
 
-  if SaveDialog.Execute then
-  begin
-    if OpenDialog.FileName = SaveDialog.FileName then
-      UseDefrag := true;
-
-    if QuickSave(UseDefrag) then
+  ThreadDestroy;
+  try
+    if SaveDialog.Execute then
     begin
-      //Save.Enabled := false;
-      //Defrag.Enabled := false;
+      if OpenDialog.FileName = SaveDialog.FileName then
+        UseDefrag := true;
+
+      if QuickSave(UseDefrag) then
+      begin
+        //Save.Enabled := false;
+        //Defrag.Enabled := false;
+      end;
     end;
+  finally
+    ThreadCreate;
   end;
 end;
 
@@ -2195,7 +2208,12 @@ begin
   if not tbMenuBar.Enabled then
     Exit;
 
-  QuickSave(false);
+  ThreadDestroy;
+  try
+    QuickSave(false);
+  finally
+    ThreadCreate;
+  end;
 end;
 
 procedure TRFAViewForm.DefragExecute(Sender: TObject);
@@ -2203,7 +2221,12 @@ begin
   if not tbMenuBar.Enabled then
     Exit;
 
-  QuickSave(true);
+  ThreadDestroy;
+  try
+    QuickSave(true);
+  finally
+    ThreadCreate;
+  end;
 end;
 
 procedure TRFAViewForm.QuitExecute(Sender: TObject);
@@ -2391,6 +2414,36 @@ else
 end;
 
 
+procedure TRFAViewForm.ThreadCreate;
+begin
+  DebugItem.Color := clLime;
+  if DebugHook <> 0 then
+    Assert(FThread = nil);
+
+  if not Assigned(FThread) then
+    FThread := TSyncThread.Create(False, Self, 'SyncThread');
+end;
+
+procedure TRFAViewForm.ThreadDestroy;
+var
+  Diff: Cardinal;
+begin
+  DebugItem.Color := clRed;
+  if Assigned(FThread) then
+  begin
+    Diff := GetTickCount;
+    FThread.Terminate;
+    if not FThread.Suspended then
+    begin
+      Assert(FThread.Terminated);
+      FThread.WaitFor;
+      FThread.Free;
+    end;
+    FThread := nil;
+    SendDebugFmt('SyncThread destroyed in %dms',[GetTickCount-Diff]);
+  end;
+end;
+
 procedure TRFAViewForm.TotalProgress(Operation: TRFAOperation; Value: Integer; Max:integer);
 begin
   if TotalProgressLabel.Tag <> Ord(Operation) then
@@ -2436,13 +2489,14 @@ end;
 
 { TSyncThread }
 
-constructor TSyncThread.Create(CreateSuspended: boolean);
+constructor TSyncThread.Create(CreateSuspended: boolean; Gui: TRFAViewForm; Name: string);
 begin
   inherited Create(CreateSuspended);
 
   FreeOnTerminate:=false;
   Priority:=tpNormal;
-  FOwner := nil;
+  FGui := Gui;
+  FName := Name;
   FSyncNode := nil;
 end;
 
@@ -2455,38 +2509,33 @@ end;
 procedure TSyncThread.Execute;
 begin
   inherited;
+  NameThreadForDebugging(FName);
+
   repeat
-
-  if (State = ssWaiting) then
-    Sleep(100)
-  else
-  if (State = ssStopping) then
-    State := ssWaiting
-  else
-  if (State = ssWorking) and not FOwner.OperationPending and not FMutex then
-  begin
-    Sleep(5);
-    FMutex := true;
-    if Assigned(FOwner.FArchive) then
+    if not FGui.OperationPending then
     begin
-      if (FSyncNode = nil) then
-        FSyncNode := FOwner.RFAList.GetFirst
-      else
-        FSyncNode := FOwner.RFAList.GetNext(FSyncNode, true);
+      Sleep(10);
+      if Assigned(FGui.FArchive) then
+      begin
+        if (FSyncNode = nil) then
+          FSyncNode := FGui.RFAList.GetFirst
+        else
+          FSyncNode := FGui.RFAList.GetNext(FSyncNode, true);
 
-      if FOwner.CheckStatus(FSyncNode) then
-        Synchronize(Invalidate);
+        if FGui.CheckStatus(FSyncNode) then
+          Synchronize(Invalidate);
+      end;
     end;
-    FMutex := false;
-  end;
+  until
+    Terminated;
 
-  until Terminated;
+  FSyncNode := nil;
 end;
 
 procedure TSyncThread.Invalidate;
 begin
-  FOwner.RFAList.InvalidateNode(FSyncNode);
-  FOwner.NotifyChange;
+  FGui.RFAList.InvalidateNode(FSyncNode);
+  FGui.NotifyChange;
 end;
 
 end.

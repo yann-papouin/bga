@@ -248,6 +248,11 @@ inherited RFAViewForm: TRFAViewForm
     object SelectionText: TSpTBXLabelItem
       Caption = 'SelectionText'
     end
+    object SpTBXRightAlignSpacerItem1: TSpTBXRightAlignSpacerItem
+      CustomWidth = 333
+    end
+    object DebugItem: TSpTBXColorItem
+    end
   end
   object ProgressPanel: TSpTBXPanel [3]
     Left = 0
@@ -470,6 +475,9 @@ inherited RFAViewForm: TRFAViewForm
       ImageIndex = 1185
       OnExecute = EditWithOSExecute
     end
+  end
+  inherited UpdateVCL: TTimer
+    OnTimer = nil
   end
   object DropFileSource: TDropFileSource
     DragTypes = [dtMove]
