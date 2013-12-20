@@ -92,9 +92,10 @@ begin
     Application.Title := 'BGA : Battlefield 1942 Game Archive Tool';
 
     Application.CreateForm(TRFAViewForm, RFAViewForm);
-  Application.CreateForm(TRFASettingsForm, RFASettingsForm);
-  Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
-  // Show bench results of entries reading
+    Application.CreateForm(TRFASettingsForm, RFASettingsForm);
+    Application.CreateForm(TUpdateManagerForm, UpdateManagerForm);
+
+    // Show bench results of entries reading
     Bench := GetTickCount - Bench;
     SendDebugFmt('Application loaded in %dms',[Bench]);
 

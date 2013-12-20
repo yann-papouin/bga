@@ -88,8 +88,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
 			<DCC_Define>DEBUG;EUREKALOG;EUREKALOG_VER6;$(DCC_Define)</DCC_Define>
 		</PropertyGroup>
 		<PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.6;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=20/12/2013 14:44:54</VerInfo_Keys>
-			<VerInfo_Build>6</VerInfo_Build>
+			<VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.37;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;LastCompiledTime=20/12/2013 16:48:17</VerInfo_Keys>
+			<VerInfo_Build>37</VerInfo_Build>
 		</PropertyGroup>
 		<ItemGroup>
 			<DelphiCompile Include="$(MainSource)">
@@ -195,7 +195,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
 						<VersionInfo Name="MajorVer">1</VersionInfo>
 						<VersionInfo Name="MinorVer">0</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">6</VersionInfo>
+						<VersionInfo Name="Build">37</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -207,7 +207,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">Yann Papouin</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription">BGA : Battlefield 1942 Game Archive Tool</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">1.0.0.6</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">1.0.0.37</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">BGA</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright">Yann Papouin</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalTrademarks"/>
@@ -215,7 +215,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
 						<VersionInfoKeys Name="ProductName">BF1942 Game Archive Tool</VersionInfoKeys>
 						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
 						<VersionInfoKeys Name="Comments"/>
-						<VersionInfoKeys Name="LastCompiledTime">20/12/2013 14:44:54</VersionInfoKeys>
+						<VersionInfoKeys Name="LastCompiledTime">20/12/2013 16:48:17</VersionInfoKeys>
 					</VersionInfoKeys>
 					<Excluded_Packages>
 						<Excluded_Packages Name="$(BDSBIN)\bcboffice2k140.bpl">Package Serveurs Office 2000 Embarcadero C++Builder</Excluded_Packages>

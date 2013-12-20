@@ -163,10 +163,6 @@ type
     FSearchThread : TSearchThread;
     FSortBy : TSortBy;
     FSortDirection : TSortDirection;
-    { Déclarations privées }
-    function IsFolder(Name: String) : boolean;
-    procedure SetSearchText(const Value: string);
-    function GetSearchText: string;
   protected
     function FindFileByName(Filename: string; ParentNode : PVirtualNode = nil): PVirtualNode;
     function FindFileByPath(Path: string): PVirtualNode;
@@ -244,11 +240,6 @@ uses
   AppLib,
   MD5Api;
 
-
-function TRFACommonForm.IsFolder(Name: String) : boolean;
-begin
-  result := SFRight(DirDelimiter,Name) <> EmptyStr;
-end;
 
 function TRFACommonForm.IsFile(FileType: TFileType): boolean;
 begin
@@ -343,7 +334,10 @@ var
   Count: integer;
   i: integer;
   Node, Parent, Previous : PVirtualNode;
-  Data,DataDbg : pFse;
+  Data : pFse;
+  {$IfDef DEBUG_BP}
+  DataDbg: pFse;
+  {$EndIf}
   SegPath, Current : string;
   Create : boolean;
 begin
@@ -351,9 +345,10 @@ begin
   Count := StrCharCount(Path, DirDelimiter);
   Result := RFAList.RootNode;
   Node := nil;
+  Parent := nil;
+  Previous := nil;
   Create := false;
   SegPath := Path;
-
 
   {$IfDef DEBUG_BP}
   SendSeparator;
@@ -1126,9 +1121,7 @@ end;
 procedure TRFACommonForm.SearchEditChange(Sender: TObject);
 var
   Node : pVirtualNode;
-  Data : pFse;
 begin
-
   if Assigned(FSearchThread) then
     SearchThreadDestroy;
 
@@ -1199,47 +1192,6 @@ begin
     FSearchThread := nil;
     SendDebugFmt('SearchThread destroyed in %dms',[GetTickCount-Diff]);
   end;
-end;
-
-function TRFACommonForm.GetSearchText: string;
-begin
-
-end;
-
-procedure TRFACommonForm.SetSearchText(const Value: string);
-var
-  Node : pVirtualNode;
-  Data : pFse;
-begin
-(*
-  if (Value <> EmptyStr) then
-  begin
-    SearchThreadDestroy;
-    SearchProgressBar.Position := 0;
-    SearchProgressBar.Max := RFAList.TotalCount;
-    SearchThreadCreate;
-    FSearchThread.FSearchText := Value;
-    FSearchThread.FSearchList.DelimitedText := FSearchThread.FSearchText;
-  end
-    else
-  begin
-    Node := RFAList.GetFirst(true);
-    RFAList.BeginUpdate;
-    while Node <> nil do
-    begin
-      RFAList.IsVisible[Node] := True;
-
-      if RFAList.GetNodeLevel(Node) <= 2 then
-        RFAList.Expanded[Node] := True
-      else
-        RFAList.Expanded[Node] := not True;
-
-      Node := RFAList.GetNext(Node, true);
-    end;
-    RFAList.EndUpdate;
-    GoToSelection;
-  end;
-  *)
 end;
 
 
