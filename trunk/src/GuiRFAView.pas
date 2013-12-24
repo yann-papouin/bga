@@ -25,7 +25,7 @@ interface
 {$I BGA.inc}
 
 uses
-  JvGnuGetText, ShellAPI, GuiFormCommon,
+  JvGnuGetText, ShellAPI, GuiFormCommon, Comobj,
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, GuiRFACommon, ActnList, VirtualTrees, TB2Item, SpTBXItem, TB2Dock,
   TB2Toolbar, ExtCtrls, JvFormPlacement, JvAppStorage, JvAppRegistryStorage, Menus,
@@ -1538,41 +1538,51 @@ begin
     RecentList.Lines.Delete(RecentList.Lines.Count-1);
 end;
 
-function FilesFromIDataObject(ADataObject: IDataObject; AFiles: TStrings): Integer;
+// http://stackoverflow.com/questions/3770109/how-do-you-drag-and-drop-a-file-from-explorer-shell-into-a-virtualtreeview-contr
+procedure GetFileListFromObj(const DataObj: IDataObject; FileList: TStringList);
 var
-  I: Integer;
-  Data: TStgMedium;
-  SOF: TFormatEtc;
-  Enum: IEnumFORMATETC;
+  FmtEtc: TFormatEtc;                   // specifies required data format
+  Medium: TStgMedium;                   // storage medium containing file list
+  DroppedFileCount: Integer;            // number of dropped files
+  I: Integer;                           // loops thru dropped files
+  FileNameLength: Integer;              // length of a dropped file name
+  FileName: string;                     // name of a dropped file
 begin
-  Result:=0;
-  if ADataObject = nil then
-    exit;
-
-  ZeroMemory(@Data, SizeOf(Data));
-  ADataObject.EnumFormatEtc(DATADIR_GET, Enum);
-  while (Enum.Next(1, SOF, @I) = S_OK) and (I > 0) do
-    if SOF.cfFormat = CF_HDROP then
-    begin
-      if Succeeded(ADataObject.GetData(SOF, Data)) then
-      try
-        case SOF.tymed of
-          TYMED_FILE: AFiles.Text:=Data.lpszFileName;
-          TYMED_HGLOBAL: ReadFilesFromHGlobal(Data.hGlobal, AFiles);
-          else exit;
+  // Get required storage medium from data object
+  FmtEtc.cfFormat := CF_HDROP;
+  FmtEtc.ptd := nil;
+  FmtEtc.dwAspect := DVASPECT_CONTENT;
+  FmtEtc.lindex := -1;
+  FmtEtc.tymed := TYMED_HGLOBAL;
+  OleCheck(DataObj.GetData(FmtEtc, Medium));
+  try
+    try
+      // Get count of files dropped
+      DroppedFileCount := DragQueryFile(Medium.hGlobal, $FFFFFFFF, nil, 0);
+      // Get name of each file dropped and process it
+      for I := 0 to Pred(DroppedFileCount) do
+        begin
+          // get length of file name, then name itself
+          FileNameLength := DragQueryFile(Medium.hGlobal, I, nil, 0);
+          SetLength(FileName, FileNameLength);
+          DragQueryFileW(Medium.hGlobal, I, PWideChar(FileName), FileNameLength + 1);
+          // add file name to list
+          FileList.Append(FileName);
         end;
-        Result:=AFiles.Count;
-        exit;
-      finally
-        ReleaseStgMedium(Data);
-      end;
+    finally
+      // Tidy up - release the drop handle
+      // don't use DropH again after this
+      DragFinish(Medium.hGlobal);
     end;
+  finally
+    ReleaseStgMedium(Medium);
+  end;
+
 end;
 
 procedure TRFAViewForm.RFAListDragDrop(Sender: TBaseVirtualTree; Source: TObject; DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 var
   DropData: TStgMedium;
-  SOF: TFormatEtc;
   FileList : TStringList;
   HitNode: PVirtualNode;
   AttachMode: TVTNodeAttachMode;
@@ -1580,34 +1590,42 @@ var
   SourceNode : PVirtualNode;
   TargetNode : PVirtualNode;
   Data : pFse;
+  i: integer;
 begin
   Data := nil;
-
   if (Source = nil) and not (DropFileSource.DragInProgress) then
   begin
-    FileList := TStringList.Create;
-    DataObject.GetData(SOF, DropData);
-    FilesFromIDataObject(DataObject, FileList);
-
-    HitNode := Sender.GetNodeAt(Pt.X, Pt.Y);
-
-    if (HitNode <> nil) and (HitNode <> Sender.RootNode) then
+    for i := 0 to High(formats) - 1 do
     begin
-      Data := Sender.GetNodeData(HitNode);
-
-      while IsFile(Data.FileType) do
+      if (Formats[i] = CF_HDROP) and Assigned(DataObject) then
       begin
-        HitNode := HitNode.Parent;
+        FileList := TStringList.Create;
+        try
+          GetFileListFromObj(DataObject, FileList);
 
-        if (HitNode = nil) or (HitNode = Sender.RootNode) then
-          Break
-        else
-          Data := Sender.GetNodeData(HitNode);
+          HitNode := Sender.GetNodeAt(Pt.X, Pt.Y);
+
+          if (HitNode <> nil) and (HitNode <> Sender.RootNode) then
+          begin
+            Data := Sender.GetNodeData(HitNode);
+
+            while IsFile(Data.FileType) do
+            begin
+              HitNode := HitNode.Parent;
+
+              if (HitNode = nil) or (HitNode = Sender.RootNode) then
+                Break
+              else
+                Data := Sender.GetNodeData(HitNode);
+            end;
+          end;
+
+          Add(HitNode, FileList);
+        finally
+          FileList.Free;
+        end;
       end;
     end;
-
-    Add(HitNode, FileList);
-    FileList.Free;
   end
     else
   begin
