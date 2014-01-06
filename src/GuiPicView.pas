@@ -672,27 +672,30 @@ begin
   FScreenPoint := Value;
 
   // Get scene position from ScreenPoint
-  FPencilPosition := VectorMake(Scene.CurrentBuffer.ScreenToWorld(FScreenPoint.X, FScreenPoint.Y));
-  FPencilPosition := Parent.AbsoluteToLocal(FPencilPosition);
-  FPencilPosition := SimpleRoundTo(FPencilPosition, 1);
-  UnscalePosition := Parent.LocalToAbsolute(FPencilPosition);
-
-  // Place cross
-  FCross.Visible := IsDrawing;
-
-  if FCross.Visible then
+  if Assigned(Scene) and Assigned(Scene.CurrentBuffer) then
   begin
-    FCross.Nodes[A].X := UnscalePosition.X;
-    FCross.Nodes[B].X := UnscalePosition.X;
+    FPencilPosition := VectorMake(Scene.CurrentBuffer.ScreenToWorld(FScreenPoint.X, FScreenPoint.Y));
+    FPencilPosition := Parent.AbsoluteToLocal(FPencilPosition);
+    FPencilPosition := SimpleRoundTo(FPencilPosition, 1);
+    UnscalePosition := Parent.LocalToAbsolute(FPencilPosition);
 
-    FCross.Nodes[C].Y := UnscalePosition.Y;
-    FCross.Nodes[D].Y := UnscalePosition.Y;
+    // Place cross
+    FCross.Visible := IsDrawing;
 
-    FCross.Nodes[C].X := -Scene.CurrentBuffer.Width + Scene.CurrentGLCamera.Position.X;
-    FCross.Nodes[D].X :=  Scene.CurrentBuffer.Width + Scene.CurrentGLCamera.Position.X;
+    if FCross.Visible then
+    begin
+      FCross.Nodes[A].X := UnscalePosition.X;
+      FCross.Nodes[B].X := UnscalePosition.X;
 
-    FCross.Nodes[A].Y := -Scene.CurrentBuffer.Height + Scene.CurrentGLCamera.Position.Y;
-    FCross.Nodes[B].Y :=  Scene.CurrentBuffer.Height + Scene.CurrentGLCamera.Position.Y;
+      FCross.Nodes[C].Y := UnscalePosition.Y;
+      FCross.Nodes[D].Y := UnscalePosition.Y;
+
+      FCross.Nodes[C].X := -Scene.CurrentBuffer.Width + Scene.CurrentGLCamera.Position.X;
+      FCross.Nodes[D].X :=  Scene.CurrentBuffer.Width + Scene.CurrentGLCamera.Position.X;
+
+      FCross.Nodes[A].Y := -Scene.CurrentBuffer.Height + Scene.CurrentGLCamera.Position.Y;
+      FCross.Nodes[B].Y :=  Scene.CurrentBuffer.Height + Scene.CurrentGLCamera.Position.Y;
+    end;
   end;
 end;
 
