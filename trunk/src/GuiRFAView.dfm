@@ -5,7 +5,7 @@ inherited RFAViewForm: TRFAViewForm
   OnActivate = FormActivate
   OnCloseQuery = FormCloseQuery
   ExplicitWidth = 742
-  ExplicitHeight = 560
+  ExplicitHeight = 561
   PixelsPerInch = 96
   TextHeight = 13
   inherited Container: TSpTBXPanel
