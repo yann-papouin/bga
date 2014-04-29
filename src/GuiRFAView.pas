@@ -1358,26 +1358,29 @@ begin
 
     if IsFile(Data.FileType) then
     begin
-      if RecreatePath then
-        W32Path := Data.W32Path
-      else
+      if not (fsNew in Data.Status) and not (fsDelete in Data.Status) and not (fsConflict in Data.Status) then
       begin
-        W32Path := BuildEntryNameFromTree(Node, true);
-        W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
+        if RecreatePath then
+          W32Path := Data.W32Path
+        else
+        begin
+          W32Path := BuildEntryNameFromTree(Node, true);
+          W32Path := StringReplace(W32Path,'/','\',[rfReplaceAll]);
+        end;
+
+        ExternalFilePath := IncludeTrailingBackslash(Directory) + W32Path;
+        ForceDirectories(ExtractFilePath(ExternalFilePath));
+
+        if Assigned(List) then
+        begin
+          //SendDebug(ExternalFilePath);
+          List.Add(ExternalFilePath);
+        end;
+
+        ExternFile := TFileStream.Create(ExternalFilePath, fmOpenWrite or fmCreate);
+        ExportFile(Node, ExternFile);
+        ExternFile.Free;
       end;
-
-      ExternalFilePath := IncludeTrailingBackslash(Directory) + W32Path;
-      ForceDirectories(ExtractFilePath(ExternalFilePath));
-
-      if Assigned(List) then
-      begin
-        //SendDebug(ExternalFilePath);
-        List.Add(ExternalFilePath);
-      end;
-
-      ExternFile := TFileStream.Create(ExternalFilePath, fmOpenWrite or fmCreate);
-      ExportFile(Node, ExternFile);
-      ExternFile.Free;
     end;
 
     TotalProgress(roExport, PG_AUTO, RFAList.SelectedCount);
