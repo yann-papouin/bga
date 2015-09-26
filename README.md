@@ -35,3 +35,6 @@ The purpose of a virtual file system is to allow real map preview. A database wi
 * Script parser
 
 The Battlefield engine uses some scripts (.con) to init data. The engine is built upon a class system so all we need to do is rebuilt this system with a script parser. When finalized, all data loading/saving will be transparent, without any destructive effects (like erasing user custom scripts). 
+
+#Tags
+rfa, battlefield, sm, standardmesh, viewer, delphi, treemesh, heightmap, con, script, tm 
