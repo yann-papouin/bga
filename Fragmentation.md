@@ -5,6 +5,8 @@
 The RFA file format is a standalone file system, this page will try to explain you how data is hierarchised. In following explanations we are talking about a RFA archive that contains 5 files named a, b, c, d and e.
 RFA file structure
 
+## RFA file structure
+
 Data and entries are stored in the same file, the RFA archive.
 
 ![rect6720](https://github.com/user-attachments/assets/cc777a68-f331-4903-9930-cfe973110d2b)
